@@ -1,0 +1,76 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model BasePageModel
+@{
+    ViewBag.Title = "Edit";
+    EntryPageHelper entryPage = new EntryPageHelper(Model)
+    {
+        Url = this.Url
+    };
+}
+
+@Html.Hidden("ObjectID", Model.EntityInstance.GetPrimaryKeyValue() )
+
+<div class="list-container">
+    <div class="row">
+        <div class="col-xl-2" >
+            @{
+                Html.Kendo().Menu().Name("subPageMenus")
+                        .Orientation(MenuOrientation.Vertical)
+                        .HtmlAttributes(new { @style="width: 200px;" })
+                        .Items(itm =>
+                        {
+                            itm.Add().Text("Basic").LinkHtmlAttributes(new { style = "color: black;"}).Url("javascript:loadChildPage('Basic')");
+                    itm.Add().Text("Catalogue").LinkHtmlAttributes(new { style = "color: black;" }).Url("javascript:loadChildPage('Catalogue')");
+                            itm.Add().Text("Finance").LinkHtmlAttributes(new { style = "color: black;"}).Url("javascript:loadChildPage('Finance')");
+                            itm.Add().Text("Documents").LinkHtmlAttributes(new { style = "color: black;"}).Url("javascript:loadChildPage('Documents')");
+                    itm.Add().Text("ApprovalHistory").LinkHtmlAttributes(new { style = "color: black;" }).Url("javascript:loadChildPage('ApprovalHistory')");
+                            itm.Add().Text("Integration").LinkHtmlAttributes(new { style = "color: black;"}).Url("javascript:loadChildPage('Integration')");
+
+                        }).Render();
+            }
+        </div>
+
+        <div class="col-xl-10" style="border-color: lightgray; border-left: solid 1px; min-height: 450px; ">
+            <div id="childWorkingArea" class="userWorkingArea">
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<script language="javascript" type="text/javascript">
+    function loadChildPage(pageName) { 
+        $.each(
+            $("#subPageMenus").find(".k-link"),
+            function (i, data) {
+                if (data.innerText == pageName) {
+                    $(data).addClass("selected-item");
+                }
+                else {
+                    $(data).removeClass("selected-item");
+                }
+            }
+        );
+
+        loadContentPageToControl("@($"/{Model.ControllerName}/Details/{Model.EntityInstance.GetPrimaryKeyValue()}?pageName={Model.PageName}"):" + pageName, "childWorkingArea", false);
+    }
+
+    $(function () {
+        setPageHeading('Edit @Language.GetPageTitle(Model.PageTitle)');
+        setInitialFocus('@entryPage.FirstFieldName');
+
+        //load first menu item
+        $.each(
+            $("#subPageMenus").find(".k-link"),
+            function (i, data) {
+                loadChildPage(data.innerText);
+                return false;
+            }
+        );
+    });
+
+</script>

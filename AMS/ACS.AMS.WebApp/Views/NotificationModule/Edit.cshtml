@@ -1,0 +1,127 @@
+﻿@using ACS.AMS.DAL
+@model NotificationModuleTable
+@{
+    string PageName = ViewBag.PageName;
+}
+
+
+    @using (Html.AjaxBeginForm("NotificationModuleEdit", "NotificationModule", DisplayHelper.GetAjaxOptions()))
+    {    
+
+    @Html.HiddenFor(model => model.CurrentPageID)
+    @Html.HiddenFor(model => model.NotificationModuleID)
+    @Html.HiddenFor(model => model.QueryString)
+    @Html.HiddenFor(model => model.QueryType)
+    @Html.HiddenFor(model => model.StatusID)
+    @Html.Hidden("pageName", PageName)
+    <div class="list-container">
+        <div class="row k-text-error">
+            @* @Html.ValidationSummary()*@
+            @Html.ValidationMessage("12")
+        </div>
+        <div class="row">
+            <div class="col-xl-4">
+                @Html.Label("NotificationModule")
+
+                @Html.TextBoxFor(model => model.NotificationModule, new { Class = "form-control" })
+                @Html.ValidationMessageFor(model => model.NotificationModule, " ")
+                <div id="errReportTemplateName"></div>
+            </div>
+            <div class="col-xl-4">
+                @Html.Label("QueryString")
+                @Html.TextBox("QueryString", Model.QueryString, new { disabled = "disabled", Class = "form-control" })
+                @Html.ValidationMessageFor(model => model.QueryString, " ")
+                <div id="errProcedureName"></div>
+            </div>
+            <div class="col-xl-4">
+
+                <label for="fullname">@Html.LabelFor(model => model.ReportTemplate, true)</label>
+                @if (Model.ReportTemplateID.HasValue)
+                {
+                    var name = ReportTemplateTable.GetItem(AMSContext.CreateNewContext(), (int)Model.ReportTemplateID);
+                    @Html.HiddenFor(model=>model.ReportTemplateID)
+                    @Html.TextBox("ReportTemplateName", name.ReportTemplateName, new { disabled = "disabled", Class = "form-control" })
+                    
+                }
+                else
+                {
+                    @(
+                        Html.Kendo().MultiColumnComboBoxFor(model => model.ReportTemplateID)
+                        .DataTextField("ReportTemplateName")
+                        .DataValueField("ReportTemplateID")
+                        .Columns(columns =>
+                        {
+                            columns.Add().Field("ReportTemplateName").Title("ReportTemplateName").Width("300px");
+                            columns.Add().Field("ProcedureName").Title("ProcedureName").Width("300px");
+                            columns.Add().Field("ReportTemplateFile").Title("ReportTemplateFile").Width("100px");
+                        })
+                       
+                        .AutoBind(false)
+                        .Filter(FilterType.Contains).HtmlAttributes(new { Style = "Width:100%" })
+                        .DataSource(source =>
+                        {
+                            source.Read(read =>
+                            {
+                                read.Action("GetAllReportTemplate", "DataService");
+                            }).ServerFiltering(true);
+                        })
+
+                        )
+                }
+
+
+            </div>
+          
+            <div class="form-group col-12 col-sm-6 col-md-12">
+            </div>
+            <div class="col-xl-6" id="NotificationFieldGrid">
+                </div>
+               
+    
+
+
+            <div class="col-xl-12 text-right add-action-btns">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type="submit" })
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick=$"LoadIndexPage('NotificationModule','{PageName}')" })
+            </div>
+        </div>
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                EntryPageModel newModel = new EntryPageModel()
+                {
+
+                    EntityInstance = Model as BaseEntityObject,
+                    ControllerName = this.GetType().Name.Substring(0, this.GetType().Name.Length - "Controller".Length),
+                };
+                Html.RenderPartial("BaseViews/AuditLogSingleView", newModel);
+            }
+        </div>
+    </div>
+          
+}
+
+<script language="javascript" type="text/javascript">
+    function GetCurrentPageID() {
+        return $("#CurrentPageID").val();
+    }
+    $(function () {
+        setPageHeading("Notification Module Edit");
+        ProcedureChange();
+    });
+  
+    function ProcedureChange() {
+        //ReloadFilterFields();
+
+        prm = { pageNumber: 0, currentPageID: GetCurrentPageID() };
+        loadContentPageToControl("@Url.Action("NotificationModuleFields")?" + $.param(prm), "NotificationFieldGrid", false);
+    }
+
+  
+                                    </script>

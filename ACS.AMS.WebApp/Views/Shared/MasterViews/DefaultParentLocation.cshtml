@@ -1,0 +1,14 @@
+﻿@model string 
+
+@(Html.Kendo().DropDownTree()
+       .Name("ParentLocationID")
+       .Label(label =>
+       {
+           label.Content("Select an Location...");
+       })
+       .DataTextField("Name")
+       .DataValueField("id").Value(Model)
+       .HtmlAttributes(new { style = "width: 100%" })
+       .Filter(FilterType.Contains)
+       .DataSource(dataSource => dataSource.ServerFiltering(true).Read(read => read.Action("GetLocationListForDDTree", "DataService") ) )
+   )

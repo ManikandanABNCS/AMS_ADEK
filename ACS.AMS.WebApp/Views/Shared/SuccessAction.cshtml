@@ -1,0 +1,162 @@
+﻿<script>
+ @{
+
+        string message = "Record Saved Successfully";
+
+     if (ViewData.ContainsKey("Message"))
+     {
+         message = ViewData["Message"] + "";
+     }
+     string messageSuffix = "";
+
+     if (ViewData.ContainsKey("MessageSuffix"))
+     {
+         messageSuffix = ViewData["MessageSuffix"] + "";
+     }
+
+     string extrenalWindowURL = "";
+
+     if (ViewData.ContainsKey("ExternalReportPageURL"))
+     {
+        extrenalWindowURL = ViewData["ExternalReportPageURL"] + "";
+
+                                    <text>
+                                    window.open('@Html.Raw(extrenalWindowURL)');
+                                    </text>
+     }
+         if (!ViewData.ContainsKey("ClosePopup"))
+        {
+                                <text>
+                                showSuccessMessage('@message' + ". " + '@messageSuffix');
+                                        </text>
+    }
+        else
+
+        {
+                                    <text>
+                                    alert("Record SuccessFully");
+                                          </text>
+        }
+
+    if (ViewData.ContainsKey("PageNavigationNotRequired"))
+    {
+            
+    }
+    else
+    {
+     if (ViewData.ContainsKey("URLControl"))
+     {
+         if (ViewData.ContainsKey("URL"))
+         {
+                                            <text>
+                                            loadContentPageToControl('@ViewData["URL"]', '@ViewData["URLControl"]', false);
+                                            </text>
+         }
+         else
+         {
+                                            <text>
+                                            loadContentPageToControl('@Url.Action("Index")', '@ViewData["URLControl"]', false);
+                                            </text>
+         }
+     }
+     else
+     {
+         if (ViewData.ContainsKey("URL"))
+         {
+                                                   <text>
+                                            loadDefaultPage('@ViewData["URL"]');
+                                            </text>
+                }
+                else if (ViewData.ContainsKey("ClosePopup"))
+                {
+                 
+                                            <text>
+                                var data = '@ViewData["RefereshID"]';
+                
+                                        setTimeout(function () {
+                                            switch (data) {
+                                                case "DepartmentID":
+                                                case "SectionID":
+                                                case "CategoryTypeID":
+                                                case "ModelID":
+                                                case "ManufacturerID":
+                                                case "PartyID":
+                                                case "AssetConditionID":
+                                                case "CustodianID":
+                                                case "TransferTypeID":
+                                                    var dropdown = parent.window.$("#" + data).data("kendoDropDownList");
+
+                                                    if (dropdown) {
+                                                        dropdown.dataSource.read(); // Reload the data
+                                                    }
+                                                    break;
+
+                                                case "CategoryID":
+                                                case "LocationID":
+                                                case "ParentCategoryID":
+                                                 case "ParentLocationID":
+
+                                                    parent.window.$("#" + data).data("kendoDropDownTree").dataSource.read();
+                                                    break;
+
+                                            }
+                                  
+
+                                            var w = window.parent.$("#QuickMaster").data("kendoWindow");
+                                            w.close();
+                                            }, 500);
+
+                                        
+                                         
+                                                </text>
+                }
+            else
+            {
+                if (ViewData.ContainsKey("PageName"))
+                {
+                    if (ViewData.ContainsKey("PopupwindowClose"))
+                    {
+                        if (ViewData.ContainsKey("controlName"))
+                        {
+                                                                 <text>
+                                                                  if (parent.window.document.getElementById('@ViewData["controlName"]') != null) {
+                                                                     parent.window.document.getElementById('@ViewData["controlName"]').value = '@ViewData["controlValue"]';
+                                                                  }
+                                                  
+                                                                  </text>
+
+                        }
+                                                            <text>
+
+                                               
+                                                                OnPopupClose();
+                                                                </text>
+                    }
+                    else
+                    {
+                                                    <text>
+                                                        loadDefaultPage('@Url.Action("Index", new { pageName = ViewData["PageName"] })');
+                                                    </text>
+                    }
+                }
+                else
+                {
+                    if (ViewData.ContainsKey("controlName"))
+                    {
+                                                     <text>
+                                                    popupProductClose('@ViewData["param"]');
+                                                    </text>
+                    }
+                    else
+                    {
+                                                    <text>
+                                                        loadDefaultPage('@Url.Action("Index")');
+                                                    </text>
+                    }
+                   
+                }
+            }
+     }
+    }
+    }
+</script>

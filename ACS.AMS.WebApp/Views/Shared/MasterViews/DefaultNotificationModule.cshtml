@@ -1,0 +1,200 @@
+﻿@model string
+<script>
+
+    function NotificationModule() {
+        
+        if (this.value() && this.selectedIndex == -1) {
+            alert('Please select a valid value from the list');
+            this.value('');
+            return;
+        }
+        var val = $("#NotificationModuleID").data("kendoDropDownList").text();
+        var PrimaryKeyID = $("#primaryKeyID").val();
+
+        var IsHtmlContent = $("#IsHtmlContent").val();
+        var IsAttachmentRequired = $("#IsAttachmentRequired").val();
+
+        //$("#templateTool").closest(".k-widget").parent().show();
+        //$("#templateHeaderTool").closest(".k-widget").parent().show();
+        //$("#templateFooterTool").closest(".k-widget").parent().show();
+
+        var editor = $("#TemplateDetailsBodyContent").data("kendoEditor");
+        editor.value("");
+
+        var editorHeader = $("#TemplateHeaderBodyContent").data("kendoEditor");
+        editorHeader.value("");
+        var editorFooter = $("#TemplateFooterBodyContent").data("kendoEditor");
+        editorFooter.value("");
+
+        if (val.indexOf("Select") != 0) {
+            var dataSource = new kendo.data.DataSource({
+                data: []
+            });
+            var Param = $("#NotificationModuleID").data("kendoDropDownList").value();
+            //if (!IsHtmlContent) {
+            var ddl = $("#templateTool").data("kendoDropDownList");
+            ddl.setDataSource(dataSource); // clears dataSource
+            ddl.text(""); // clears visible text
+            ddl.value("");
+            //}
+
+            var ddl1 = $("#templateHeaderTool").data("kendoDropDownList");
+            ddl1.setDataSource(dataSource); // clears dataSource
+            ddl1.text(""); // clears visible text
+            ddl1.value("");
+
+            var ddl2 = $("#templateFooterTool").data("kendoDropDownList");
+            ddl2.setDataSource(dataSource); // clears dataSource
+            ddl2.text(""); // clears visible text
+            ddl2.value("");
+
+            var select1 = $('#templateTool');
+            var selectHeader = $('#templateHeaderTool');
+            var selectFooter = $('#templateFooterTool');
+            var data1 = [];
+            $.ajax({
+                url: '/DataService/GetNotificationFields',
+                type: "POST",
+                dataType: "json",
+                async: false,
+                data: {
+                    moduleID: Param
+                },
+                success: function (response) {
+                    var data1 = response.data;
+
+                    for (var i = 0; i < data1.length; i++) {
+                        var item = data1[i].Text;
+                        var option = new Option(data1[i].Text, data1[i].Value);
+                        select1.append($(option));
+
+                    }
+
+                    for (var j = 0; j < data1.length; j++) {
+                        var item1 = data1[j].Text;
+                        var option1 = new Option(data1[j].Text, data1[j].Value);
+
+                        selectHeader.append($(option1));
+
+                    }
+                    for (var k = 0; k < data1.length; k++) {
+                        var item2 = data1[k].Text;
+                        var option2 = new Option(data1[k].Text, data1[k].Value);
+
+                        selectFooter.append($(option2));
+                    }
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                }
+            });
+
+            $("#templateTool").kendoDropDownList({
+                change: function (e) {
+                    
+                    var editor = $("#TemplateDetailsBodyContent").data("kendoEditor");
+                    if (e.sender.text() != "<--SELECT-->") {
+                        var val = "##" + e.sender.value() + "##";
+                        editor.exec("inserthtml", { value: val });
+                    }
+                    e.sender.value("");
+                    e.sender.text("<--SELECT-->");
+                }
+            });
+
+            $("#templateHeaderTool").kendoDropDownList({
+                change: function (e) {
+                    
+                    var editor = $("#TemplateHeaderBodyContent").data("kendoEditor");
+                    if (e.sender.text() != "<--SELECT-->") {
+                        var val = "##" + e.sender.value() + "##";
+                        editor.exec("inserthtml", { value: val });
+                    }
+
+                    e.sender.value("");
+                    e.sender.text("<--SELECT-->");
+                }
+            });
+            $("#templateFooterTool").kendoDropDownList({
+                change: function (e) {
+                    
+                    var editor = $("#TemplateFooterBodyContent").data("kendoEditor");
+                    if (e.sender.text() != "<--SELECT-->") {
+                        var val = "##" + e.sender.value() + "##";
+                        editor.exec("inserthtml", { value: val });
+                    }
+                    e.sender.value("");
+                    e.sender.text("<--SELECT-->");
+                }
+            });
+            if (IsAttachmentRequired) {
+                if ($("#ReportID").data("kendoDropDownList") != null) {
+                    $("#ReportID").data("kendoDropDownList").dataSource.read();
+                }
+                if ($("#SourceField1").data("kendoDropDownList") != null) {
+                    $("#SourceField1").data("kendoDropDownList").dataSource.read();
+                }
+                if ($("#SourceField2").data("kendoDropDownList") != null) {
+                    $("#SourceField2").data("kendoDropDownList").dataSource.read();
+                }
+                if ($("#SourceField3").data("kendoDropDownList") != null) {
+                    $("#SourceField3").data("kendoDropDownList").dataSource.read();
+                }
+            }
+        }
+        else {
+            $("#divTemplateDetailsBodyContent").hide();
+            //$("#templateTool").closest(".k-widget").parent().hide();
+            $("#templateHeaderTool").closest(".k-widget").parent().hide();
+            $("#templateFooterTool").closest(".k-widget").parent().hide();
+        }
+
+        document.getElementById("templateselectionArea").style.display = "block";
+
+        SelectTemplateFields(this.value(), PrimaryKeyID);
+
+    }
+    function SelectTemplateFields(moduleID, templateID) {
+        loadContentPageToControl("@Url.Action("TemplateTableSelectionEntry")?notificationModuleID=" + moduleID + "&NotificationTemplateID=" + templateID, "templateissueDetails", false);
+    }
+    function delTemplateFields() {
+        var ctrl = document.getElementById("lstSelectedFields");
+        for (i = 0; i < ctrl.length; i++) {
+            if (ctrl[i].selected) {
+                document.getElementById("lstAvailableFields").appendChild(document.getElementById("lstSelectedFields").options.item(i));
+                i--;
+            }
+        }
+    }
+
+    function addTemplateFields() {
+        var ctrl = document.getElementById("lstAvailableFields");
+        for (i = 0; i < ctrl.length; i++) {
+            if (ctrl[i].selected) {
+                document.getElementById("lstSelectedFields").appendChild(document.getElementById("lstAvailableFields").options.item(i));
+                i--;
+            }
+        }
+    }
+</script>
+@(
+Html.Kendo().DropDownList()
+        .Name("NotificationModuleID")
+        .Value(Model != "0" ? Model : "")
+        .OptionLabel("Select Notification Module")
+        .BindTo(ComboBoxHelper.GetAllNotificationModules())
+           .Events(e =>e.Change("NotificationModule"))
+
+
+)
+<div id="errModuleID"></div>
+<script language="javascript" type="text/javascript">
+    $(function () {
+
+
+    });
+
+
+
+
+</script>

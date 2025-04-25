@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>D:\PrgsDrive\Projects\ACS\ERP\Apps\ACS_AMS_Web\ACS.AMS.WebApp\bin\Release\net7.0\publish</_PublishTargetUrl>
+    <History>False|2024-03-11T21:41:18.1088322Z;True|2024-03-06T10:02:45.5420338+04:00;True|2024-03-05T10:09:17.9461451+04:00;True|2024-03-05T10:07:57.1349218+04:00;True|2024-03-05T09:40:03.9220778+04:00;True|2024-03-01T10:17:35.0492843+04:00;True|2024-02-28T00:30:11.3993067+04:00;True|2024-02-27T21:42:40.6745494+04:00;True|2024-02-27T21:29:25.2181449+04:00;True|2024-02-27T20:45:46.1355353+04:00;True|2024-02-27T19:42:55.1539210+04:00;True|2024-02-27T19:33:58.8149007+04:00;True|2024-02-27T19:14:06.1066527+04:00;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>

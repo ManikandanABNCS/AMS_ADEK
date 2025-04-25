@@ -1,0 +1,145 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model BasePageModel
+@{
+    ViewBag.Title = "Create";
+    EntryPageHelper entryPage = new EntryPageHelper(Model);
+}
+<script>
+    function addItemsToHiddenField() {
+        debugger;
+       
+    }
+</script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+{
+    @Html.Hidden("PageName", Model.PageName)
+
+    <div class="list-container">
+        <div class="row k-text-error">
+
+            @Html.ValidationMessage("12")
+        </div>
+
+        @{
+            entryPage.CreateNotificationPageControls(Html, this);
+        }
+        <div id="errorCombination"></div>
+        <div class="col-xl-12 text-right add-action-btns">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new
+                {
+                    type = "submit",
+                    onclick = "return CheckSourceValidation();"
+                })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick=$"LoadIndexPage('NotificationTemplate','{Model.PageName}')" })
+        </div>
+
+    </div>
+
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading('Create @Language.GetPageTitle(Model.PageTitle)');
+        setInitialFocus('@entryPage.FirstFieldName');
+    });
+    $(document).ready(function () {
+
+        //$("#templateTool").closest(".k-widget").parent().hide();
+        $("#divTemplateDetailsBodyContent").hide();
+        $("#TemplateSMSContent").hide();
+        $("#TemplateTableContent").hide();
+        $("#templateHeaderTool").closest(".k-widget").parent().hide();
+        $("#templateFooterTool").closest(".k-widget").parent().hide();
+        $("#divEmailSignature").hide();
+        $("#divAttachmentFormat").hide();
+        $("#divReport").hide();
+        $("#divSourceField1").hide();
+        $("#divSourceField2").hide();
+        $("#divSourceField3").hide();
+        $("#divDestinationField1").hide();
+        $("#divDestinationField2").hide();
+        $("#divDestinationField3").hide();
+    });
+
+    function CheckSourceValidation() {
+        debugger;
+       // addItemsToHiddenField();
+        var lst = document.getElementById("lstSelectedFields");
+        var hid = document.getElementById("hdTemplateSelectedItems");
+
+        if (lst.options.length > 0) {
+            for (i = 0; i < lst.options.length; i++) {
+                hid.value += lst.options[i].value + ",";
+            }
+        }
+
+        var lst = document.getElementById("lstAvailableFields");
+        var hid = document.getElementById("hdTemplateNonSelectedItems");
+
+        if (lst.options.length > 0) {
+            for (i = 0; i < lst.options.length; i++) {
+                hid.value += lst.options[i].value + ",";
+            }
+        }
+        var flag = true;
+        if (!$("#NotificationModuleID").val()) {
+            if ($("#validateerror").val() != "") {
+                $("#errModuleID").after('<span style="color:red;font-weight:normal;" id="validateerror">@Language.GetString("Notification Module is Required")</span>');
+            }
+            flag = false;
+        }
+        else {
+            $("#validateerror").remove();
+        }
+        if (!$("#NotificationTypeID").val()) {
+            if ($("#validateTypeID").val() != "") {
+                $("#errTypeID").after('<span style="color:red;font-weight:normal;" id="validateTypeID">@Language.GetString("Notification Type is Required")</span>');
+            }
+            flag = false;
+        }
+        else {
+            $("#validateTypeID").remove();
+        }
+        if (IsAttachmentRequired) {
+            var Source1 = $("#SourceField1").val();
+            var source2 = $("#SourceField2").val();
+            var source3 = $("#SourceField3").val();
+            if (Source1 != '' && source2 != '') {
+                if (Source1 == source2) {
+                    flag = false
+                    if ($("#validateCombination").val() != "") {
+                        $("#errorCombination").after('<span style="color:red;font-weight:normal;" id="validateCombination">@Language.GetString("Source1 and Source2 are the Same Field")</span>');
+                    }
+                }
+            }
+            if (Source1 != '' && source3 != '') {
+                if (Source1 == source3) {
+                    flag = false;
+                    if ($("#validateCombination").val() != "") {
+                        $("#errorCombination").after('<span style="color:red;font-weight:normal;" id="validateCombination">@Language.GetString("Source1 and Source3 are the Same Field")</span>');
+                    }
+                }
+            }
+            if (source2 != '' && source3 != '') {
+                if (source2 == source3) {
+                    flag = false;
+                    if ($("#validateCombination").val() != "") {
+                        $("#errorCombination").after('<span style="color:red;font-weight:normal;" id="validateCombination">@Language.GetString("Source2 and Source3 are the Same Field")</span>');
+                    }
+                }
+            }
+        }
+        if (flag) {
+            return true;
+        }
+        else {
+            return false;
+        }
+
+    }
+</script>
+

@@ -1,0 +1,30 @@
+﻿@model IndexPageModel
+  
+@{
+    ViewBag.Title = "Index";
+}
+
+<div class="list-container">
+
+        @{
+    DisplayHelper display = new DisplayHelper(this,"Role", "RoleID");
+
+    var gridCtrl = Html.Kendo().Grid<dynamic>()
+        .Name("DetailsGrid");
+
+    display.AddGridActionColumns(gridCtrl, Url, "Role", RightNames.RoleMaster);
+    display.ConfigureGrid(gridCtrl);
+    display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.RoleMaster);
+
+    gridCtrl.Render();
+    //display.AddPopUpWindow(this.Html, "Division");
+
+}
+</div>
+
+<script>
+    $(function () {
+        setPageHeading("Role Master");
+    });
+  
+</script>

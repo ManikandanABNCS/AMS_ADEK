@@ -1,0 +1,953 @@
+﻿{
+   "CodeGenerationMode": 4,
+   "ContextClassName": "AMSContext",
+   "ContextNamespace": null,
+   "DefaultDacpacSchema": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "ModelNamespace": null,
+   "OutputContextPath": "DBContext",
+   "OutputPath": "DBModel",
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "ACS.AMS.DAL",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[dbo].[AFieldTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[App_Applications]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApplicationErrorLogTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApprovalHistoryTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApprovalLocationTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApprovalRoleDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApprovalRoleTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApprovalStatusTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApprovalTransactionHistoryTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApproveModuleTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApproveWorkflowLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApproveWorkflowTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ASelectionControlQueryTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AssetConditionDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AssetConditionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AssetimportDocumentHistoryTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AssetTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AssetTransactionLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AssetTransactionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AssetTransferCategoryHistoryTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AssetTransferHistoryTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AssetTransferTransactionLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AssetTransferTransactionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AttachmentFormatTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AttributeDefinitionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AuditLogLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AuditLogTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AuditLogTransactionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[BarcodeAutoSequenceTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[BarcodeConstructSequenceTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[BarcodeConstructTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[BarcodeFormatsTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[BudgetYearTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CategoryDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CategoryTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CategoryTypeDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CategoryTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CompanyDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CompanyTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ConfigurationTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CostTypeDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CostTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CountryDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CountryTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CurrencyConversionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CurrencyDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CurrencyTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DashboardFieldMappingTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DashboardMappingTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DashboardTemplateFieldTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DashboardTemplateFilterFieldTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DashboardTemplateTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DashboardTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DataTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DelegateRoleTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DepartmentDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DepartmentTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DepreciationClassLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DepreciationClassTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DepreciationLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DepreciationMethodTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DepreciationTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DesignationDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DesignationTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DisplayControlTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DisposalTypeDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DisposalTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DocumentTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DynamicColumnRequiredEntityTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[EmailSignatureTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[EntityActionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[EntityCodeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[EntitySummaryActionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[EntityTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ExchangeRateTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ExpenseTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[GRNLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[GRNTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ImportFormatLineItemNewTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ImportFormatNewTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ImportTemplateNewTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ImportTemplateTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[InvoiceLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[InvoiceTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ItemDispatchLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ItemDispatchTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ItemReqestLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ItemReqestTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ItemSupplierMappingTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ItemTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LanguageContentLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LanguageContentTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LanguageTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LocationDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LocationTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LocationTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ManufacturerDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ManufacturerTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[MasterGridNewLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[MasterGridNewTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ModelDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ModelTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NotificationFieldTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NotificationInputTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NotificationModuleFieldTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NotificationModuleTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NotificationReportAttachmentTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NotificationTemplateFieldTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NotificationTemplateNotificationTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NotificationTemplateTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[NotificationTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PartyDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PartyTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PartyTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PaymentTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PeriodTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PersonTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PostingStatusTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PriceAnalysisLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PriceAnalysisTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ProductDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ProductTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ProductUOMMappingTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ProjectDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ProjectTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PurchaseOrderLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PurchaseOrderTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PurchaseTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ReasonTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ReportFieldTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ReportGroupFieldTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ReportPaperSizeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ReportTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ReportTemplateCategoryTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ReportTemplateFieldTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ReportTemplateFileTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ReportTemplateTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RequestQuotationLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RequestQuotationTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RetirementTypeDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RetirementTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ScreenFilterLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ScreenFilterTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ScreenFilterTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SectionDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SectionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[StatusTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SupplierAccountDetailTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SupplierQuotationLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SupplierQuotationTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TransactionLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TransactionScheduleTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TransactionSubTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TransactionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TransactionTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TransferTypeDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TransferTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UOMDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UOMTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[User_LoginUserTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[User_MenuTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[User_RightGroupTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[User_RightTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[User_RoleRightTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[User_RoleTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[User_UserRightTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[User_UserRoleTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UserApprovalRoleMappingTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UserCategoryMappingTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UserCompanyMappingTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UserDepartmentMappingTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UserGridNewColumnTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UserLocationMappingTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UserReportFilterLineItemTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UserReportFilterTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UserTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[VATDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[VATTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[VATTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[WarehouseDescriptionTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[WarehouseTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[WarehouseTypeTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[WebServiceLogTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ZDOF_PurchaseOrderTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ZDOF_UserPODataTable]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ApprovalHistoryView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[AssetNewView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[AssetRetirementApprovalView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[AssetTransferApprovalView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[CategoryListView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[CategoryNewHierarchicalView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[CategoryNewView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[FinalLevelRetirementView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[FinalLevelTransferView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[LocationForUserMappingView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[LocationNewHierarchicalView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[LocationNewView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[PersonView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[SecondLevelCategoryTable]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[TransactionApprovalView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[TransactionLineItemViewForTransfer]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[TransactionView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[User_RoleRightView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[User_UserRightView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[UserApprovalRoleMappingView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[UserRightView]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[vwDashboardTemplateObjects]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[vwNotificationTemplateObjects]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[vwReportTemplateObjects]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[Prc_AssetCreationValidation]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Prc_AssetModificationValidation]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[prc_AssetRetirementForApproval]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Prc_AssetRetirementValidation]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[prc_AssetTransferForApproval]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Prc_AssetTransferValidation]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[prc_Depreciation]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[prc_DepreciationApproval]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[prc_ExportToCategory]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[prc_ExportToLocation]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[prc_GetAssetDetails]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[prc_GetPeriodWithDate]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[prc_GetSecondLevelLocationValue]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[prc_ImportTemplateUserAgainstList]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Prc_ValidateAssetAddition]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Prc_ValidateBulkAssetAddition]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Prc_ValidateBulkExcelRetirement]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[prc_ValidateForTransaction]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[Prc_ValidateUserWiseTransactions]",
+         "ObjectType": 1
+      }
+   ],
+   "UiHint": "desktop-6o1315p\\ex2019.AMS_Client.dbo",
+   "UncountableWords": null,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": true,
+   "UseDateOnlyTimeOnly": false,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": false,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": true,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": true
+}

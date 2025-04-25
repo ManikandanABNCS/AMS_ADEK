@@ -1,0 +1,55 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model BasePageModel
+@{
+    ViewBag.Title = "Edit";
+    EntryPageHelper entryPage = new EntryPageHelper(Model)
+    {
+        Url = this.Url
+    };
+}
+<script>
+     
+     function treeViewSelect(e) {
+        var controlName = $("#PageName").val();
+        if (controlName == "Product") {
+            controlName = "Category";
+        }
+        controlName = controlName + "ID";
+        var datI = $("#treeView").getKendoTreeView().dataItem(e.node);
+        $("#" + controlName).val(datI.id);
+        document.getElementById("NameValue").value = datI.text;
+    }
+    </Script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+    @Html.Hidden("PageName", Model.PageName)
+    @Html.Hidden("primaryKeyID", Model.EntityInstance.GetPrimaryKeyValue())
+    @Html.Hidden(Model.EntityInstance.GetPrimaryKeyFieldName(), Model.EntityInstance.GetPrimaryKeyValue())
+
+        <div class="list-container">
+           @* <div class="row k-text-error">
+                @Html.ValidationSummary()
+            </div>*@
+
+            @{
+                entryPage.CreateTreeviewPageControls(Html, this, true);
+            }
+
+        <div class="col-xl-12 text-right add-action-btns">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick=$"loadDynamicIndexPage('{Model.ControllerName}', '{Model.PageName}')" })
+        </div>
+
+    </div>
+
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading('@Language.GetPageTitle(Model.PageTitle) Details');
+    });
+  
+</script>

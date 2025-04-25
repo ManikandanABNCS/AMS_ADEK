@@ -1,0 +1,20 @@
+﻿@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+}
+<div class="list-container">
+    @{
+        DisplayHelper display = new DisplayHelper(this, "SearchByVirtualBarcode", "ProductID");
+        var gridCtrl = Html.Kendo().Grid<dynamic>()
+        .Name("DetailsGrid");
+        display.AddGridActionColumns(gridCtrl, Url, "SearchByVirtualBarcode", RightNames.SearchByVirtualBarcode, addEditColumn: false, addDeleteColumn: false, addDetailsColumn: true,addCheckbox:false);
+        display.ConfigureGrid(gridCtrl);
+        display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.SearchByVirtualBarcode,addNewButtonRequired:false,addDeleteButtonRequired:false,exportToCSVButtonRequired:false,exportToExcelButtonRequired:false,exportToPDFButtonRequired:false);
+        gridCtrl.Render();
+    }
+</div>
+<script>
+    $(function () {
+        setPageHeading("@Language.GetPageTitle("Search By Virtual Barcode")");
+    });
+</script>

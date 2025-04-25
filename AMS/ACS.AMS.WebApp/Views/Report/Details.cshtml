@@ -1,0 +1,283 @@
+﻿@model ReportTable
+@using ACS.AMS.DAL
+
+@{
+    ViewBag.Title = "Detail";
+}
+
+<style>
+    .radio input[type="radio"], .radio-inline input[type="radio"], .checkbox input[type="checkbox"], .checkbox-inline input[type="checkbox"] {
+        margin-left: -16px !important;
+    }
+</style>
+<script>
+    function filterforReport() {
+        return {
+            ReportTemplateID: $('#ReportTemplateID').val()
+        };
+    }
+</script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+{
+  
+        <div class="list-container">
+    <div class="validationMessage">
+        @Html.ValidationSummary()
+    </div>
+<div class="">
+    <div class="row">
+        <div class="col-xl-3">
+            <label for="fullname">@Html.Label("Report Template")</label>
+            <div class="k-textbox" style="width:100%">
+                @Model.ReportTemplate.ReportTemplateName
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <label for="fullname">@Html.FieldLabelFor(model => model.ReportName, true)</label>
+            <div class="k-textbox" style="width:100%">
+                @Model.ReportName
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <label for="fullname">@Html.FieldLabelFor(model => model.ReportTitle, true)</label>
+            <div class="k-textbox" style="width:100%">
+                @Model.ReportTitle
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <label for="fullname">@Html.Label(Language.GetString("Paper Size")) </label>
+            <div class="k-textbox" style="width:100%">
+                @Model.ReportPaperSize.PaperSizeOrientation
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <label for="fullname">@Html.Label(Language.GetString("Left Margin"))</label>
+            <div class="k-textbox" style="width:100%">
+                @Model.ReportLeftMargin
+
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <label for="fullname">@Html.Label(Language.GetString("Right Margin"))</label>
+            <div class="k-textbox" style="width:100%">
+                @Model.ReportRightMargin
+
+
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <label for="fullname">@Html.Label(Language.GetString("Top Margin"))</label>
+            <div class="k-textbox" style="width:100%">
+                @Model.ReportTopMargin
+            </div>
+        </div>
+        <div class="col-xl-3">
+            <label for="fullname">@Html.Label(Language.GetString("Bottom Margin"))</label>
+            <div class="k-textbox" style="width:100%">
+                @Model.ReportBottomMargin
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        @{
+                AMSContext db = AMSContext.CreateNewContext();
+
+
+        }
+        <div class="form-group col-12">
+            @(Html.Kendo().TabStrip().Name("TabStrip").SelectedIndex(0).Items(tabstrip =>
+{
+    tabstrip.Add().Text("Groups")
+                                                                    .Content(@<text>
+            <div>
+
+                <div class='form-group' style="align:center">
+                    @Language.GetString("(Optional)GroupTheInformationOnTheReport")
+                </div>
+                <div>
+                    @{
+                        var avaliableGroupList = ReportTemplateFieldTable.GetAvailableFieldsForEdit(db, Model.ReportID);
+                        var SelectedGroupList = ReportTemplateFieldTable.GetSelectedGroupFields(db, Model.ReportID);
+
+                    }
+
+                    <table>
+                        <tr>
+                            <td style="width: 320px;">
+                                <label class="listBoxHead">@Language.GetString("AvailableGroupFields:") </label>
+
+                                @Html.ListBox("lstAvailableGroupFields", new SelectList(avaliableGroupList, "Value", "Text"), new { style = "width:260px;height:200px", @Class = "listBoxClass" })
+
+
+                            </td>
+                              <td>&nbsp;</td>
+
+                            <td style="width: 320px;">
+
+                                <label class="listBoxHead pull-left">
+                                    @Language.GetString("GroupBy:")
+                                </label>
+                                <div class="pull-right">
+
+                                    @*<button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedGroupFields','up')"><i class="fa fa-angle-double-up"></i></button>
+                                    <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedGroupFields','down')"><i class="fa fa-angle-double-down"></i></button>*@
+                                </div>
+                                <div class="clearfix"></div>
+
+                                 @Html.ListBox("lstSelectedGroupFields", new SelectList(SelectedGroupList, "Value", "Text"), new { style = "width:260px;height:200px", @Class = "listBoxClass" })
+
+
+
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td id="issueDetails" colspan="2"></td>
+
+
+                        </tr>
+                    </table>
+
+                </div>
+                
+            </div>
+                                    <div class="col-12 text-right add-action-btns">
+                                        @* <button type="button" value="Back" title="Back" class="cancelButton"  onclick="clickoneback(event)">Back</button> *@
+                                        <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button>
+                                    </div>
+                                                                    </text>);
+    tabstrip.Add().Text(Language.GetString("Fields"))
+                                                                .Content(@<text>
+
+                <div class="row">
+
+                    <div class="col-md-12>
+                        <div>@Language.GetString("Choose the information to display the Report") </div>
+                    </div>
+                            <div class="row">
+                        <div class="col-md-8">
+                            <table>
+                                <tr>
+                                    <td><label for="fullname">@Language.GetString("Available Fields") </label></td>
+                                    <td>&nbsp;</td>
+                                    <td><label for="fullname">@Language.GetString("Selected Fields")</label></td>
+
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        @{
+                                            var avaliableList = ReportTemplateFieldTable.GetAvailableReportFieldsForEdit(db, Model.ReportID);
+                                        }
+                                        <div class="form-group">
+
+                                            @Html.ListBox("lstAvailableFields", new SelectList(avaliableList, "Value", "Text"), new { style = "width:260px;height:200px", @Class = "listBoxClass" })
+
+                                        </div>
+                                    </td>
+                                      <td>&nbsp;</td>
+                                    <td>
+                                        @{
+                                            var SelectedList = ReportTemplateFieldTable.GetSelectedReportFieldDatas(db, Model.ReportID);
+                                        }
+
+                                        <div class="form-group col-md-3">
+
+                                            @Html.ListBox("lstSelectedFields", new SelectList(SelectedList, "Value", "Text"), new { style = "width:260px;height:200px", @Class = "listBoxClass", onchange = "lstSelectedOnChange()" })
+                                        </div>
+                                    </td>
+
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="row">
+                                <div class="form-group col-12">
+                                    <label class="listBoxHead pull-left">
+                                        @Language.GetString("FieldAttributes:")
+
+                                    </label>
+                                </div>
+                                <div class="form-group col-md-5">
+                                    <label for="fullname">@Html.Label(Language.GetString("Width"))</label>
+
+                                    @Html.TextBox("width_Textbox", "", new
+                                                                                       {
+                                                                                           @Class = "k-textbox",
+                                                                                           onkeyup = "return onkeyPressWidthTextBox()",
+                                                                                           onblur = "OnBlurWidth()",
+                                                                                           @style = "width: 100% !important;"
+                                                                                       })
+                                    <span id="hide_Sum" style="display:none;">
+                                        <label class="checkbox-inline"><input type="checkbox" id="isSum"> @Language.GetString("IsSumField") </label>
+                                    </span>
+                                </div>
+
+                                @*<div class="form-group col-md-10">
+                                    <label for="fullname">@Html.Label(Language.GetString("OrderBy"))</label>
+                                    @(Html.Kendo().DropDownList()
+                                                                .Name("Direction").HtmlAttributes(new { style = "width:100%" })
+                                                                .BindTo(ComboBoxHelper.GetReportOrderList()))
+
+
+                                </div>*@
+                            </div>
+                        </div>
+                    </div>
+
+                   
+                </div>
+
+                                    <div class="col-12 text-right add-action-btns" style="padding-top: 10px">
+                                        <button type="button" value="Back" title="Back" class="cancelButton" onclick="clickoneback(event)">Back</button>
+                                        @* <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button> *@
+
+                                    </div>
+
+                                                                </text>);
+}))
+        </div>
+
+
+
+
+
+    </div>
+
+            <div class="row">
+
+                <div class="col-xl-12 text-right add-action-btns">
+                  
+                    @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="loadIndexPage('Report')" })
+                </div>
+            </div>
+</div>
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                EntryPageModel newModel = new EntryPageModel()
+                {
+
+                    EntityInstance = Model as BaseEntityObject,
+                    ControllerName = this.GetType().Name.Substring(0, this.GetType().Name.Length - "Controller".Length),
+                };
+                Html.RenderPartial("BaseViews/AuditLogSingleView", newModel);
+            }
+        </div>
+</div>
+}
+}
+
+<script>
+    $(function () {
+        setPageHeading("@Language.GetPageTitle("DetailsReport")");
+        
+    });
+</script>
+

@@ -1,0 +1,171 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using ACS.AMS.DAL.DBContext;
+using Microsoft.EntityFrameworkCore;
+
+namespace ACS.AMS.DAL.DBModel;
+
+public partial class SectionDescriptionTable : BaseEntityObject, IACSDBObject
+{
+    [Key]
+    public int SectionDescriptionID { get; set; }
+
+    public int SectionID { get; set; }
+
+    public string SectionDescription { get; set; } = null!;
+
+    public int LanguageID { get; set; }
+
+    public int CreatedBy { get; set; }
+
+    [Column(TypeName = "smalldatetime")]
+    public DateTime CreatedDateTime { get; set; }
+
+    public int? LastModifiedBy { get; set; }
+
+    [Column(TypeName = "smalldatetime")]
+    public DateTime? LastModifiedDateTime { get; set; }
+
+    [ForeignKey("CreatedBy")]
+    [InverseProperty("SectionDescriptionTableCreatedByNavigation")]
+    public virtual User_LoginUserTable? CreatedByNavigation { get; set; } = null!;
+
+    [ForeignKey("LanguageID")]
+    [InverseProperty("SectionDescriptionTable")]
+    public virtual LanguageTable? Language { get; set; } = null!;
+
+    [ForeignKey("LastModifiedBy")]
+    [InverseProperty("SectionDescriptionTableLastModifiedByNavigation")]
+    public virtual User_LoginUserTable? LastModifiedByNavigation { get; set; }
+
+    [ForeignKey("SectionID")]
+    [InverseProperty("SectionDescriptionTable")]
+    public virtual SectionTable? Section { get; set; } = null!;
+
+/*
+	#region Constructors
+
+    //[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+    public SectionDescriptionTable()
+    {
+
+    }
+
+	/// <summary>
+    /// Default constructor for SectionDescriptionTable
+    /// </summary>
+    /// <param name="db"></param>
+	public SectionDescriptionTable(AMSContext _db)
+	{
+		
+		InitializeProperties();
+
+		_db.Add(this);
+	}
+
+	#endregion Constructors
+*/
+
+    #region Instance methods
+
+	public override string GetPrimaryKeyFieldName()
+	{
+		return "SectionDescriptionID";
+	}
+
+	public override object GetPrimaryKeyValue()
+	{
+		return SectionDescriptionID;
+	}
+
+	internal override void BeforeSave(AMSContext db)
+    {
+		if(!string.IsNullOrEmpty(this.SectionDescription)) this.SectionDescription = this.SectionDescription.Trim();
+
+		OnBeforeSave(db);
+
+        base.BeforeSave(db);
+    }
+
+	public void Delete()
+	{
+		OnDelete();
+	}
+
+	#endregion Instance methods
+
+    #region Static Methods
+
+    public static SectionDescriptionTable GetItem(AMSContext _db, int id)
+    {
+        return (from b in _db.SectionDescriptionTable
+                where b.SectionDescriptionID == id
+                select b).FirstOrDefault();
+    }
+
+    public static IQueryable<SectionDescriptionTable> GetAllItems(AMSContext _db , bool includeInactiveItems = false )
+    {
+        return (from b in _db.SectionDescriptionTable select b);
+    }
+
+    public static IQueryable<SectionDescriptionTable> GetAllUserItems(AMSContext _db, int userID, bool includeInactiveItems = false)
+    {
+        return SectionDescriptionTable.GetAllItems(_db, includeInactiveItems);
+    }
+
+    public static bool DeleteItem(AMSContext _db, int id)
+    {
+        var item = GetItem(_db, id);
+        if (item != null)
+        {
+            item.Delete();
+    		return true;
+        }
+    
+    	return false;
+    }
+    
+    #endregion Static Methods
+
+    #region Partial Methods
+	
+	partial void InitializeProperties();
+	partial void OnBeforeSave(AMSContext db);
+	partial void OnDelete();
+
+	#endregion Partial Methods
+
+    protected override IQueryable GetAllItemsQuery(AMSContext _db)
+    {
+        return (from b in _db.SectionDescriptionTable select b);
+    }
+
+    #region Interface Methods
+
+    IQueryable<BaseEntityObject> IACSDBObject.GetAllItems(AMSContext _db, bool includeInactiveItems = true)
+    {
+        return SectionDescriptionTable.GetAllItems(_db, includeInactiveItems);
+    }
+
+    IQueryable<BaseEntityObject> IACSDBObject.GetAllUserItems(AMSContext _db, int userID, bool includeInactiveItems = true)
+    {
+        return SectionDescriptionTable.GetAllUserItems(_db, userID, includeInactiveItems);
+    }
+
+    BaseEntityObject IACSDBObject.GetItemByID(AMSContext _db, long itemID)
+    {
+        return GetItem(_db, (int) itemID);
+    }
+
+    bool IACSDBObject.DeleteObject()
+    {
+        this.Delete();
+
+        return true;
+    }
+
+    #endregion Interface Methods
+}

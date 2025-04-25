@@ -1,0 +1,9 @@
+﻿@model string
+
+@(
+ Html.Kendo().DropDownList()
+        .Name("PostingStatusID")
+        .Value(Model)
+        .OptionLabel("Select Posting Status")
+        .BindTo(ComboBoxHelper.GetAllPostingStatus())
+)

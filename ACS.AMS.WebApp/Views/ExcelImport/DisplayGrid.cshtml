@@ -1,0 +1,63 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@using System.Data
+
+@model DataTable
+@{
+    ViewBag.Title = "Create";
+    var data = AMSContext.CreateNewContext();
+    int currentPageId = ViewBag.CurrentPageID;
+    //var listdata = Model;
+}
+<script>
+    function onDataBounds() {
+        var width = $(".k-selectable tr td div").parent().width();
+        $(".k-selectable tr td div").css("width", width);
+    }
+</script>
+        <div class="row">
+            <div class="col-xl-12">
+                <table style="width:@DisplayHelper.IndexPageWidth_Medium;" class="tablegrid">
+                    <tr>
+                        <td style="padding:10px 0px;">
+                            @(
+                                Html.Kendo().Grid<dynamic>()
+                        .Name("DetailsGrid")
+                        .Columns(columns =>
+                        {
+                            foreach (System.Data.DataColumn column in Model.Columns)
+                            {
+                        columns.Bound(column.ColumnName).Title(@Language.GetString(column.Caption)).Width(150).Filterable(true)
+                                .ClientTemplate("<div class='text-overflow-dynamic-container'><span  style='width: 100px;' class='text-overflow-dynamic-ellipsis' title='#=" +
+                                column.ColumnName + " #'>#if (" + column.ColumnName + " != null) { ##:getTheSubstring(" + column.ColumnName + ",40)##} else {# &nbsp; #}#</div>");
+
+                                //.ClientTemplate("<div style='width:150px;' class='tableContent' title='#=" + column.Caption + " #'>#if (" + column.ColumnName + " != null) { ##:getTheSubstring(" + column.ColumnName + ",40)##} else {# &nbsp; #}#</div>");
+                            }
+                        }
+                        )
+                        .Events(e => e.DataBound("onDataBounds"))
+                        .DataSource(dataSource => dataSource
+                        .Ajax()
+                        .Read(read => read.Action("Read", "ExcelImport", new { currentPageID = ViewBag.CurrentPageID }))
+                        //.ServerOperation(false)
+                        .PageSize(10)
+                            .Model(model =>
+                            {
+                                model.Id(Model.Columns[0].ColumnName);
+
+                                foreach (System.Data.DataColumn column in Model.Columns)
+                                {
+                                    if (column.Ordinal > 0)
+                                        model.Field(column.ColumnName, column.DataType);
+                                }
+                            })).Pageable().Sortable().Filterable()
+                       
+                            )
+
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            </div>

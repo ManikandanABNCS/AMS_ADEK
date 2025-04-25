@@ -1,0 +1,363 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@{
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+
+        @if (!string.IsNullOrEmpty(Model)) {
+            //set the selected user
+            <text>
+        document.getElementById("rightsTab").style.display = "block";
+            document.getElementById("rightsTabSave").style.display = "block";
+        SelectUserRights("@Model");
+        </text>
+        }
+    });
+
+    function navigationHome() {
+        window.location.href = '@Url.Action("Dashboard", "Dashboard")';
+    }
+
+    function CheckRightsVisibility() {
+        var dID = $("#UserID").val();
+
+        if ((dID == "") || (dID == "<--Select-->")) {
+            document.getElementById("rightsTab").style.display = "none";
+            document.getElementById("rightsTabSave").style.display = "none";
+        }
+        else {
+            document.getElementById("rightsTab").style.display = "block";
+            document.getElementById("rightsTabSave").style.display = "block";
+        }
+    }
+
+    $(document).ready(function () {
+        if ($(window).width() < 992) {
+            $("#tab_list").niceScroll('#tab_list .wrap');
+        }
+    });
+
+    function UserChanged() {
+        debugger
+        var dID = $("#UserID").val();
+        CheckRightsVisibility();
+
+        if (dID == "")
+            $("#issueDetails").html("");
+        else
+            SelectUserRights(dID);
+    }
+
+    function SelectUserRights(userName) {
+        UncheckAll();
+        var prm = { userID: userName };
+        loadContentPageToControl('@Url.Action("UserRightSelectionEntry")?' + $.param(prm), "issueDetails", false);
+    }
+
+    function ValidateForm() {
+        var dID = $("#UserID").val();
+
+        if ((dID == "") || (dID == "<--Select-->")) {
+            // alert("Please select user and rights");
+            // alert("
+            return false;
+        }
+
+        return true;
+    }
+
+    function IsElementFound(elementID) {
+        return (document.getElementById(elementID) != null);
+    }
+
+    function selectCheckBox(checkboxID, checkedVal) {
+        if (IsElementFound(checkboxID))
+            document.getElementById(checkboxID).checked = checkedVal;
+    }
+
+    function selectRightCheckBoxes(Rightid, groupID, view, create, edit, deleteV, exportV, detailsV) {
+      
+        // alert("View_" + groupID + "_" + Rightid, view);
+        selectCheckBox("View_" + groupID + "_" + Rightid, view);
+        selectCheckBox("Create_" + groupID + "_" + Rightid, create);
+        selectCheckBox("Edit_" + groupID + "_" + Rightid, edit);
+        selectCheckBox("Delete_" + groupID + "_" + Rightid, deleteV);
+        selectCheckBox("Export_" + groupID + "_" + Rightid, exportV);
+        selectCheckBox("Details_" + groupID + "_" + Rightid, detailsV);
+
+        var allVal = true;
+        if (IsElementFound("View_" + groupID + "_" + Rightid)) allVal = allVal && view;
+        if (IsElementFound("Create_" + groupID + "_" + Rightid)) allVal = allVal && create;
+        if (IsElementFound("Edit_" + groupID + "_" + Rightid)) allVal = allVal && edit;
+        if (IsElementFound("Delete_" + groupID + "_" + Rightid)) allVal = allVal && deleteV;
+        if (IsElementFound("Export_" + groupID + "_" + Rightid)) allVal = allVal && exportV;
+        if (IsElementFound("Details_" + groupID + "_" + Rightid)) allVal = allVal && detailsV;
+
+        selectCheckBox("All_" + groupID + "_" + Rightid, allVal);
+    }
+
+
+    function AllClicked(id, groupID) {
+        //alert("All_" + groupID + "_" + id);
+        var ctrl = document.getElementById("All_" + groupID + "_" + id);
+        selectCheckBox("View_" + groupID + "_" + id, ctrl.checked);
+        selectCheckBox("Create_" + groupID + "_" + id, ctrl.checked);
+        selectCheckBox("Edit_" + groupID + "_" + id, ctrl.checked);
+        selectCheckBox("Delete_" + groupID + "_" + id, ctrl.checked);
+        selectCheckBox("Export_" + groupID + "_" + id, ctrl.checked);
+        selectCheckBox("Details_" + groupID + "_" + id, ctrl.checked);
+    }
+    function AllColumnClicked(name, groupID, status) {
+        // alert("3");
+        if (name == "All") {
+            AllColumnClicked('View', groupID, status);
+            AllColumnClicked('Create', groupID, status);
+            AllColumnClicked('Edit', groupID, status);
+            AllColumnClicked('Delete', groupID, status);
+            AllColumnClicked('Export', groupID, status);
+            AllColumnClicked('Details', groupID, status);
+        }
+
+        name = name + '_' + groupID;
+        //alert(name);
+        var itm = $('input[name^=' + name + ']')
+
+        for (var cnt = 0; cnt < itm.length; cnt++) {
+            itm[cnt].checked = status;
+        }
+
+        //alert(itm.length);
+    }
+    function UncheckAll() {
+        AllColumnClicked("All", false);
+    }
+</script>
+
+
+    
+    @using (Html.AjaxBeginForm("UserRights", "Account", DisplayHelper.GetAjaxOptions()))
+    {
+        <div class="list-container">
+                                    <div class="row">
+                                        <div class="col-xl-8">
+                                            <label for="fullname">@Html.Label("User Name")</label>
+                                            @(Html.Kendo().MultiColumnComboBox()
+                                            .Name("UserID")
+                                            .Placeholder("Select User Name")
+                                            .DataTextField("PersonName")
+                                            .DataValueField("UserID")
+                                            .Columns(columns =>
+                                            {
+                                                columns.Add().Field("PersonCode").Title("Person Code").Width("100px");
+                                                columns.Add().Field("PersonName").Title("PersonName").Width("200px");
+                                                columns.Add().Field("EMailID").Title("EMail ID").Width("100px");
+                                                columns.Add().Field("UserName").Title("UserName").Width("100px");
+                                            })
+                                            .HtmlAttributes(new { style = "width:300px!important;" })
+                                            .Filter(FilterType.Contains)
+                                            .FilterFields(new string[] { "PersonCode", "PersonName", "EMailID", "UserName" })
+                                            .Events(a => { a.Change("UserChanged"); })
+                                            .DataSource(source =>
+                                            {
+                                                source.Read(read =>
+                                                {
+                                                    read.Action("GetAllLoginUserList", "DataService");
+                                                }).ServerFiltering(true);
+                                            })
+                                            )
+
+                                        </div>
+                                        <div class="col-xl-12">
+                                            <div style="text-align: left; display: none;" id="rightsTab">
+                                                @{
+                                                    var list = UserRightView.GetAllRights(AMSContext.CreateNewContext()).ToList();
+                                                    var groupList = (from b in list orderby b.RightGroupName select b.RightGroupName).Distinct().ToList();
+
+
+                                                }
+                                                @(Html.Kendo().TabStrip()
+                                                 .Name("TabStrip")
+                                                 .SelectedIndex(0)
+                                                  .Items(items =>
+                                                  {
+
+                                                  foreach (var grp in groupList)
+                                                  {
+                                                      var rightItems = (from b in list orderby b.RightName where b.RightGroupName == grp select b).ToList();
+                                                      string trimGroupID = (from b in list where b.RightGroupName == grp select b.RightGroupID).FirstOrDefault() + "";
+                                                      if (rightItems.Count == 0) continue;
+                                                      items.Add().Text(grp).HtmlAttributes(new { style = "color:#fff; font-weight:bold; " })
+                                                         .Content(@<div class="TabControlScroll">
+
+                                                                     <table border="0" style="text-align: left; margin-bottom: 0px; margin: 0 auto;" id="rightsTable" class="table table-striped">
+                                                                                        <thead>
+                                                                                            <tr>
+                                                                                                <th style="width: 40%;">
+                                                                                                    <label>
+                                                                                                        @Html.CheckBox("AllAllView", new { onclick = "AllColumnClicked('All', '" + trimGroupID+ "', this.checked);", title = "Click here to select all items" })
+                                                                                                        Rights
+                                                                                                    </label>
+                                                                                                </th>
+                                                                                                <th style="text-align: center;" class="">
+                                                                                                    <label>
+                                                                                                        @Html.CheckBox("GlobalAllView", new { onclick = "AllColumnClicked('View', '" + trimGroupID + "', this.checked)" })
+                                                                                                       View
+                                                                                                    </label>
+                                                                                                </th>
+                                                                                                <th style="text-align: center;" class="">
+                                                                                                    <label>
+                                                                                                        @Html.CheckBox("GlobalAllCreate", new { onclick = "AllColumnClicked('Create', '" + trimGroupID + "', this.checked)" })
+                                                                                                       Create
+                                                                                                    </label>
+                                                                                                </th>
+                                                                                                <th style="text-align: center;" class="">
+                                                                                                    <label>
+                                                                                                        @Html.CheckBox("GlobalAllEdit", new { onclick = "AllColumnClicked('Edit', '" + trimGroupID + "', this.checked)" })
+                                                                                                        Edit
+                                                                                                    </label>
+                                                                                                </th>
+                                                                                                <th style="text-align: center;" class="">
+                                                                                                    <label>
+                                                                                                        @Html.CheckBox("GlobalAllDelete", new { onclick = "AllColumnClicked('Delete', '" + trimGroupID + "', this.checked)" })
+                                                                                                        Delete
+                                                                                                    </label>
+                                                                                                </th>
+                                                                                                <th style="text-align: center;" class="">
+                                                                                                    <label>
+                                                                                                        @Html.CheckBox("GlobalAllExport", new { onclick = "AllColumnClicked('Export', '" + trimGroupID + "', this.checked)" })
+                                                                                                        Export
+                                                                                                    </label>
+                                                                                                </th>
+                                                                                                <th style="text-align: center;" class="">
+                                                                                                    <label>
+                                                                                                        @Html.CheckBox("GlobalAllExport", new { onclick = "AllColumnClicked('Details', '" + trimGroupID + "', this.checked)" })
+                                                                                                       Details
+                                                                                                    </label>
+                                                                                                </th>
+                                                                                            </tr>
+                                                                                         </thead>
+                                                                        <tbody>
+                                                                            @{
+
+                                                                                foreach (var itm in rightItems)
+                                                                                {
+
+                                                                                    byte valueType = (byte)itm.ValueType;
+
+                                                                                    if (valueType == 0)
+                                                                                    {
+                                                                                        continue;
+                                                                                    }
+
+                                                                                    bool allowView = (valueType & (byte)UserRightValue.View) == (byte)UserRightValue.View;
+                                                                                    bool allowCreate = (valueType & (byte)UserRightValue.Create) == (byte)UserRightValue.Create;
+                                                                                    bool allowEdit = (valueType & (byte)UserRightValue.Edit) == (byte)UserRightValue.Edit;
+                                                                                    bool allowDelete = (valueType & (byte)UserRightValue.Delete) == (byte)UserRightValue.Delete;
+                                                                                    bool allowExport = (valueType & (byte)UserRightValue.ExportToCSV) == (byte)UserRightValue.ExportToCSV;
+                                                                                    bool allowDetails = (valueType & (byte)UserRightValue.Details) == (byte)UserRightValue.Details;
+
+                                                                                    var titleString = itm.RightName;
+                                                                                    int indexOf_ = titleString.LastIndexOf('_');
+                                                                                    if (indexOf_ > 0)
+                                                                                    {
+                                                                                        titleString = titleString.Substring(indexOf_ + 1);
+                                                                                    }
+
+                                                                                    <tr>
+                                                                                        <td>
+                                                                                            <div class="checkbox buttonLocationLeft">
+                                                                                                <label>
+                                                                                                    @Html.CheckBox("All_" + itm.RightGroupID.ToString() + "_" + itm.RightID.ToString(), new { onclick = "AllClicked(" + itm.RightID.ToString() + "," + itm.RightGroupID.ToString() + " )" })
+                                                                                                    @titleString
+                                                                                                    <input type="hidden" name='@itm.RightID.ToString()' value='@itm.RightID.ToString()' />
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <td style="text-align: center">
+                                                                                            @if (allowView)
+                                                                                                    {
+                                                                                                @Html.CheckBox("View_" + itm.RightGroupID + "_" + itm.RightID.ToString())
+
+                                                                                                    }
+
+
+                                                                                        </td>
+                                                                                        <td style="text-align: center">
+                                                                                            @if (allowCreate)
+                                                                                                    {
+                                                                                                @Html.CheckBox("Create_" + itm.RightGroupID + "_" + itm.RightID.ToString())
+                                                                                                    }
+
+
+                                                                                        </td>
+                                                                                        <td style="text-align: center">
+                                                                                            @if (allowEdit)
+                                                                                                    {
+                                                                                                @Html.CheckBox("Edit_" + itm.RightGroupID + "_" + itm.RightID.ToString())
+                                                                                                    }
+
+
+                                                                                        </td>
+                                                                                        <td style="text-align: center">
+                                                                                            @if (allowDelete)
+                                                                                                    {
+                                                                                                @Html.CheckBox("Delete_" + itm.RightGroupID + "_" + itm.RightID.ToString())
+                                                                                                    }
+
+
+                                                                                        </td>
+                                                                                        <td style="text-align: center">
+                                                                                            @if (allowExport)
+                                                                                                    {
+                                                                                                @Html.CheckBox("Export_" + itm.RightGroupID + "_" + itm.RightID.ToString())
+                                                                                                    }
+
+
+                                                                                        </td>
+                                                                                        <td style="text-align: center">
+                                                                                            @if (allowDetails)
+                                                                                                    {
+                                                                                                @Html.CheckBox("Details_" + itm.RightGroupID + "_" + itm.RightID.ToString())
+                                                                                                    }
+
+
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                 }
+                                                                            }
+                                                                            <tr style="display: none">
+                                                                                <td id="issueDetails"></td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                                );
+                                                  }
+}))
+                                            </div>
+
+
+                                        </div>
+
+            <div class="col-12 text-right add-action-btns" id="rightsTabSave">
+                                            <button type="submit" value="Save" title="Save" class="saveButton">Save</button>
+                                            <button type="button" value="Cancel" title="Cancel" class="cancelButton" onclick="loadDefaultPage('@Url.Action("Dashboard", "Dashboard")')">Cancel</button>
+                                        </div>
+                                    </div>
+                          </div>        
+}
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("User Rights");
+
+        $("#TabStrip").data("kendoTabStrip").select(0);
+    });
+</script>
+
+
+

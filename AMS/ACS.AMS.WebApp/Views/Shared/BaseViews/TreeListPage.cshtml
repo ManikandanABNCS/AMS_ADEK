@@ -1,0 +1,239 @@
+﻿@using ACS.AMS.DAL.DBModel;
+@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+    string first = "Search ";
+    string Last = "....";
+    string placeholder = string.Empty;
+    if (string.Compare(Model.PageName, "Category") == 0)
+    {
+         placeholder = "Search Category ....";
+    }
+    else
+    {
+         placeholder = "Search Location ....";
+    }
+}
+<script>
+    // Send the dates for the newly creted/updated tasks as UTC strings
+    function onUpdateCreate(e) {
+        e.End = e.End.toISOString();
+        e.Start = e.Start.toISOString();
+    }
+    function OpenCreatePage() {
+        loadContentPageToControl("/MasterPage/Create" + "?pageName=" + $("#PageName").val() , "workingArea");
+    }
+    function OnEdit(e) {
+        var tr = $(e.currentTarget).closest("tr");
+        var dataItem = $("#treelist").data("kendoTreeList").dataItem(tr);
+        if (dataItem) {
+            loadContentPageToControl("/MasterPage/Edit/" + dataItem.CategoryID + "?pageName=" + $("#PageName").val(), "workingArea");
+        }
+    }
+    function OnSearch(e) {
+        var tr = $(e.currentTarget).closest("tr");
+        var dataItem = $("#treelist").data("kendoTreeList").dataItem(tr);
+        if (dataItem) {
+            loadContentPageToControl("/MasterPage/CatalogueListView/" + dataItem.CategoryID, "workingArea");
+        }
+    }
+    function OnDelete(e) {
+        var tr = $(e.currentTarget).closest("tr");
+        var dataItem = $("#treelist").data("kendoTreeList").dataItem(tr);
+        if (dataItem) {
+            var check = confirm('are you sure do want to delete?');
+            if (check == true) {
+                $.ajax({
+                    url: "/MasterPage/_deleteCategory",
+                    type: "POST",
+                    dataType: "json",
+                    async: false,
+                    data: { categoryID: dataItem.CategoryID },
+                    success: function (data) {
+                        if (data.Result == "Success") {
+                            var treeList = $("#treelist").data("kendoTreeList");
+                            treeList.dataSource.read();
+                        }
+                    },
+                });
+            }
+        }
+    }
+    function OnReport(e) {
+        var tr = $(e.currentTarget).closest("tr");
+        var dataItem = $("#treelist").data("kendoTreeList").dataItem(tr);
+        if (dataItem) {
+            var params = {
+              
+                reportName: "ProductCatalog",
+                CategoryID: dataItem.CategoryID
+            };
+            var url = '/ShowReport/ShowCatalogueReport?' + jQuery.param(params);
+            window.open(url);
+           
+        }
+    }
+  
+</script>
+<script id="photo-template" type="text/x-kendo-template">
+    <div class='employee-photo'
+         style='background-image: url(@Url.Content("~/#: CatalogueImage #"));'></div>
+   
+</script>
+<style>
+    .employee-photo {
+        display: inline-block;
+        width: 150px;
+        height: 100px;
+        background-size: cover;
+        background-position: center;
+       
+      
+      
+    }
+
+</style>
+<form action="@Url.Action("Excel_Export_TreeSave", "MasterPage")" method="POST" id="form">
+    
+<div class="list-container">
+    <div style="border-bottom: solid 1px #CCC;padding-bottom: 5px;">
+
+         @Html.Hidden("PageName",Model.PageName)
+
+        <table class="entry1" style="width: 100%;" id="SearchPage">
+            <tr>
+                <td style="text-align: left;">
+                    @{
+                        
+                        if (SessionUser.HasRights(Model.PageName, UserRightValue.Create))
+                        {
+                                 <button type="button" class="CommonButton CreateButton" onclick="OpenCreatePage()">Add New Record</button>                                                         
+                        }                      
+                    }
+                </td>
+            </tr>
+
+          
+        </table>
+
+    </div>
+
+    <div class="row">
+                @(
+                Html.Kendo().TreeList<CategoryListView>()
+                    .Name("treelist")
+                    .Columns(columns =>
+                    {
+
+                    columns.Add().Field(a => a.CategoryCode).Title(Language.GetString("CategoryCode")).Sortable(true).Width(100);
+                    columns.Add().Field(a => a.CategoryName).Title(Language.GetString("CategoryName")).Sortable(true).Width(150).HtmlAttributes(new { @class = "text-ellipsis" });
+                    columns.Add().Field(a => a.ParentCategory).Title(Language.GetString("ParentCategory")).Sortable(true).Width(200).HtmlAttributes(new { @class = "text-ellipsis" });
+                    columns.Add().Field(a => a.CatalogueImage).Title(Language.GetString("Catalogue")).Sortable(true).Width(100).TemplateId("photo-template");
+                    columns.Add().Field(a => a.Status).Title(Language.GetString("Status")).Sortable(true).Width(100);
+                        columns.Add().Width(100).Title("Actions").Command(c =>
+                        {
+                          
+                            c.Custom().Name("details").Text("Edit").Click("OnEdit");
+                            c.Custom().Name("delete").Text("Delete").Click("OnDelete");
+                             c.Custom().Name("Report").Text("Report").Click("OnReport");
+                        c.Custom().Name("Catalogue").Text("Catalogue").Click("OnSearch");
+                        @* c.Custom().Name("details").Text("<img src='~/css/images/edit-icon.png' alt='Edit' title='Edit' style='width:16px;height:16px;'/>").Click("OnEdit").
+                        c.Custom().Name("delete").Text("<img src='~/css/images/delete-icon.png' alt='Delete' title='Delete' style='width:16px;height:16px;'/>").Click("OnDelete");
+                        c.Custom().Name("report").Text("<img src='~/css/images/Report.png' alt='Report' title='Report' style='width:16px;height:16px;'/>").Click("OnReport"); *@
+                        });
+                    
+
+                                        })
+                    .Toolbar(tools => tools.Excel())
+                    .Excel(excel => excel.FileName("CategoryList.xlsx").AllPages(true).ProxyURL(Url.Action("Excel_Export_TreeSave")))
+                        .Filterable()
+                        .Sortable()
+                        .DataSource(dataSource => dataSource
+                                    .Read(read => read.Action("_TreeIndex", "MasterPage"))
+                        .ServerOperation(false)
+                        .Model(m =>
+                        {
+                            m.Id(f => f.CategoryID);
+                            m.ParentId(f => f.ParentCategoryID);
+                            m.Expanded(true);
+                        
+                        })
+                        )
+                        .Events(e => { e.Change("OnEdit"); })
+                        .Height(540)
+                        .Pageable(p => p.PageSize(10)
+                        .PageSizes(true)
+                    )
+                )
+        </div>
+
+        <div class="clearfix"></div>
+</div>
+</form>
+<script>
+    $(function () {
+        setPageHeading('@Language.GetPageTitle(Model.PageTitle) List');
+        $(".treeviewParent").niceScroll();
+            
+        $(".download").click(function (e) {
+            debugger;
+            //$("#loadingmaskApproval").css("display", "block");
+           
+            var options = {
+                format: $(this).data("format"),
+                title: $(this).data("title"),
+                pageName:$("#PageName").val(),
+                filterData:$("#search-term").val(),
+            };
+            
+            var param = $.param(options);
+            window.open("/MasterPage/ExportTreeViewServer?" + param);
+            //Sever_PostData("/MasterPage/ExportTreeViewServer", options, ItemRequest_SubmitItemDetails_Success, IssueDetails_SubmitItemDetails_Failure);
+            // $('#form input[type="hidden"]').remove();
+            // addOptionsToForm(options, $('#form'), []);
+        });
+       });
+
+    function ItemRequest_SubmitItemDetails_Success(data) {
+    }
+    
+    function IssueDetails_SubmitItemDetails_Failure(data) {        
+    }
+
+    function addOptionsToForm(options, form, parents) {
+        for (var option in options) {
+            if (!options[option]) {
+                continue;
+            }
+
+            if (typeof options[option] === 'object') {
+                parents.push(option)
+                addOptionsToForm(options[option], form, parents);
+                parents.pop();
+                $("#loadingmaskApproval").css("display", "none");
+            } else {
+                form.append('<input type="hidden" name="' + inputName(option, parents) + '" value="' + options[option] + '" />');
+                $("#loadingmaskApproval").css("display", "none");
+            }
+        }
+    }
+     function inputName(option, parents) {
+        var result = "";
+
+        if (!parents.length) {
+            return option;
+        }
+
+        for (var i = 0; i < parents.length; i++) {
+            if (i === 0) {
+                result += parents[i];
+                continue;
+            }
+            result += "[" + parents[i] + "]";
+        }
+
+        result += "[" + option + "]";
+
+        return result;
+    }
+</script>

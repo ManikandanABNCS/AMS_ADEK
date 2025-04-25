@@ -1,0 +1,99 @@
+﻿@model ACS.AMS.WebApp.Models.LoginModel
+@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@{
+    Layout = null;
+    var data = AMSContext.CreateNewContext();
+}
+<style type="text/css">
+	.has-float-label{display:block;position:relative}
+	.has-float-label label,
+	.has-float-label>span{position:absolute;cursor:text;font-size:75%;opacity:1;-webkit-transition:all .2s;transition:all .2s;top:-.5em;left:.75rem;z-index:3;line-height:1;padding:0 1px}
+	.has-float-label label::after,.has-float-label>span::after{content:" ";display:block;position:absolute;background:#fff;height:2px;top:50%;left:-.2em;right:-.2em;z-index:-1}.has-float-label .form-control::-webkit-input-placeholder{opacity:1;-webkit-transition:all .2s;transition:all .2s}.has-float-label .form-control:placeholder-shown:not(:focus)::-webkit-input-placeholder{opacity:0}.has-float-label .form-control:placeholder-shown:not(:focus)+*{font-size:100%;opacity:.5;top:.7em}.input-group .has-float-label{display:table-cell; width: 100%;margin: 5px 0;}.input-group .has-float-label .form-control{border-radius:.25rem;     box-shadow: none;}
+</style>
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>AMS - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="~/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <script src="~/js/jquery.min.js"></script>
+    <script src="~/js/popper.min.js"></script>
+    <script src="~/js/bootstrap.min.js"></script>
+    <link href="~/css/Login.css" rel="stylesheet" />
+    @* <link href="~/css/ThemeBuilder.css" rel="stylesheet" /> *@
+
+    @* <link href="@Url.Content("~/lib/kendo-ui/styles/default-main.css")" rel="stylesheet" type="text/css" /> *@
+    <script src="@Url.Content("~/lib/kendo-ui/js/jquery.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/jszip.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/kendo.all.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/kendo.aspnetmvc.min.js")"></script>
+
+
+</head>
+<body>
+  @*   <form asp-action="Login"> *@
+     @using (Html.BeginForm("Login", "Login", FormMethod.Post, new { Name = "Form1" }))
+    { 
+    <div class="login-container">
+        <div class="login-details">
+		<div class="logo">
+                    <img src="~/css/images/logo.png" alt="Logo">
+        </div>
+            <h2>Login</h2>
+                <h3>Welcome to AMS</h3>
+            <form class="login-form">
+                    <div class="form-group">
+                        @* @Html.LabelFor(model => model.UserName, new { @class = "login-labels"})*@
+                        @Html.TextBoxFor(model => model.UserName, new { id = "UserName", @Class = "logintextBox", @Style = "width:100%;", @tabindex = 1 ,@Placeholder="User Name" })
+
+                        <p class="errmsg">@Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })</p>
+                        <span class="focus-input100"></span>
+                    </div>
+
+                    <div class="form-group">
+                        @*  @Html.LabelFor(model => model.Password, new { @class = "login-labels"})*@
+                        @Html.PasswordFor(model => model.Password, new { id = "Password", @Class = "logintextBox", @Style = "width:100%", @tabindex = 2,@Placeholder="Password"})
+
+                        <p class="errmsg">@Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })</p>
+                        @{
+                            string errormsg = "";
+                            if (ViewData["ErrorMesg"] != null)
+                            {
+                                errormsg = ViewData["ErrorMesg"].ToString();
+                            }
+                        }
+                        <span style="color: #d33434; font-size: 16px; font-weight: 600; ">
+                            @errormsg
+                        </span>
+                        <span class="focus-input100"></span>
+                    </div>
+
+                  @*   <div>
+                        @Html.Kendo().CheckBoxFor(m => m.RememberMe)
+                    </div> *@
+                    @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Log In").Name("loginButton").HtmlAttributes(new { @class="login-button",  type="submit"})
+            </form>
+        </div>
+    </div>
+
+
+    }
+</body>
+    
+</html>
+
+<script>
+    $(document).ready(function () {
+        $("#UserName").focus();
+    });
+    function Validation() {
+		
+    }
+</script>

@@ -1,0 +1,100 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model BasePageModel
+@{
+    ViewBag.Title = "Edit";
+    EntryPageHelper entryPage = new EntryPageHelper(Model)
+            {
+                AddControlsInSingleColumnForLessItems = false
+            };
+
+    TransactionTable transactionTable = Model.EntityInstance as TransactionTable;
+}
+
+
+
+
+@using (Html.AjaxBeginForm("Details", "AssetMaintenanceClosure", DisplayHelper.GetAjaxOptions()))
+    {
+    @Html.Hidden("PageName", Model.PageName)
+    @Html.Hidden("primaryKeyID", Model.EntityInstance.GetPrimaryKeyValue())
+    @Html.Hidden(Model.EntityInstance.GetPrimaryKeyFieldName(), Model.EntityInstance.GetPrimaryKeyValue())
+
+    
+
+    <div class="list-container">
+        <div class="row k-text-error">
+            @Html.ValidationMessage("12")
+        </div>
+
+     
+        @{
+            entryPage.CreatePageControls(Html, this, true);
+        }
+        <div class="row" style="padding-top:12px">
+            <div class="col-xl-12">
+                @(Html.Kendo().Grid<TransactionLineItemModel>()
+                    .Name("GridLineItemDetailGrid")
+                    .Columns(columns =>
+                    {
+                    columns.Bound(p => p.AssetCode).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("AssetCode"));
+                    columns.Bound(p => p.Barcode).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Barcode"));
+                    columns.Bound(p => p.MaintenanceRemarks).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("MaintenanceRemarks"));
+                    columns.Bound(p => p.AdjustmentValue).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("AdjustmentValue"));
+                        columns.Bound(p => p.IsNetBookAdjustment).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("IsNetBookAdjustment"))
+                        .ClientTemplate("<div class='text-overflow-dynamic-container'><span class='text-overflow-dynamic-ellipsis'>#if (IsNetBookAdjustment) { # Yes #} else {# No #}#</div>");
+                    })
+                    .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                    {
+                        o.ForString(t => t
+                        .Clear()
+                        .Contains("Contains")
+                        .DoesNotContain("Does Not Contains")
+                        .IsEqualTo("Equal To")
+                        .IsNotEqualTo("Not EqualTo")
+                        .StartsWith("Starts With")
+                        .EndsWith("Ends With")
+                        );
+                    })
+                    )
+                    .Sortable().Selectable()
+                    .Pageable()
+
+                    .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+                    .DataSource(datasource => datasource
+                    .Ajax()
+                    .Read(read => read.Action("_LineItemindex", "AssetMaintenanceRequest", new { currentPageID = ViewBag.CurrentPageID }))
+                    ))
+            </div>
+        </div>
+
+        <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick=$"LoadIndexPage('AssetMaintenanceRequest','{Model.PageName}')" })
+        </div>
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                Html.RenderPartial("BaseViews/AuditLogSingleView", Model);
+            }
+        </div>
+    </div>
+
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        // setPageHeading('Details @Language.GetPageTitle(Model.PageTitle)');
+        setPageHeading('Details Asset Maintenance Closure');
+        setInitialFocus('@entryPage.FirstFieldName');
+    });
+
+</script>

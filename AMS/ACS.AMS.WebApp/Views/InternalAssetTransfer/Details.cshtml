@@ -1,0 +1,338 @@
+﻿@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+    int transactionID = ViewBag.TransactionID;
+    int enableApprovalHistory = ViewBag.enableApprovalHistory;
+    var header = TransactionTable.GetItem(AMSContext.CreateNewContext(), transactionID);
+    var lineitem = TransactionLineItemTable.TransactionLineItems(AMSContext.CreateNewContext(), transactionID).FirstOrDefault();
+    var inidoc = DocumentTable.GetDocumentDetails(AMSContext.CreateNewContext(), transactionID, "AssetTransfer");
+}
+<script>
+    function popupitemSelection() {
+        url = "/PopupItem/Index?currentPageID=" + $("#CurrentPageID").val() + '&sceenName=InternalAssetTransfer';
+        popupItemOpenWindow(url, "Asset Details");
+    }
+    function popupItemOpenWindow(url, titleCon) {
+
+        var wnd = $("#PopupAsset").data("kendoWindow");
+        if (wnd == null)
+            wnd = parent.window.$("#window").data("kendoWindow");
+        wnd.refresh({
+            url: url
+        });
+
+        wnd.center();
+        wnd.open();
+        wnd.title(titleCon);
+    }
+    function onSelect(e) {
+        if (e.files.length > 5) {
+            alert("Please select max 5 files.");
+            e.preventDefault();
+        }
+    }
+    function OnSuccessUpload(e) {
+        
+
+    }
+    function OnComplete(e) {
+     
+    }
+    function OnExcelSuccessUpload(e) { 
+        $("#DetailsGrid").data("kendoGrid").dataSource.read();
+    }
+    function OnExcelComplete(e) {
+
+    }
+    </script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+
+<div class="list-container">
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="gridClass">
+                    @Html.Hidden("CurrentPageID", Model.EntityInstance.CurrentPageID)
+                    @Html.Hidden("TransactionID", Model.PageTitle)
+                    @Html.Hidden("AssetIDS")
+                    @{
+                        DisplayHelper display = new DisplayHelper(this, "InternalAssetTransfer", "AssetID");
+
+                        var gridCtrl = Html.Kendo().Grid<dynamic>()
+                        .Name("DetailsGrid");
+                        display.AddGridActionColumns(gridCtrl, Url, "InternalAssetTransfer", RightNames.Asset, addEditColumn: false, addDetailsColumn: false, addDeleteColumn: true, addCheckbox: false, deleteActionName: "_deleteItem", deleteAdditionalData: "CurrentPageID=" + Model.EntityInstance.CurrentPageID);
+                        display.ConfigureGrid(gridCtrl, readDataHandler: "defaultGridReadWithParamMethod", readActionName: "_lineItems");
+                        display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.Asset, addNewButtonRequired: false, exportToCSVButtonRequired: false, exportToExcelButtonRequired: false, exportToPDFButtonRequired: false, addDeleteButtonRequired: false,ChangeColumnRequired:false);
+
+                        gridCtrl.Render();
+                    }
+                    <div id="errGrid"></div>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+            <div style="border: solid 1px #C0CAD1; margin: 5px 0px;" id="transferAssetPart">
+                <h5 style="background: #C0CAD1; padding: 10px; margin: 0px;">Transfer To</h5>
+                <div class="transferAsset" style="width:90%">
+                    <div class="row">
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("ReferencesNo", true)</label>
+                            @(Html.TextBox("ReferencesNo", @header.TransactionNo, new { Class = "form-control", disabled = "disabled" }))
+
+                        </div>
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("Remarks", true)</label>
+                            @(Html.TextBox("Remarks", @header.Remarks, new { Class = "form-control", disabled = "disabled" }))
+
+                        </div>
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("ToLocation", true)</label>
+                            @(Html.TextBox("ToLocation", @lineitem.ToLocation.LocationName, new { Class = "form-control", disabled = "disabled" }))
+
+                            <div id="errLoc"></div>
+                        </div>
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("Upload Doc", true)</label>
+                            @{
+                                int i = 0;
+                                foreach (var doc in inidoc)
+                                {
+                                    string ids = "filePath" + i + "";
+                                    string[] arryDocID = doc.FilePath.Split("FileStoragePath");
+                                    @Html.ActionLink(doc.DocumentName, "DownloadAttachedFile", new { fileName = arryDocID[1] })
+                                    <br />
+
+                                    i = i + 1;
+                                }
+
+                            }
+                        </div>
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("Transfer Type", true)</label>
+                            @if (lineitem.TransferTypeID.HasValue)
+                            {
+                                @(Html.TextBox("TransferType", @lineitem.TransferType.TransferTypeName, new { Class = "form-control", disabled = "disabled" }))
+
+                            }
+                            else
+                            {
+                                @(Html.TextBox("TransferType", null, new { Class = "form-control", disabled = "disabled" }))
+                            }
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+            @if (enableApprovalHistory == 1)
+            {
+                <div class="row" style="padding-top:10px">
+                    <div class="col-xl-12">
+                        <label class="fieldlabel"> Approval History Details :</label>
+                        @(
+                        Html.Kendo().Grid<ApprovalHistoryView>()
+                                    .Name("DetailGrid1")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Bound(p => p.ApprovalHistoryID).Visible(false);
+                                        columns.Bound(p => p.ApprovalRoleName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovalRoleName"));
+                                        columns.Bound(p => p.UserName).Width(100).ClientTemplate("#= tagsName(UserName) #").HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovalRoleName"));
+                                        columns.Bound(p => p.ApprovalStatus).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovalStatus"));
+                                        columns.Bound(p => p.Remarks).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Remarks"));
+                                        columns.Bound(p => p.DocumentName).ClientTemplate("#= tagsTemplate(DocumentName,ApprovalHistoryID) #").Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("DocumentUploaded"));
+                                        columns.Bound(p => p.ApprovedBy).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovedBy"));
+                                        columns.Bound(p => p.ApprovedDatetime).Width(100).Format("{0:" + CultureHelper.ConfigureDateFormat + "}").HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovedDateTime"));
+                                    })
+
+                                    .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                                    {
+                                        o.ForString(t => t
+                                        .Clear()
+                                        .Contains("Contains")
+                                        .DoesNotContain("Does Not Contains")
+                                        .IsEqualTo("Equal To")
+                                        .IsNotEqualTo("Not EqualTo")
+                                        .StartsWith("Starts With")
+                                        .EndsWith("Ends With")
+                                        );
+                                    })
+                                    )
+                                    .Sortable().Selectable()
+                                    .Pageable()
+
+                                    .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+                                    .DataSource(datasource => datasource
+                                    .Ajax()
+                                    .Read(read => read.Action("_LineItemApproval", "InternalAssetTransfer", new { id = ViewBag.TransactionID }))
+
+                                    )
+                        )
+                    </div>
+            </div>
+            }
+            <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick = "loadIndexPage('InternalAssetTransfer')" })
+            </div>
+            </div>
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                EntryPageModel newModel = new EntryPageModel()
+                {
+
+                    EntityInstance = header as BaseEntityObject,
+                    ControllerName = this.GetType().Name.Substring(0, this.GetType().Name.Length - "Controller".Length),
+                };
+                Html.RenderPartial("BaseViews/AuditLogSingleView", newModel);
+            }
+        </div>
+</div>
+}
+
+
+
+ @( Html.Kendo().Window()
+        .Name("PopupAsset")
+        .Width(1300)
+        .Visible(false)
+        .Actions(actions => actions.Close())
+        .Height(550)
+        .Draggable()
+        .Resizable()
+        .Iframe(true)
+        .Modal(true)
+.Scrollable(false)
+)
+
+<script>
+    $(function () {
+        setPageHeading("Internal Asset Transfer Details ");
+    });
+    function downloadDocument() {
+
+        //window.open("~/ExcelTemplate/UploadTransferAsset.xls");
+        $.ajax({
+            url: "/InternalAssetTransfer/DownloadFile",
+            type: "Get",
+            dataType: "json",
+            async: false,
+            data: { fileName: "UploadTransferAsset.xls" },
+
+
+        });
+
+    }
+    function Transfervalidate() { 
+        var flag = true;
+
+
+        if (!$("#LocationID").data("kendoMultiColumnComboBox").input.val()) { 
+            flag = false;
+            if ($("#validateLocation").val() != "") {
+                $("#errLoc").after('<span style="color:red;font-weight:normal;" id="validateLocation">@Language.GetString("Location Name is Required")</span>');
+            }
+        }
+        else {
+            $("#validateLocation").remove();
+        }
+      
+        var grid = $("#DetailsGrid").data("kendoGrid");
+        var data = grid.dataSource.data();
+        var totalNumber = data.length;
+        if (totalNumber <= 0) {
+            if ($("#validateGrid").val() != "") {
+                $("#errGrid").after('<span style="color:red;font-weight:normal;" id="validateGrid">@Language.GetString("Select anyone Asset Details")</span>');
+            }
+            flag = false;
+        }
+        else {
+         
+            var loadedID = [];
+            for (var i = 0; i < totalNumber; i++) {
+                var currentDataItem = data[i];
+                loadedID.push(currentDataItem.AssetID);
+            }
+            $("#validateGrid").remove();
+            $("#AssetIDS").val(loadedID);
+        }
+        if (flag) {
+            // TransferAssetValidate();
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    function tagsTemplate(item, path) {
+
+        var template = "<ul>";
+        if (item != null) {
+            var feedUpdateSplit = item.split(";");
+            if (item != null) {
+                if (feedUpdateSplit.length > 0) {
+                    for (var i = 0; i < feedUpdateSplit.length; i++) {
+
+                        template += kendo.format("<li><a class='gridHyperLine' style='width:250px;' href='javascript:DownloadApprovalDocument(\"{0}\",{1})'  title='\{0}\#'>{0}</a></li>", feedUpdateSplit[i], path);
+                    }
+                }
+            }
+        }
+        template += "</ul>";
+        return template;
+    }
+    function DownloadApprovalDocument(filename, id) {
+        //  window.open("/FileStoragePath/AssetRetirement/Account Statement 1357XXXXXX767305022024122234.pdf");
+        //  window.open("/FileStoragePath/AssetTransferApproval/UploadDisposalAsset12022024164055.xls");
+        $.ajax({
+            url: "/InternalAssetTransfer/DownloadApprovalFile",
+            type: "Get",
+            dataType: "json",
+            async: false,
+            data: { fileName: filename, id: id },
+            success: function (data) {
+                if (data.Result == "Success") {
+                    var folder = "TransactionDocument";
+                    if (data.type == "AssetTransferApproval") {
+                        folder = "TransactionDocument";
+                    }
+                    else if (data.type == "AssetRetirementApproval") {
+                        folder = "TransactionDocument";
+                    }
+                    var url = "/FileStoragePath/" + folder + "/" + data.fileName;
+                    // alert(url);
+                    window.open(url);
+                }
+            }
+        });
+
+
+        // });
+        // var configurationFilePath = "/ApprovalUploadedFiles";
+        //window.open('/' + path + '/' + filename.replace(/\//g, "/"));
+        //window.open(path.replace(/\//g, "/"));
+    }
+    function tagsName(username) {
+        var template = "";//"<ul>";
+        if (username != null) {
+            var feedUpdateSplit = username;//.split(",");
+            if (username != null) {
+                if (feedUpdateSplit.length > 0) {
+                    for (var i = 0; i < feedUpdateSplit.length; i++) {
+
+                        template += kendo.format("<a class='gridHyperLines' style='width:250px;'   title='\{0}\#'>{0}</a>", feedUpdateSplit[i]);
+                    }
+                }
+            }
+        }
+        //  template += "</ul>";
+        return template;
+    }
+</script>
+<script src="~/ACSScript/Common.js"></script>

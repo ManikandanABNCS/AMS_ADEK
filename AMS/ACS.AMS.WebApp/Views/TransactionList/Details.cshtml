@@ -1,0 +1,216 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model IndexPageModel
+@{
+    int currentPageId = ViewBag.CurrentPageID;
+    int ApprovalHistoryID = ViewBag.ApprovalHistoryID;
+    ViewBag.Title = "Details";
+    var tranObject = TransactionTable.GetTransaction(AMSContext.CreateNewContext(), ApprovalHistoryID);
+}
+
+
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+
+   @*  @Html.Hidden("primaryKeyID", Model.EntityInstance.GetPrimaryKeyValue())
+    @Html.Hidden(Model.EntityInstance.GetPrimaryKeyFieldName(), Model.EntityInstance.GetPrimaryKeyValue()) *@
+
+    <div class="list-container">
+        <div class="row k-text-error">
+            @* @Html.ValidationSummary()*@
+            @Html.ValidationMessage("12")
+        </div>
+
+        <div class="row">
+            <div class="col-xl-4">
+                
+                <label for="fullname">@Html.FieldLabel("TransactionType", false)</label>
+                @(Html.TextBox("TransactionType", tranObject.TransactionType.TransactionTypeName, new { Class = "form-control", disabled = "disabled" }))
+            </div>
+           
+            </div>
+
+
+        <div class="row" style="padding-top:10px">
+            <div class="col-xl-12">
+                @(
+                    Html.Kendo().Grid<TransactionLineItemViewForTransfer>()
+                                .Name("DetailGrid")
+                                .Columns(columns =>
+                                {
+                                    columns.Bound(p => p.TransactionID).Visible(false);
+                        columns.Bound(p => p.Barcode).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Barcode"
+                        ));
+
+                        columns.Bound(p => p.CategoryHierarchy).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("CategoryHierarchy"));
+                        columns.Bound(p => p.AssetDescription).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("AssetDescription"));
+                        if (tranObject.TransactionTypeID == (int)TransactionTypeValue.AssetTransfer || tranObject.TransactionTypeID == (int)TransactionTypeValue.InternlaAssetTransfer)
+                                    {
+                            columns.Bound(p => p.OldLocationName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("OldLocationName"));
+                            columns.Bound(p => p.NewLocationName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("NewLocationName"));
+                                    }
+                                    else
+                                    {
+                            columns.Bound(p => p.OldLocationName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("LocationName"));
+                                    }
+
+                       
+                    })
+
+                    .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                    {
+                        o.ForString(t => t
+                        .Clear()
+                        .Contains("Contains")
+                        .DoesNotContain("Does Not Contains")
+                        .IsEqualTo("Equal To")
+                        .IsNotEqualTo("Not EqualTo")
+                        .StartsWith("Starts With")
+                        .EndsWith("Ends With")
+                        );
+                    })
+                    )
+                    .Sortable().Selectable()
+                    .Pageable()
+
+                    .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+                    .DataSource(datasource => datasource
+                    .Ajax()
+                    .Read(read => read.Action("_LineItemindex", "TransactionList", new { id = ViewBag.ApprovalHistoryID }))
+
+                    )
+                )
+            </div>
+         
+        </div>
+
+        <div class="row" style="padding-top:10px">
+            <div class="col-xl-12">
+                <label class="fieldlabel"> Approval History Details :</label>
+                @(Html.Kendo().Grid<ApprovalHistoryView>()
+                    .Name("DetailGrid1")
+                    .Columns(columns =>
+                    {
+                        columns.Bound(p => p.ApprovalHistoryID).Visible(false);
+                        columns.Bound(p => p.ApprovalRoleName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovalRoleName"));
+                        columns.Bound(p => p.UserName).Width(100).ClientTemplate("#= tagsName(UserName) #").HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovalRoleName"));
+                        columns.Bound(p => p.ApprovalStatus).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovalStatus"));
+                        columns.Bound(p => p.Remarks).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Remarks"));
+                        columns.Bound(p => p.DocumentName).ClientTemplate("#= tagsTemplate(DocumentName,ApprovalHistoryID) #").Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("DocumentUploaded"));
+                        columns.Bound(p => p.ApprovedBy).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovedBy"));
+                        columns.Bound(p => p.ApprovedDatetime).Width(100).Format("{0:" + CultureHelper.ConfigureDateFormat + "}").HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovedDateTime"));
+                    })
+
+                    .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                    {
+                        o.ForString(t => t
+                        .Clear()
+                        .Contains("Contains")
+                        .DoesNotContain("Does Not Contains")
+                        .IsEqualTo("Equal To")
+                        .IsNotEqualTo("Not EqualTo")
+                        .StartsWith("Starts With")
+                        .EndsWith("Ends With")
+                        );
+                    })
+                    )
+                    .Sortable().Selectable()
+                    .Pageable()
+
+                    .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+                    .DataSource(datasource => datasource
+                    .Ajax()
+                    .Read(read => read.Action("_LineItemApproval", "TransactionList", new { id = ViewBag.ApprovalHistoryID }))
+
+                    ))
+            </div>
+        </div>
+     
+        <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+           @*  @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Approve").Name("Approve").HtmlAttributes(new { style="width: 170px;",  onclick="return multiapprovalDoc('Approval')" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Reject").Name("Reject").HtmlAttributes(new { style="width: 170px;", onclick="return multiapprovalDoc('Reject')" }) *@
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="loadIndexPage('TransactionList')" })
+        </div>
+
+    </div>
+
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+
+        setPageHeading('Transaction View');
+       
+    });
+    function tagsTemplate(item,path) {
+        
+        var template = "<ul>";
+        if (item !=null) {
+            var feedUpdateSplit = item.split(";");
+            if (item!=null) {
+                if (feedUpdateSplit.length > 0) {
+                    for (var i = 0; i < feedUpdateSplit.length; i++) {
+
+                        template += kendo.format("<li><a class='gridHyperLine' style='width:250px;' href='javascript:DownloadDocument(\"{0}\",{1})'  title='\{0}\#'>{0}</a></li>", feedUpdateSplit[i],path);
+                    }
+                }
+            }
+        }
+        template += "</ul>";
+        return template;
+    }
+    function DownloadDocument(filename, id) {
+    //  window.open("/FileStoragePath/AssetRetirement/Account Statement 1357XXXXXX767305022024122234.pdf");
+        //  window.open("/FileStoragePath/AssetTransferApproval/UploadDisposalAsset12022024164055.xls");
+        $.ajax({
+            url: "/TransactionList/DownloadFile",
+            type: "Get",
+            dataType: "json",
+            async: false,
+            data: { fileName: filename, id: id },
+            success: function (data) {
+                if (data.Result == "Success") {
+                    var folder = "TransactionDocument";
+                    if (data.type == "AssetTransferApproval") { 
+                        folder = "TransactionDocument";
+                    }
+                    else if (data.type == "AssetRetirementApproval")
+                    {
+                        folder = "TransactionDocument";
+                    }
+                    var url = "/FileStoragePath/" +folder + "/" + data.fileName;
+                   // alert(url);
+                    window.open(url);
+                }
+            }
+        });
+
+
+        // });
+        // var configurationFilePath = "/ApprovalUploadedFiles";    
+        //window.open('/' + path + '/' + filename.replace(/\//g, "/"));
+        //window.open(path.replace(/\//g, "/"));
+    }
+    function tagsName(username) {
+        var template = "";//"<ul>";
+        if (username != null) {
+            var feedUpdateSplit = username;//.split(",");
+            if (username != null) {
+                if (feedUpdateSplit.length > 0) {
+                    for (var i = 0; i < feedUpdateSplit.length; i++) {
+
+                        template += kendo.format("<a class='gridHyperLines' style='width:250px;'   title='\{0}\#'>{0}</a>", feedUpdateSplit[i]);
+                    }
+                }
+            }
+        }
+      //  template += "</ul>";
+        return template;
+    }
+</script>
+
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.unobtrusive.min.js"></script>

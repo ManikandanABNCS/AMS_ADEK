@@ -1,0 +1,9 @@
+﻿@model string
+
+@(
+ Html.Kendo().DropDownList()
+        .Name("CategoryTypeID")
+        .Value(Model)
+        .OptionLabel("Select CategoryTypeID")
+        .BindTo(ComboBoxHelper.GetAllCategorytype(AMSContext.CreateNewContext(),""))
+)

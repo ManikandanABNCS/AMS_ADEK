@@ -1,0 +1,115 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@using Kendo.Mvc.UI;
+
+<style>
+	.h3{
+		font-size: 40px;
+	}
+	.span
+	{
+		font-size: 25px;
+	}
+</style>
+
+<script language="javascript" type="text/javascript">
+	function onDataBound(e) {
+		var chartData = e.sender.dataSource.data(); //get the Chart's data
+		var options = e.sender.options;
+		var series = options.series; //get the Series options
+
+		kendo.dataviz.Gradients.series1Gradient = { // define the gradients
+			type: "linear",
+			stops: [{
+				offset: 0,
+				color: `${chartData[0].ColorFrom}`, //set the color based on the Model field "ColorFrom"
+				opacity: 0.5
+			}, {
+				offset: 1,
+				color: `${chartData[0].ColorTo}`, //set the color based on the Model field "ColorTo"
+			}]
+		};
+
+		kendo.dataviz.Gradients.series2Gradient = {
+			type: "linear",
+			stops: [{
+				offset: 0,
+				color: `${chartData[1].ColorFrom}`,
+				opacity: 0.5
+			}, {
+				offset: 1,
+				color: `${chartData[1].ColorTo}`,
+			}]
+		};
+		// override gradients for each series
+		series[0].overlay.gradient = "series1Gradient";
+		series[0].overlay.gradient.start = [0.5, 0];
+		series[0].overlay.gradient.end = [0.5, 1];
+
+		series[0].overlay.gradient = "series2Gradient";
+		series[0].overlay.gradient.start = [0.5, 0];
+		series[0].overlay.gradient.end = [0.5, 1];
+	}
+</script>
+@model DashboardPageModel
+@{
+    ViewBag.Title = "Create";
+	var _db = AMSContext.CreateNewContext();
+	DashboardPageHelper entryPage = new DashboardPageHelper(Model)
+	{
+	};
+}
+
+
+
+	@Html.Hidden("PageName","ss")
+	@Html.Hidden("CurrentPageID",1001)
+<div class="Dashboard-Container">
+		@{
+			entryPage.CreateDashboardControl(Html, this);
+		}
+	
+
+	<br /><br />
+	<div class="row" style="padding-top: 20px;">
+
+	</div>
+				
+			
+	<div class="row" style="margin-top: 30px;">
+		<div class="col-md-4">
+			
+		</div>
+
+		<div class="col-md-4">
+		
+		</div>
+
+			<div class="col-md-4">
+			
+		</div>
+				</div>
+</div>
+	
+@(Html.Kendo().Window()
+				.Name("window")
+				.Width(1300)
+				.Visible(false)
+				.Actions(actions => actions.Close())
+				.Height(550)
+				.Draggable()
+				.Resizable()
+				.Iframe(true)
+				.Modal(true)
+.Scrollable(false)
+)
+
+<script language="javascript" type="text/javascript">
+	$(function () {
+		
+		storePageHistory("/Dashboard/Dashboard");
+		setPageHeading("Dashboard");
+	});
+</script>

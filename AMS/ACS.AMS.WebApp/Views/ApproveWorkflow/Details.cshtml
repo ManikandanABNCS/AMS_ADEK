@@ -1,0 +1,149 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@model ApproveWorkflowTable
+@{
+    ViewBag.Title = "Details";
+    var data = AMSContext.CreateNewContext();
+   var approvalRole = ComboBoxHelper.GetAvailableApprovalRole(data,Model.ApproveWorkflowID);
+    var selectedRole = ApproveWorkflowLineItemTable.GetApprovalRoleDetails(data, Model.ApproveWorkflowID).Select(s => new { ID = s.ApprovalRoleCode, Code = s.ApprovalRoleName, IDS = s.ApprovalRoleID, OrderNo = s.OrderNo }).OrderBy(a => a.OrderNo).ToList(); ;
+    // int currentPageID;
+
+}
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+    <div class="list-container">
+        <div class="row k-text-error">
+            @Html.HiddenFor(model=>model.ApproveWorkflowID)
+            @Html.HiddenFor(model=>model.StatusID)
+        </div>
+        <div class="row">
+            <div class="col-xl-3">
+                <label for="fullname">@Html.Label("Approval Module")</label> :
+                @(Html.Kendo().DropDownListFor(model => model.ApproveModuleID)
+                    //.Name("ApproveModuleID")
+                    .HtmlAttributes(new { style = "width:200px!important ", @readonly = "readonly" })
+                    .BindTo(ComboBoxHelper.GetAllApproveModule(AMSContext.CreateNewContext(), ""))
+                    .OptionLabel("Select Approve Module")
+
+                    )
+                <div id="errApproveModuleID"></div>
+            </div>
+          @*   <div class="col-xl-3">
+                <label for="fullname">@Html.Label("Category Type")</label> :
+                @(Html.Kendo().DropDownListFor(model => model.CategoryTypeID)
+                    //.Name("ApproveModuleID")
+                    .HtmlAttributes(new { style = "width:200px!important ", @readonly = "readonly" })
+                    .BindTo(ComboBoxHelper.GetAllCategorytype(AMSContext.CreateNewContext(), ""))
+                    .OptionLabel("Select Category Type")
+
+                    )
+                <div id="errApproveModuleID"></div>
+            </div> *@
+            <div class="col-xl-3">
+                <label for="fullname">@Html.Label("From Location Type")</label> :
+                @(Html.Kendo().DropDownListFor(model => model.FromLocationTypeID)
+                    //.Name("FromLocationTypeID")
+                    .HtmlAttributes(new { style = "width:200px!important ", @readonly = "readonly" })
+                    .BindTo(ComboBoxHelper.GetAllLocationType(AMSContext.CreateNewContext(), ""))
+                    .OptionLabel("Select From Location Type")
+
+                    )
+                <div id="errFromLocationType"></div>
+            </div>
+            @if (Model.ToLocationTypeID.HasValue)
+            {
+                <div class="col-xl-3">
+                    <label for="fullname">@Html.Label("To Location Type")</label> :
+                    @(
+                        Html.Kendo().DropDownListFor(model => model.ToLocationTypeID)
+                                //  .Name("ToLocationTypeID")
+                                .HtmlAttributes(new { style = "width:200px!important ", @readonly = "readonly" })
+                                .BindTo(ComboBoxHelper.GetAllLocationType(AMSContext.CreateNewContext(), ""))
+                                .OptionLabel("Select To Location Type")
+
+                                )
+                    <div id="errToLocationType"></div>
+            </div>
+            }
+            <div class="col-xl-12">
+
+                <table class="tablefilter" style="width: 544px;margin:0px auto;" id="selectionArea">
+                    <tr>
+                        <td class="editor-label">
+
+                            @Html.Label("lblAvailableApprovalRoles", "Available Approval Roles")
+                        </td>
+                        <td>
+                        </td>
+                        <td class="editor-label">
+
+                            @Html.Label("lblSelectedApprovalRoles", "Selected Approval Roles")
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 300px;">
+
+                            @{
+                                var rolelist = approvalRole;
+                            }
+
+                            @Html.ListBox("lblAvailableApprovalRoles", new SelectList(rolelist,"Value","Text"), new { style = "height:250px;width:100%" })
+
+                        </td>
+                        <td>
+                            <input type="button" value=">>" title="SelectRole" class="t-button t-button-icon" onclick="addRole()" />
+                            <input type="button" value="<<" title="RemoveRole" class="t-button t-button-icon" onclick="delRole()" />
+
+                        </td>
+                        <td style="width: 300px;">
+                            @{
+                                var rolelist1 = selectedRole;
+                            }
+                            @Html.ListBox("lblSelectedApprovalRoles", new SelectList(rolelist1,"IDS","Code"), new { style = "height:250px;width:100%" })
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id="issueDetails">
+                        </td>
+                    </tr>
+                    <div id="SelectedApprovals"></div>
+                    @Html.Hidden("hdSelectedItems")
+                    @Html.Hidden("hdNonSelectedItems")
+
+                </table>
+            </div>
+
+            <div class="col-xl-12 text-right add-action-btns">
+               
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="loadIndexPage('ApproveWorkflow')" })
+            </div>
+            <div class="form-group col-md-12">
+                <label for="fullname">@Html.Label("Audit Log")</label>
+                <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+                   aria-expanded="false" aria-controls="AuditLogCollapse">
+                    <span title='Audit Log'></span>
+                </a>
+            </div>
+            <div class="collapse" id="AuditLogCollapse">
+                @{
+                    EntryPageModel newModel = new EntryPageModel()
+                {
+
+                    EntityInstance = Model as BaseEntityObject,
+                    ControllerName = this.GetType().Name.Substring(0, this.GetType().Name.Length - "Controller".Length),
+                };
+                    Html.RenderPartial("BaseViews/AuditLogSingleView", newModel);
+                }
+            </div>
+        </div>
+    </div>
+}
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("Approval Workflow Details");
+        //storevalueinHidden();
+    });
+</script>

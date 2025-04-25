@@ -1,0 +1,20 @@
+﻿@model string 
+
+@(Html.Kendo().DropDownTree()
+       .Name("ParentCategoryID")
+       .Label(label =>
+       {
+           label.Content("Select an category...");
+           label.Floating(true);
+       })
+       .DataTextField("Name")
+       .DataValueField("id").Value(Model)
+       .HtmlAttributes(new { style = "width: 100%" })
+       .Filter(FilterType.Contains)
+       .DataSource(dataSource => dataSource
+           .Read(read => read
+               .Action("GetCategoryListForDDTree", "DataService")
+           )
+       )
+   )
+    

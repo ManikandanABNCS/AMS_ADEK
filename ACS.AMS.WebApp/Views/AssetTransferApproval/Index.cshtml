@@ -1,0 +1,245 @@
+﻿@model List<AssetTransferApprovalView>
+@{
+    ViewBag.Title = "Index";
+
+}
+<script>
+    function DateDiff(createdDateTime) {
+        var start = new Date(createdDateTime),
+            end = new Date(),
+            diff = new Date(end - start),
+            days = diff / 1000 / 60 / 60 / 24;
+
+
+
+        return Math.round(days);
+    }
+    function multiapprovalAllDoc(val) {
+        var ItemIds1 = [];
+        ItemIds = ItemIds1;
+
+        var sel = $("input:checkbox", grid.tbody).closest("tr");
+        $.each(sel, function (idx, row) {
+            var item = grid.dataItem(row);
+
+            $(this).closest('tr').find('[type=checkbox]').prop('checked', true);
+            ItemIds.push(item.ApprovalHistoryID);
+        });
+
+
+        multiapprovalDoc(val)
+    }
+    function multiapprovalDoc(val) {
+
+        if (ItemIds.length > 0) {
+            if (val == 'Reject') {
+                if ($('#Remarks').val() == '') {
+                    alert('Please Enter Remarks');
+                    return false;
+                }
+            }
+
+            $.ajax({
+                url: "/AssetTransferApproval/MultipleApproval",
+                type: "POST",
+                dataType: "json",
+                async: false,
+                data: {
+                    type: val,
+                    docID: ItemIds,
+                    remarks: document.getElementById("Remarks").value
+                },
+                success: function (data) {
+                    if (data.Result == "Success") {
+                        showSuccessMessage(data.message);
+                        //loadContentPageToControl("@Url.Action("Index")");
+                        $('#Remarks').val('');
+                        $("#NewUniformRequestDetailsGrid").data('kendoGrid').dataSource.read();
+
+                    }
+                    else {
+                        showErrorMessage(data.message);
+                        $('#Remarks').val('');
+                        $("#NewUniformRequestDetailsGrid").data('kendoGrid').dataSource.read();
+                    }
+                }
+            });
+        }
+        else {
+            if (val == "Approval") {
+                showErrorMessage("Select Atleast One Record to Approve");
+            }
+            else
+                showErrorMessage("Select Atleast One Record to Reject");
+
+            return false;
+        }
+    }
+</script>
+
+<div class="list-container">
+    <div class="row">
+        <div class="form-group col-md-12">
+
+            @(
+                Html.Kendo().Grid(Model)
+                .Name("NewUniformRequestDetailsGrid")
+                .Columns(columns =>
+                {
+                    columns.Bound(p => p.ApprovalHistoryID)
+                    .ClientTemplate(
+                    "#if (enableUpdate=='0') {#" +
+                    "<input type='checkbox' class='NewUniformRequestClass' name='chkbx' id='chkbx' onclick='enableGridRow3(this)' value='#=ApprovalHistoryID#'"+
+                    "#} else {#" +
+                   @*  "<input type='checkbox' class='NewUniformRequestClass' name='chkbx' id='chkbx' disabled='disabled' value='#=ApprovalHistoryID#'" + *@
+                    " #}#")
+                    
+              
+                    .ClientHeaderTemplate("<input type='checkbox' id='selectAllUniformRequestID' onclick='selectAllClicked3(this)'/>").Filterable(false).Sortable(false);
+                    
+                    columns.Bound(p => p.TransactionNo);
+                    columns.Bound(p => p.CreatedUSer).Title("Created By");
+                    columns.Bound(p => p.CreatedDateTime).Format("{0: " + CultureHelper.DateTimeFormat + "}").Title("Created On").Filterable(true);
+                    columns.Bound(p => p.ApprovalStatus);
+                    //columns.Bound(p => p.CreatedDateTime).ClientTemplate("#=DateDiff(CreatedDateTime)#").Title("Days Passed").Filterable(true);
+                    columns.Template("<center><a class='k-button-icontext' id='#=ApprovalHistoryID#' href='javascript:AssetTransferApprovalView(#=ApprovalHistoryID#)'><img src='/css/images/view.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                    .Title(Language.GetString("Details")).Width(50);
+                    columns.Template("<center><a class='k-button-icontext' id='#=ApprovalHistoryID#' href='javascript:AssetTransferApprovalEdit(#=ApprovalHistoryID#,#=enableUpdate#,#=TransactionID#)'><img src='/css/images/view.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                    .Title(Language.GetString("Edit")).Width(50);
+
+                })
+                .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                {   
+                    o.ForString(t => t
+                    .Clear()
+                    .Contains("Contains")
+                    .DoesNotContain("Does Not Contains")
+                    .IsEqualTo("Equal To")
+                    .IsNotEqualTo("Not EqualTo")
+                    .StartsWith("Starts With")
+                    .EndsWith("Ends With")
+                    );
+                })
+                )
+                .Sortable().Selectable().Pageable()
+                .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+                .DataSource(datasource => datasource
+                .Ajax().Model(p => p.Id(x => x.ApprovalHistoryID)).PageSize(10)
+                .Read(read => read.Action("_Index", "AssetTransferApproval"))))
+
+        </div>
+        <div class="form-group col-md-6">
+            <div class="row">
+                <label class="fieldlabel"> Remarks :</label>
+                @Html.TextArea("Remarks", "", 5, 50, new { @class = "k-textbox", style = "width: 594px !important;height:90px; resize:none;", maxlength = 180 })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-12 text-right add-action-btns">
+        @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Approve All").Name("ApproveAll").HtmlAttributes(new {  style="width: 170px;", onclick="return multiapprovalAllDoc('Approval')" })
+        @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Approve Selected").Name("Approve").HtmlAttributes(new { style="width: 170px;",  onclick="return multiapprovalDoc('Approval')" })
+        @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Reject All").Name("RejectAll").HtmlAttributes(new { style="width: 170px;", onclick="return multiapprovalAllDoc('Reject')" })
+        @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Reject selected").Name("Reject").HtmlAttributes(new { style="width: 170px;", onclick="return multiapprovalDoc('Reject')" })
+    </div>
+</div>
+
+
+
+
+<script>
+    $(function () {
+        setPageHeading("Asset Transfer Approval");
+    });
+
+    function selectAllClicked3(checkBox) {
+        var grid = $("#NewUniformRequestDetailsGrid").data("kendoGrid");
+        var sel = $("input:checkbox", grid.tbody).closest("tr");
+
+        if (checkBox.checked == true) {
+
+
+            $.each(sel, function (idx, row) {
+                var item = grid.dataItem(row);
+
+                $(this).closest('tr').find('[type=checkbox]').prop('checked', true);
+                ItemIds.push(item.ApprovalHistoryID);
+                checkedIds[item.ApprovalHistoryID] = true;
+
+            });
+
+        }
+        else {
+            $('.NewUniformRequestClass').removeAttr('checked');
+            $.each(sel, function (idx, row) {
+                var item = grid.dataItem(row);
+                ItemIds = jQuery.grep(ItemIds, function (value) {
+                    return value != item.ApprovalHistoryID;
+                });
+                checkedIds[item.ApprovalHistoryID] = false;
+            });
+        }
+        if (ItemIds.length > 0)
+            $('#remarks').show();
+        else
+            $('#remarks').hide();
+    }
+    function removecheckbox(e) {
+        var headcheckbox = document.getElementById("selectAllUniformRequestID");
+        headcheckbox.attr('', checkBox.checked);
+
+    }
+    function enableGridRow3(e) {
+        var grid = $(e).closest("tr");
+    }
+    var grid = $("#NewUniformRequestDetailsGrid").data("kendoGrid");
+    var checkedIds = {};
+    var ItemIds = [];
+    grid.table.on("click", ".NewUniformRequestClass", selectRow);
+    //on click of the checkbox:
+    function selectRow() {
+        var checked = this.checked,
+            row = $(this).closest("tr"),
+            grid = $("#NewUniformRequestDetailsGrid").data("kendoGrid"),
+            dataItem = grid.dataItem(row);
+
+
+        if (checked) {
+            //-select the row
+
+            checkedIds[dataItem.id] = checked;
+            row.addClass("k-state-selected");
+            ItemIds.push(dataItem.id);
+
+
+        }
+        else {
+            //-remove selections
+            checkedIds[dataItem.id] = checked;
+            row.removeClass("k-state-selected");
+            ItemIds = jQuery.grep(ItemIds, function (value) {
+                return value != dataItem.id;
+            });
+
+        }
+        if (ItemIds.length > 0)
+            $('#remarks').show();
+        else
+            $('#remarks').hide();
+    }
+    function AssetTransferApprovalView(id) {
+
+        loadContentPage("/AssetTransferApproval/Details?id=" + id);
+    }
+    function AssetTransferApprovalEdit(id,updateRole,transferID) {
+        debugger;
+        if (updateRole == 0) {
+            loadContentPage("/AssetTransferApproval/Edit?id=" + id);
+        }
+        else 
+        {
+            loadContentPage("/AssetTransferFinalApproval/Index?id=" + id);
+        }
+    }
+
+</script>

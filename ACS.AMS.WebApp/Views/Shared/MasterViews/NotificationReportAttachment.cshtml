@@ -1,0 +1,130 @@
+﻿@model string
+<div class="col-xl-4">
+  
+    @(
+        Html.Kendo().DropDownList()
+        .Name("AttachmentFormatID")
+        .Value(Model)
+        .OptionLabel("Select AttachmentFormat")
+        .BindTo(ComboBoxHelper.GetAllAttachmentFormat())
+        )
+
+</div>
+@* <div class="col-xl-4">
+    <label for="fullname">@Html.FieldLabel("Report Name",true)</label> :
+    @(Html.Kendo().DropDownList().Name("ReportID")
+        .HtmlAttributes(new { style = "width:200px !important" })
+        .OptionLabel(Language.GetString("Select")).DataTextField("Text")
+        .DataValueField("Value")
+        .DataSource(source =>
+        {
+            source.Read(read =>
+            {
+                read.Action("GetReports", "DataService").Data("GetAdditionReportFilterParam");
+                
+            })
+            .ServerFiltering(true);
+        })
+        .Enable(true).AutoBind(true)
+
+        )
+</div> *@
+
+@* 
+<div class="col-xl-4">
+    <label for="fullname">@Html.FieldLabel("Report Filter 1",true)</label> :
+    @(
+        Html.Kendo().DropDownList()
+        .Name("AttachmentFormatID")
+        .OptionLabel("Select AttachmentFormat")
+        .BindTo(ComboBoxHelper.GetAllAttachmentFormat())
+        )
+
+</div>
+ *@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

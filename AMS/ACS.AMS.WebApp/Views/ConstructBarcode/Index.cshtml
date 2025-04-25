@@ -1,0 +1,524 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@using ACS.WebAppPageGenerator.Models.SystemModels;
+@using ACS.AMS.WebApp;
+@model BarcodeConstructTable
+@{
+    ViewBag.Title = "Index";
+
+}
+<script>
+      function checkedCustom() {       
+        if ($("#CustomCheckbox").is(':checked')) {           
+            var Categorytree = $("#CategoryID").data("kendoDropDownTree");
+            Categorytree.readonly();
+             var Locationtree = $("#LocationID").data("kendoDropDownTree");
+            Locationtree.readonly();
+            $("#CategoryID").val("");
+            var Depart = $("#DepartmentID").data("kendoMultiColumnComboBox");
+            Depart.readonly();
+              var Section = $("#SectionID").data("kendoMultiColumnComboBox");
+            Section.readonly();
+
+            $("#CategoryCode").val("");
+            $("#LocationID").val("");
+            $("#LocationCode").val("");
+            $("#DepartmentID").val("");
+            $("#SectionID").val("");
+          
+            $("#DepartmentCode").val("");
+            $("#SectionCode").val("");
+            
+
+            var numerictextbox = $("#CustomPrefixLength").data("kendoNumericTextBox");
+            numerictextbox.enable();
+            CountAsset();
+        }
+        else {
+            RemoveDetails();
+            CountAsset();
+        }
+    }
+    function RemoveDetails()
+    {
+        var Categorytree = $("#CategoryID").data("kendoDropDownTree");
+            Categorytree.enable();
+             var Locationtree = $("#LocationID").data("kendoDropDownTree");
+            Locationtree.enable();
+            $("#CategoryID").val("");
+            var Depart = $("#DepartmentID").data("kendoMultiColumnComboBox");
+            Depart.enable();
+              var Section = $("#SectionID").data("kendoMultiColumnComboBox");
+            Section.enable();
+
+            $("#CategoryCode").val("");
+            $("#LocationID").val("");
+            $("#LocationCode").val("");
+            $("#DepartmentID").val("");
+            $("#SectionID").val("");
+          
+            $("#DepartmentCode").val("");
+            $("#SectionCode").val("");
+              var numerictextbox = $("#CustomPrefixLength").data("kendoNumericTextBox");
+            numerictextbox.value("");
+            numerictextbox.enable(false);
+            $("#CustomPrefix").val("");
+            $("#validateCustom").remove();
+            $("#validateCustomLength").remove();
+
+    }
+      $("#CustomPrefixLength").on('change', function () {
+        $("#CustomPrefix").prop('readonly', false);
+        $("#CustomPrefix").val("");
+        CountAsset();
+     });
+    $("#CustomPrefix").keypress(function (e) {
+        if (this.value.length >= $("#CustomPrefixLength").val()) {
+            e.returnValue = false;
+            e.preventDefault();
+        }
+    });
+     function validate(evt) {
+        var theEvent = evt || window.event;
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode(key);
+        //var regex = /^[A-Za-z0-9 \b\s]*[A-Za-z0-9\b\s][A-Za-z0-9 \b\s]*$/;
+        var regex = /^[A-Za-z0-9 \b]*[A-Za-z0-9\b][A-Za-z0-9 \b]*$/;
+        if (!regex.test(key)) {
+            theEvent.returnValue = false;
+            if (theEvent.preventDefault) theEvent.preventDefault();
+        }
+    }
+    function CustomValidation() {
+        var flag = true;
+        if ($("#CustomCheckbox").is(':checked')) {
+            var numerictextbox = $("#CustomPrefixLength").data("kendoNumericTextBox");            
+            if ((numerictextbox.value() != "") && ($("#CustomPrefix").val() == "")) {
+                flag = false;
+                $("#validateCustom").remove();
+                $("#errCustom").after('<span style="color:red;font-weight:normal;" id="validateCustom">@Language.GetString("PleaseEnterCustomPrefix")</span>');
+                //return false;
+            }
+            if ((numerictextbox.value() == null) && ($("#CustomPrefix").val() != "")) {
+                flag = false;
+                $("#validateCustomLength").remove();
+                $("#errCustomLength").after('<span style="color:red;font-weight:normal;" id="validateCustomLength">@Language.GetString("PleaseEnterCustomPrefixLength")</span>');
+               // return false;
+            }
+            if ((numerictextbox.value() == null) && ($("#CustomPrefix").val() == "")) {
+                flag = false;
+                $("#validateCustom").remove();
+                $("#errCustom").after('<span style="color:red;font-weight:normal;" id="validateCustom">@Language.GetString("PleaseEnterCustomPrefix")</span>');
+                $("#validateCustomLength").remove();
+                $("#errCustomLength").after('<span style="color:red;font-weight:normal;" id="validateCustomLength">@Language.GetString("PleaseEnterCustomPrefixLength")</span>');
+                // return false;
+            }
+            if (flag) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        }
+
+        function Cleared() {
+           //  $("#CategoryID").val('');
+             $("#CategoryCode").val('');
+             $("#LocationCode").val('');
+             //$("#LocationID").val('');
+             var numerictextbox = $("#CustomPrefixLength").data("kendoNumericTextBox");
+                numerictextbox.value("");        
+                $("#CustomPrefix").val("");
+                $("#CustomCheckbox").removeAttr('checked');
+              
+             $("#DepartmentCode").val('');
+              $("#SectionCode").val('');
+           
+              
+            var Categorytree = $("#CategoryID").data("kendoDropDownTree");
+            Categorytree.text("");
+            Categorytree.value("");
+             var Locationtree = $("#LocationID").data("kendoDropDownTree");
+            Locationtree.text("");
+            Locationtree.value("");
+            // $("#CategoryID").val("");
+            var Depart = $("#DepartmentID").data("kendoMultiColumnComboBox");
+            Depart.text("");
+             Depart.value("");
+              var Section = $("#SectionID").data("kendoMultiColumnComboBox");
+            Section.text("");
+              Section.value("");
+                RemoveDetails();
+                CountAsset();
+
+        }
+        function checkLabelFormat() {
+            var flag = true;
+            var result = $("#FormatID").val();
+            var from = $("#textBoxFrom").val();
+            var noofAsset = $("#textBoxNoofAsset").val();
+             if (!result) {
+             flag = false;
+            if ($("#validateFormat").val() != "") {
+                $("#errFormatID").after('<span style="color:red;font-weight:normal;" id="validateFormat">Please Select Label format</span>');
+            }
+
+        }
+        else {
+            $("#validateFormat").remove();
+        }
+        if (!noofAsset) {
+        flag = false;
+        if ($("#validateNoofAsset").val() != "") {
+            $("#errorNoofAsset").after('<span style="color:red;font-weight:normal;" id="validateNoofAsset">Please Enter No of Assset</span>');
+        }
+        }
+        else {
+            $("#validateNoofAsset").remove();
+        }
+        if (!flag) {
+            return false;
+        }
+        else {
+        var printer = "0";
+           var numerictextbox = $("#CustomPrefixLength").data("kendoNumericTextBox");
+        var len=numerictextbox.value();
+        $.ajax({
+            url: "/DataService/CheckBarcodePrefixDetails",
+            type: "POST",
+            dataType: "json",
+            async: false,
+            data: {categoryCode: $("#CategoryCode").val(), locationCode: $("#LocationCode").val(), departmentCode: $("#DepartmentCode").val(), 
+                sectionCode: $("#SectionCode").val(), customPrefixLength: len, customPrefix: $("#CustomPrefix").val()
+            },
+            success: function (data) {
+                 if (data.datas == true) {
+                    $.ajax({
+                        url: "/ConstructBarcode/BarcodePrint",
+                        type: "POST",
+                        dataType: "json",
+                        async: false,
+                        data: {
+                            formatID: result, fromAsset: from, toAsset: noofAsset, categorycode: $("#CategoryCode").val(), locationCode: $("#LocationCode").val(),
+                            deptCode: $("#DepartmentCode").val(), sectCode: $("#SectionCode").val(), printer: printer
+                        },
+                        success: function (data) {
+                            if (data.directprint == "0") {
+                                CallPrint(data.rawData);
+                                loadDefaultPage("/ConstructBarcode/Index");
+                            }
+         }
+                    });
+                    return true;
+                }
+                else {
+                    alert("Please save the Prefix details");
+                    
+                }
+            }
+        });
+        
+    }
+
+
+        }
+        function OnCategoryChange(e)
+        {
+            var dropdowntree = $("#CategoryID").val();
+              $.ajax({
+            url: "/DataService/GetCategoryCode",
+            type: "POST",
+            dataType: "json",
+            async: false,
+            data: {categoryID: dropdowntree
+            },
+            success: function (data) {
+                  if (data.Success == true) {
+                      $("#CategoryCode").val(data.code)
+                  }
+            }
+              });
+
+        }
+         function OnLocationChange(e)
+        {
+            var dropdowntree = $("#LocationID").val();
+              $.ajax({
+            url: "/DataService/GetLocationCode",
+            type: "POST",
+            dataType: "json",
+            async: false,
+            data: {LocationID: dropdowntree
+            },
+            success: function (data) {
+                  if (data.Success == true) {
+                      $("#LocationCode").val(data.code)
+                  }
+            }
+              });
+
+        }
+        function OnDepartmentChange()
+        {
+              var combobox = $("#DepartmentID").data("kendoMultiColumnComboBox").value();
+                $.ajax({
+            url: "/DataService/GetDepartmentCode",
+            type: "POST",
+            dataType: "json",
+            async: false,
+            data: {deptID: combobox
+            },
+            success: function (data) {
+                  if (data.Success == true) {
+                      $("#DepartmentCode").val(data.code)
+                  }
+            }
+              });
+        }
+         function OnSectionChange()
+        {
+              var combobox = $("#SectionID").data("kendoMultiColumnComboBox").value();
+                $.ajax({
+            url: "/DataService/GetSectionCode",
+            type: "POST",
+            dataType: "json",
+            async: false,
+            data: {id: combobox
+            },
+            success: function (data) {
+                  if (data.Success == true) {
+                      $("#SectionCode").val(data.code)
+                  }
+            }
+              });
+        }
+    </script>
+@using (Html.AjaxBeginForm("Index","ConstructBarcode",DisplayHelper.GetAjaxOptions()))
+    {
+      
+<div class="list-container">
+    <div class="row">
+         <div class="col-xl-3">
+                <label class='radio-inline'>  @Html.CheckBox("CustomCheckbox", false, new { onchange = "checkedCustom()", ID = "CustomCheckbox" })Custom Prefix</label>
+             </div>
+    </div>
+    <div class="row" style="margin: 0px auto 10px;border-bottom: 1px solid #ccc;padding: 0px 5px 10px;">
+        
+        <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabel("Custom Prefix Length", false)</label> :</div>
+                  <div class="col-xl-3"> 
+                @(
+                    Html.Kendo().NumericTextBoxFor<Int32>(model=>model.CustomPrefixLength)
+                   .Format("########")
+                    .Min(0).Max(10)
+                    .HtmlAttributes(new { maxlength = "10", style = "width: 100%;" })
+                    )
+               <div id="errCustomLength"></div>    
+            </div>
+            <div class="col-xl-3">
+                @Html.TextBoxFor(model => model.CustomPrefix,new {Class="form-control",@readonly = "readonly" ,@onchange = "CountAsset();", @onkeypress="validate(event)" }) 
+                @Html.HiddenFor(model=>model.CustomPrefix) 
+                  <div id="errCustom"></div>
+            </div>
+    </div>
+        <div class="row" style="margin: 0px auto 10px;border-bottom: 1px solid #ccc;padding: 0px 5px 10px;">
+        <div class="row">
+          <div class="col-xl-3">
+               <label for="fullname">@Html.FieldLabel("Category", false)</label> : </div>
+                 <div class="col-xl-3"> 
+               @(Html.Kendo().DropDownTreeFor(model=>model.CategoryID)
+                                        .Label(label =>
+                                        {
+                                            label.Content("Select an category...");
+                                            label.Floating(true);
+                                        })
+                                        .DataTextField("Name")
+                                        .DataValueField("id")
+                                        .HtmlAttributes(new { style = "width: 100%" })
+                                        .Filter(FilterType.Contains)
+                                        .Events(e=>e.Change("OnCategoryChange"))
+                                        .DataSource(dataSource => dataSource
+                                            .Read(read => read
+                                            .Action("GetCategoryListForDDTree", "DataService")
+                                            )
+                                        )
+                                    )
+              </div>
+               <div class="col-xl-3">
+                   @Html.TextBoxFor(model => model.CategoryCode,new {Class="form-control",@readonly = "readonly",@onchange = "onchangeevent();"  })
+                   </div>
+                   </div>
+                    <div class="row">
+          <div class="col-xl-3">
+               <label for="fullname">@Html.FieldLabel("Location", false)</label> :</div>
+                <div class="col-xl-3">  @(Html.Kendo().DropDownTreeFor(model=>model.LocationID)
+                                        .Label(label =>
+                                        {
+                                            label.Content("Select an Location...");
+                                            label.Floating(true);
+                                        })
+                                        .DataTextField("Name")
+                                        .DataValueField("id")
+                                        .HtmlAttributes(new { style = "width: 100%" })
+                                        .Filter(FilterType.Contains)
+                                         .Events(e=>e.Change("OnLocationChange"))
+                                        .DataSource(dataSource => dataSource
+                                            .Read(read => read
+                                            .Action("GetLocationListForDDTree", "DataService")
+                                            )
+                                        )
+                                    )
+              </div>
+               <div class="col-xl-3">
+                   @Html.TextBoxFor(model => model.LocationCode,new {Class="form-control",@readonly = "readonly",@onchange = "onchangeevent();"  })
+                   </div>
+                   </div>
+                    <div class="row">
+          <div class="col-xl-3">
+               <label for="fullname">@Html.FieldLabel("Department", false)</label> :</div>
+               <div class="col-xl-3">  @(
+                                    Html.Kendo().MultiColumnComboBoxFor(model=>model.DepartmentID)
+                                    //.Name("DepartmentID")
+                                    .Placeholder("Select Department")
+                                    .DataTextField("DepartmentName")
+                                    .DataValueField("DepartmentID")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Add().Field("DepartmentCode").Title("Department Code").Width("100px");
+                                        columns.Add().Field("DepartmentName").Title("Department").Width("200px");
+                                    })
+                                    .HtmlAttributes(new { style = "width:100% !important;" })
+                                    .Events(e=>e.Change("OnDepartmentChange"))
+                                    .Filter(FilterType.Contains)
+                                    .FilterFields(new string[] { "DepartmentCode", "DepartmentName"})
+                                    .DataSource(source =>
+                                    {
+                                        source.Read(read =>
+                                        {
+                                            read.Action("GetAllDepartmentList", "DataService");
+                                        });
+                                    })
+                                    )
+              </div>
+               <div class="col-xl-3">
+                   @Html.TextBoxFor(model => model.DepartmentCode,new {Class="form-control",@readonly = "readonly",@onchange = "onchangeevent();"  })
+                   </div>
+                   </div>
+                    <div class="row">
+          <div class="col-xl-3">
+               <label for="fullname">@Html.FieldLabel("Section", false)</label> :</div>
+             <div class="col-xl-3">    @(
+                                    Html.Kendo().MultiColumnComboBoxFor(model=>model.SectionID)
+                                    //.Name("DepartmentID")
+                                    .Placeholder("Select Section")
+                                    .DataTextField("SectionName")
+                                    .DataValueField("SectionID")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Add().Field("SectionCode").Title("Section Code").Width("100px");
+                                        columns.Add().Field("SectionName").Title("SectionName").Width("200px");
+                                    })
+                                    .HtmlAttributes(new { style = "width:100% !important;" })
+                                    .Filter(FilterType.Contains)
+                                    .FilterFields(new string[] { "SectionCode", "SectionName"})
+                                    .DataSource(source =>
+                                    {
+                                        source.Read(read =>
+                                        {
+                            read.Action("GetAllSectionList", "DataService");
+                                        });
+                                    })
+                                    )
+              </div>
+               <div class="col-xl-3">
+                   @Html.TextBoxFor(model => model.SectionCode,new {Class="form-control",@readonly = "readonly",@onchange = "onchangeevent();"  })
+                   </div>
+                   </div>
+                    <div class="col-xl-12 text-right add-action-btns">
+                         @Html.Kendo().Button().Content("Save Prefix").Name("saveButton").HtmlAttributes(new {  type="submit", onclick="return CustomValidation();" })
+               
+                         @Html.Kendo().Button().Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="Cleared();" })
+                     
+                        </div>
+
+        </div>
+                    
+        <div class="row" style="margin: 0px auto 10px;border-bottom: 1px solid #ccc;padding: 0px 5px 10px;">
+             <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabel("Label Format", false)</label> :
+                 @(Html.Kendo().DropDownList().Name("FormatID").HtmlAttributes(new { Class = "k-textbox", style = "width: 100%;" })
+                                    .BindTo(ComboBoxHelper.GetLabelFormat(AMSContext.CreateNewContext())).OptionLabel("Select"))
+                <div id="errFormatID"></div>
+
+            </div>
+            </div>
+          <div class="row" style="margin: 0px auto 10px;border-bottom: 1px solid #ccc;padding: 0px 5px 10px;">
+                <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabel("From", true)</label> :
+                @{
+                    var res = BarcodeConstructTable.CompareData(AMSContext.CreateNewContext(), Model == null ? null : Model.CategoryCode, Model == null ? null : Model.LocationCode,
+                                                    Model == null ? null : Model.DepartmentCode, Model == null ? null : Model.SectionCode, Model == null ? null : Model.CustomPrefix);
+                    string BarcodeSeperator = AppConfigurationManager.GetValue<string>(AppConfigurationManager.BarcodeSeperator);
+                    int length = AppConfigurationManager.GetValue<int>(AppConfigurationManager.BarcodeNumericLength);
+                }
+                                            @if(res!=null)
+                {
+                    @Html.TextBox("textBoxFrom",  res.LastSeqNo+1,new { @Class = "form-control",@readonly = "readonly",style="min-width:50px" })
+                }
+                else
+                {
+                    @Html.TextBox("textBoxFrom",  1,new { @Class = "form-control",@readonly = "readonly",style="min-width:50px" })
+                }
+            </div>
+            <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabel("NoOfAsset", true)</label> :
+                @Html.TextBox("textBoxNoofAsset", 1, new { @Class = "form-control",@onchange="CountAsset();",Style="min-width:50px;", @onkeypress="return onlyNos(event,this);" })
+               @Html.Hidden("BarcodeSeperator",BarcodeSeperator)
+                @Html.Hidden("BarcodeNumericLength",length)
+
+                <div id="errorNoofAsset"></div>
+                </div>
+                 <div class="col-xl-3">
+                     <label for="fullname">@Html.FieldLabel("AssetFrom", true)</label> :
+                     @Html.TextBox("textBoxAssetFrom", null, new { @Class = "form-control",@readonly = "readonly",Style="width:150px" }) 
+                     </div>
+                      <div class="col-xl-3">
+                     <label for="fullname">@Html.FieldLabel("AssetTo", true)</label> :
+                     @Html.TextBox("textBoxAssetTo", null, new { @Class = "form-control",@readonly = "readonly",Style="width:150px" })
+                     </div>
+                      <div class="col-xl-12 text-right add-action-btns">
+                @Html.Kendo().Button().Content("Print Barcode").Name("searchButton").HtmlAttributes(new { onclick = " return checkLabelFormat();" })
+                        
+                        </div>
+            </div>
+
+        </div>
+  
+}
+
+
+<script>
+    $(function () {
+        setPageHeading("Construct Barcode Printing");
+        CountAsset();
+    });
+     function CountAsset() {
+       
+        var spe = $("#BarcodeSeperator").val();
+        var res =  $("#BarcodeNumericLength").val();
+        var val = $("#textBoxFrom").val()
+        var to = $("#textBoxNoofAsset").val();
+        var chk = (parseInt(val) - 1) + parseInt(to);
+        var cate = (document.getElementById("CategoryCode").value) != '' ? document.getElementById("CategoryCode").value + spe : document.getElementById("CategoryCode").value;
+         var loc = (document.getElementById("LocationCode").value) != '' ? document.getElementById("LocationCode").value + spe : document.getElementById("LocationCode").value;
+        var dept = (document.getElementById("DepartmentCode").value) != '' ? document.getElementById("DepartmentCode").value + spe : document.getElementById("DepartmentCode").value;
+        var sect = (document.getElementById("SectionCode").value) != '' ? document.getElementById("SectionCode").value + spe : document.getElementById("SectionCode").value;
+        var custom = (document.getElementById("CustomPrefix").value) != '' ? document.getElementById("CustomPrefix").value + spe : document.getElementById("CustomPrefix").value;
+        document.getElementById("textBoxAssetFrom").value = cate + loc + dept + sect +custom+ pad(val, res);
+        document.getElementById("textBoxAssetTo").value = cate + loc + dept + sect +custom+ pad(chk, res);
+    }
+    
+</script>

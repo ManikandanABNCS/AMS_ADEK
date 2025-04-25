@@ -1,0 +1,120 @@
+﻿@model string
+<script>
+
+    function NotificationType() {
+        
+        if (this.value() && this.selectedIndex == -1) {
+            alert('Please select a valid value from the list');
+            this.value('');
+            return;
+        }
+        var val = $("#NotificationTypeID").data("kendoComboBox").text();
+        if (val!="")
+        {
+        $.ajax({
+            url: "/DataService/GetNotificationTypeDetails",
+            type: "GET",
+            dataType: "json",
+            async: false,
+            data: {
+                notificationTypeID: this.value()
+            },
+            success: function (response) {
+                
+                $("#IsHtmlContent").val(response.IsHtmlContent);
+                $("#IsAttachmentRequired").val(response.IsAttachmentRequired);
+                if (response.IsAttachmentRequired) {
+                    $("#divEmailSignature").show();
+                    $("#divAttachmentFormat").show();
+                    $("#divReport").show();
+                    $("#divSourceField1").show();
+                    $("#divSourceField2").show();
+                    $("#divSourceField3").show();
+                    $("#divDestinationField1").show();
+                    $("#divDestinationField2").show();
+                    $("#divDestinationField3").show();
+                }
+                else {
+                    $("#divEmailSignature").hide();
+                    $("#divAttachmentFormat").hide();
+                    $("#divReport").hide();
+                    $("#divSourceField1").hide();
+                    $("#divSourceField2").hide();
+                    $("#divSourceField3").hide();
+                    $("#divDestinationField1").hide();
+                    $("#divDestinationField2").hide();
+                    $("#divDestinationField3").hide();
+                }
+                if (response.IsHtmlContent) {
+                    $("#templateHeaderTool").closest(".k-widget").parent().show();
+                    //$("#templateTool").closest(".k-widget").parent().show();
+                    $("#divTemplateDetailsBodyContent").show();
+                    $("#TemplateSMSContent").hide();
+                    $("#TemplateTableContent").show();
+                    $("#templateFooterTool").closest(".k-widget").parent().show();
+                }
+                else {
+                    $("#templateHeaderTool").closest(".k-widget").parent().hide();
+                    //$("#templateTool").closest(".k-widget").parent().show();
+                    $("#divTemplateDetailsBodyContent").show();
+                    $("#TemplateSMSContent").show();
+                    $("#TemplateTableContent").hide();
+                    $("#templateFooterTool").closest(".k-widget").parent().hide();
+                }
+            },
+            failure: function (response) {
+                alert(response.responseText);
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+        });
+        }
+        else
+        {
+            $("#divEmailSignature").hide();
+            $("#divAttachmentFormat").hide();
+            $("#divReport").hide();
+            $("#divSourceField1").hide();
+            $("#divSourceField2").hide();
+            $("#divSourceField3").hide();
+            $("#divDestinationField1").hide();
+            $("#divDestinationField2").hide();
+            $("#divDestinationField3").hide();
+            $("#templateHeaderTool").closest(".k-widget").parent().hide();
+            //$("#templateTool").closest(".k-widget").parent().show();
+            $("#divTemplateDetailsBodyContent").hide();
+            $("#TemplateSMSContent").hide();
+            $("#TemplateTableContent").hide();
+            $("#templateFooterTool").closest(".k-widget").parent().hide();
+        }
+    }
+</script>
+@Html.Hidden("IsAttachmentRequired")
+@Html.Hidden("IsHtmlContent")
+@(
+Html.Kendo().ComboBox()
+        .Name("NotificationTypeID")
+        .Value(Model != "0" ? Model : "")
+        .Placeholder("Select Notification Type")
+        .BindTo(ComboBoxHelper.GetAllNotificationTypes())
+           .Events(e =>
+           {
+
+               @* if (Model=="0")
+               {*@
+               e.Change("NotificationType");
+               @*}
+               else
+               {
+
+               }*@
+
+           }
+           )
+
+
+)
+<div id="errTypeID"></div>
+
+

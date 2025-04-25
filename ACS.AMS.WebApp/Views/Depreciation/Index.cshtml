@@ -1,0 +1,238 @@
+﻿@model List<PeriodModel>
+@{
+    ViewBag.Title = "Index";
+
+}
+@using (Html.AjaxBeginForm("Index","Depreciation",DisplayHelper.GetAjaxOptions()))
+    {
+      
+<div class="list-container">
+
+      <div id="loadingmaskApproval" style="display: none;">
+             <img src="~/css/images/loading.gif" />       
+        </div>
+  
+    @(
+        Html.Kendo().Grid(Model)
+                .Name("DetailsGrid")
+                .Columns(columns =>
+                {
+                    columns.Bound(o => o.PeriodID).Width(5).Filterable(false).Title("Select")
+                               .HeaderHtmlAttributes(new { @style = "font-weight:bold; text-align: left" })
+                               .Sortable(false).Filterable(false)
+                                 .ClientTemplate("# if ( Status=='Open' && nextRecord==1) { #" +
+                               "<input type='checkbox' name='PeriodID' id='PeriodID' value='#=PeriodID #'/>" +
+                               "# } else {#" +
+                                "<input type='checkbox' name='PeriodID' id='PeriodID' value='#=PeriodID #'  disabled='disabled'/> # } #");
+                    if (SessionUser.HasRights(RightNames.Depreciation, UserRightValue.Delete))
+                    {
+                        columns.Bound(p => p.PeriodID).Title(Language.GetString("Undo")).Filterable(false).Sortable(false).Width(30).ClientHeaderTemplate("<label><input id='selectAllPeriodID' name='selectAllPeriodID' type='checkbox' onclick='selectAllPeriods(this)'/>  Undo</label>")
+                                       .ClientTemplate("# if ( Status=='Open') { #" +
+                                       "<input type='checkbox' name='PeriodID' id='PeriodID' value='#=PeriodID #' onclick='enableGridRow(this)' class='AssetClass' style='width:18px;' disabled='disabled'  />" +
+                                       "# } else {#" +
+                                       "<input type='checkbox' name='PeriodID' id='PeriodID' value='#=PeriodID #' onclick='enableGridRow(this)' class='AssetClass' style='width:18px;'  /># } #");
+                    }
+                    if (SessionUser.HasRights(RightNames.Depreciation, UserRightValue.Details))
+                    {
+                        columns.Template("<center><a class='k-button-icontext' id='#=PeriodID#' href='javascript:DepreciationViewFunction(#=PeriodID#, \"#= Status #\")'><img src='/css/images/view.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                    .Title(Language.GetString("Details")).Width(50);
+                   @*  columns.Bound(p => p.PeriodID).Title(Language.GetString("View")).HeaderHtmlAttributes(new { @style = "font-weight:bold" })
+                                        .Width(60)
+                                           .ClientTemplate("# if (Status !='Open' ) { #" +
+                                       "<a class='abutton view' href='javascript:DepreciationViewFunction(\"#=PeriodID #\")'><span class='abutton view' title='" + Language.GetToolTipText("View") + "'></span></a>" +
+                                        "# } else {# " +
+                                        "<a class='abutton view' ><span class='abutton view' title='" + Language.GetToolTipText("View") + "'></span></a> # } #"); *@
+                    }   
+                    columns.Bound(o => o.PeriodName).Title(Language.GetString("PeriodName")).Width(50).HeaderHtmlAttributes(new { @style = "font-weight:bold" })
+                                         .ClientTemplate("<div style='width:100px;' class = 'tableContent' title='#=PeriodName #'>#=PeriodName #</div>");
+                    columns.Bound(o => o.StartDate).Title(Language.GetString("StartDate")).Width(50).HeaderHtmlAttributes(new { @style = "font-weight:bold" })
+                                        .Format("{0:" + CultureHelper.ConfigureDateFormat + "}");
+                    columns.Bound(o => o.EndDate).Title(Language.GetString("EndDate")).Width(50).HeaderHtmlAttributes(new { @style = "font-weight:bold" })
+                                        .Format("{0:" + CultureHelper.ConfigureDateFormat + "}");
+                    columns.Bound(o => o.Status).Title(Language.GetString("Status")).Width(150).HeaderHtmlAttributes(new { @style = "font-weight:bold" })
+                                         .ClientTemplate("<div style='width:200px;' class = 'tableContent' title='#=Status #'>#=Status #</div>");
+                    columns.Bound(p => p.lastField).ClientTemplate("<input type='hidden' name='lastField' value='#=lastField #'/>").Width(0).Hidden();
+                    columns.Bound(p => p.nextRecord).ClientTemplate("<input type='hidden' name='nextRecord' value='#=nextRecord #'/>").Width(0).Hidden();
+                    columns.Bound(p => p.PeriodYear).ClientTemplate("<input type='hidden' name='PeriodYear' value='#=PeriodYear #'/>").Width(0).Hidden();
+
+        })
+        .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+        {
+            o.ForString(t => t
+            .Clear()
+            .Contains("Contains")
+            .DoesNotContain("Does Not Contains")
+            .IsEqualTo("Equal To")
+            .IsNotEqualTo("Not EqualTo")
+            .StartsWith("Starts With")
+            .EndsWith("Ends With")
+            );
+        })
+        )
+        .Sortable().Selectable().Pageable()
+        .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+        .DataSource(datasource => datasource
+        .Ajax().Model(p => p.Id(x => x.PeriodID)).PageSize(10)
+        .Read(read => read.Action("_Index", "Depreciation")))
+        )
+        <div class="col-xl-12 text-right add-action-btns">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Depreciation").Name("Depreciation").HtmlAttributes(new { @class = "saveButton", style = "width: 170px;", type = "submit" })
+@*             @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Undo All").Name("UndoAll").HtmlAttributes(new { @class = "cancelButton", style = "width: 170px;", onclick = "DepreciationUndoAll();" }) *@
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Undo Selected").Name("UndoSelected").HtmlAttributes(new { @class = "saveButton", style = "width: 170px;", onclick = "DepreciationUndoSelected();" })
+        
+    </div>
+</div>
+
+}
+
+
+<script>
+    $(function () {
+        setPageHeading("Depreciation List");
+    });
+     var grid = $("#DetailsGrid").data("kendoGrid");
+    var checkedIds = {};
+    var ItemIds = [];
+    grid.table.on("click", ".AssetClass", selectRow);
+
+    function removecheckbox(e) {
+        var headcheckbox = document.getElementById("selectAllAssetID");
+        headcheckbox.attr('', checkBox.checked);
+
+    }
+    function enableGridRow(e) {
+        var grid = $(e).closest("tr");
+
+    }
+
+    ////on click of the checkbox:
+    function selectRow() {
+        debugger;
+        var checked = this.checked,
+        row = $(this).closest("tr"),
+        grid = $("#DetailsGrid").data("kendoGrid"),
+        dataItem = grid.dataItem(row);
+        checkedIds[dataItem.id] = checked;
+
+        if (checked) {
+            //-select the row
+            row.addClass("k-state-selected");
+            ItemIds.push(dataItem.id);
+        } else {
+            //-remove selections
+            row.removeClass("k-state-selected");
+
+            ItemIds = jQuery.grep(ItemIds, function (value) {
+                return value != dataItem.id;
+            });
+
+        }
+    }
+     function DepreciationUndoAll() {
+         var gridDataSource = $("#DetailsGrid").data('kendoGrid').dataSource;
+         if (gridDataSource._view.length == 0) {
+             return;
+         }
+         else {
+
+             $("#loadingmaskApproval").css("display", "block");
+             DepreciationAllDetails();
+         }
+     }
+     function DepreciationAllDetails() {
+         $("#loadingmaskApproval").css("display", "block");
+         $.ajax({
+             url: "/Depreciation/UndoAll",
+             type: "POST",
+             dataType: "json",
+             success: function (data) {
+                 if (data.Result == "Success") {
+                     showSuccessMessage(data.message);
+                     $("#loadingmaskApproval").css("display", "none");
+                     loadDefaultPage("/Depreciation/Index");
+                 }
+                 else {
+                     alert(data.message);
+                     $("#loadingmaskApproval").css("display", "none");
+                     loadDefaultPage("/Depreciation/Index");
+                 }
+             },
+             Complete: function () {
+                 $("#loadingmaskApproval").css("display", "none");
+                 loadDefaultPage("/Depreciation/Index");
+
+             },
+             error: function (data) {
+                 $("#loadingmaskApproval").css("display", "none");
+                 loadDefaultPage("/Depreciation/Index");
+             }
+         });
+     }
+      function DepreciationUndoSelected() {
+          debugger;
+         var flag = false;
+         if (ItemIds.length > 0) {
+             flag = true;
+         }
+         if (flag == true) {
+             $("#loadingmaskApproval").css("display", "block");
+             DepreciationForUndo(ItemIds);
+             return true;
+         }
+         else {
+             alert("Select Any One Period For Undo");
+             return false;
+         }
+     }
+     function DepreciationForUndo(items) {
+         $("#loadingmaskApproval").css("display", "block");
+         $.ajax({
+             url: "/Depreciation/SelectedUndo",
+             type: "POST",
+             dataType: "json",
+             async: false,
+             data: { ids: items },
+             success: function (data) {
+                 if (data.Result == "Success") {
+                     showSuccessMessage(data.message);
+                     $("#loadingmaskApproval").css("display", "none");
+                     loadDefaultPage("/Depreciation/Index");
+                 }
+                 else {
+                     alert(data.message);
+                     $("#loadingmaskApproval").css("display", "none");
+                     loadDefaultPage("/Depreciation/Index");
+                 }
+             },
+             Complete: function () {
+                 $("#loadingmaskApproval").css("display", "none");
+                 loadDefaultPage("/Depreciation/Index");
+
+             },
+             error: function (data) {
+                 $("#loadingmaskApproval").css("display", "none");
+                 loadDefaultPage("/Depreciation/Index");
+             }
+         });
+     }
+     function DepreciationUndofunction(periodID) {
+         $.ajax({
+             url: '/Depreciation/Undo',
+             type: "Post",
+             async: false,
+             data: { id: periodID },
+         });
+     }
+    function DepreciationViewFunction(id,status) {
+      
+         if(status !='Open')
+         {
+         loadContentPage("/Depreciation/Details?id=" + id);
+         }
+         else
+         {
+             alert("After Depreciation Can View Details");
+         }
+     }
+
+</script>

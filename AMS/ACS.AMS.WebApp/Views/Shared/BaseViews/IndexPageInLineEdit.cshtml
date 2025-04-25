@@ -1,0 +1,24 @@
+﻿@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+
+}
+
+<div class="list-container">
+    @{
+        IndexPageInLineEditHelper<IndexPageModel> indexPage = new IndexPageInLineEditHelper<IndexPageModel>(Model)
+            {
+                Url = this.Url
+            };
+
+        indexPage.CreateGridControl(this.Html);
+    }
+
+</div>
+
+<script>
+    $(function () {
+        setPageHeading('@Language.GetPageTitle(Model.PageTitle) List');
+    });
+
+</script>

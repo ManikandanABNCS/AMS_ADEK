@@ -1,0 +1,54 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@model NotificationTemplateModel
+
+@{
+    int NotificationTemplateID = Model.NotificationTemplateID != null ? (int)Model.NotificationTemplateID : 0;
+    var data = AMSContext.CreateNewContext();
+    var FieldList = ComboBoxHelper.GetAvailableTemplateTableFields(data, Model.NotificationModuleID, NotificationTemplateID);
+    var SelectedFields = ComboBoxHelper.GetSelectedTemplateTableFields(data, Model.NotificationModuleID, NotificationTemplateID);
+
+}  
+
+    <script language="javascript" type="text/javascript">
+    $('#lstSelectedFields').children().remove();
+    $('#lstAvailableFields').children().remove();
+ @{
+
+        if (SelectedFields != null)
+    {
+            foreach (var selectfield in SelectedFields)
+        {
+                    <text>
+
+                    $('#lstSelectedFields').append('<option value="@selectfield.Value">@selectfield.Text</option>');
+                    </text>
+         }
+    }
+
+        foreach (var field in FieldList)
+         {
+            var itmCount = (from b in SelectedFields where b.Text == field.Text select b).Count();
+                if (itmCount > 0)
+                {
+                    continue;
+                }
+            <text>
+                $('#lstAvailableFields').append('<option value="@field.Value">@field.Text</option>');
+            </text>
+            }
+
+    }
+    $(document).ready(function () {
+            $("#lstSelectedFields option").each(function () {
+            $(this).attr("title", $(this).text());
+        });
+    });
+    $(document).ready(function () {
+        $("#lstAvailableFields option").each(function () {
+            $(this).attr("title", $(this).text());
+        });
+    });
+ </script>

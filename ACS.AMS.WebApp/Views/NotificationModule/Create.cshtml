@@ -1,0 +1,151 @@
+﻿@model NotificationModuleTable
+@{
+    ViewBag.Title = "Create";
+    string PageName = ViewBag.PageName;
+}
+<script>
+    var objectName = null;
+    var objectType = null;
+
+    function dbObjectSelected(e1, e2) {
+        
+        var selectedItem = this.dataItem(e1.item.index());
+        objectName = selectedItem.ObjectName;
+        objectType = selectedItem.ObjectType;
+
+        //if ($("#ReportTemplateName").val() == "") {
+        var templateName = objectName;
+        if (templateName.toLowerCase().startsWith("rprc_"))
+            var templateName = templateName.substring(5);
+        else
+            if (templateName.toLowerCase().startsWith("rprc"))
+                var templateName = templateName.substring(4);
+            else
+                if (templateName.toLowerCase().startsWith("rvw_"))
+                    var templateName = templateName.substring(4);
+                else
+                    if (templateName.toLowerCase().startsWith("rvw"))
+                        var templateName = templateName.substring(3);
+
+
+        Notification_QueryObjectChanged("Create", objectName, objectType, GetCurrentPageID(), loadFieldDetails_Delayed);
+    }
+
+    function loadFieldDetails_Delayed() {
+        prm = { pageNumber: 0, currentPageID: GetCurrentPageID() };
+        loadContentPageToControl("@Url.Action("NotificationModuleFields")?" + $.param(prm), "NotificationFieldGrid", false);
+    }
+
+    function GetCurrentPageID() {
+        return $("#CurrentPageID").val();
+    }
+</script>
+
+ 
+    @using (Html.AjaxBeginForm("NotificationModuleCreate", "NotificationModule", DisplayHelper.GetAjaxOptions()))
+    {
+    <div class="list-container">
+        <div class="row k-text-error">
+            @* @Html.ValidationSummary()*@
+            @Html.ValidationMessage("12")
+        </div>
+        <div class="row">
+            @Html.HiddenFor(model => model.CurrentPageID)
+            @Html.Hidden("pageName", PageName)
+            <div class="col-xl-4">
+
+                <label for="fullname">@Html.LabelFor(model => model.NotificationModule, true)</label>
+                @(Html.TextBoxFor(model => model.NotificationModule, new { Class = "form-control" })
+                    )
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.NotificationModule, "", new { @class = "text-danger" })</p>
+                <div id="errReportTemplateName"></div>
+
+            </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.Label("QueryObject")</label>
+                @(Html.Kendo().MultiColumnComboBoxFor(model => model.QueryString)
+                    .DataTextField("DisplayValue")
+                    .DataValueField("ObjectID")
+                    .Columns(columns =>
+                    {
+                        columns.Add().Field("ObjectName").Title("Object Name").Width("300px");
+                        columns.Add().Field("ObjectType").Title("Type").Width("100px");
+                    })
+                    .AutoBind(true)
+                    .Filter(FilterType.Contains)
+                    .Events(e => e.Select("dbObjectSelected"))
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetNotificationDBObjectsForMCombobox", "DataService");
+                        });
+                    })
+                    )
+            @* @Html.HiddenFor(model=>model.QueryString," ")*@
+                @Html.HiddenFor(model=>model.QueryType," ")
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.QueryString, "", new { @class = "text-danger" })</p>
+                <div id="errProcedureName"></div>
+
+            </div>
+            <div class="col-xl-4">
+
+                <label for="fullname">@Html.LabelFor(model => model.ReportTemplate, true)</label>
+                @(Html.Kendo().MultiColumnComboBoxFor(model => model.ReportTemplateID)
+                    .DataTextField("ReportTemplateName")
+                    .DataValueField("ReportTemplateID")
+                    .Columns(columns =>
+                    {
+                        columns.Add().Field("ReportTemplateName").Title("ReportTemplateName").Width("300px");
+                        columns.Add().Field("ProcedureName").Title("ProcedureName").Width("300px");
+                        columns.Add().Field("ReportTemplateFile").Title("ReportTemplateFile").Width("100px");
+                    })
+                    .AutoBind(false)
+                    .Filter(FilterType.Contains).HtmlAttributes(new { Style = "Width:100%" })
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetAllReportTemplate", "DataService");
+                        }).ServerFiltering(true);
+                    })
+
+                    )
+               
+
+            </div>
+
+            <div class="col-xl-4">
+
+            </div>
+
+           
+            <div class="col-xl-6" id="NotificationFieldGrid">
+            </div>
+
+            <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type="submit" })
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick=$"LoadIndexPage('NotificationModule','{PageName}')" })
+            </div>
+           
+          
+        </div>
+    </div>
+}
+
+
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("Notification Module Create");
+        ProcedureChange();
+    });
+
+    function ProcedureChange() {
+        //ReloadFilterFields();
+
+        prm = { pageNumber: 0, currentPageID: GetCurrentPageID() };
+        loadContentPageToControl("@Url.Action("NotificationModuleFields")?" + $.param(prm), "NotificationFieldGrid", false);
+    }
+</script>
+<script src="~/acsscript/common.js"></script>

@@ -1,0 +1,54 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@model int
+
+@{
+    var data = AMSContext.CreateNewContext();
+    int userID = Model;
+    var rolelist = ComboBoxHelper.GetAvailableRole(data, userID);
+    var SelectedRoles = ComboBoxHelper.GetSelectedRole(data, userID);
+
+}  
+
+    <script language="javascript" type="text/javascript">
+    $('#lstSelectedRoles').children().remove();
+        $('#lstAvailableRoles').children().remove();
+        @{
+
+    if (SelectedRoles != null)
+    {
+        foreach (var role in SelectedRoles)
+        {
+                    <text>
+
+        $('#lstSelectedRoles').append('<option value="@role.Value">@role.Text</option>');
+            </text>
+                }
+            }
+
+            foreach (var role in rolelist)
+            {
+                var itmCount = (from b in SelectedRoles where b.Text == role.Text select b).Count();
+                if (itmCount > 0)
+                {
+                    continue;
+                }
+    <text>
+        $('#lstAvailableRoles').append('<option value="@role.Value">@role.Text</option>');
+        </text>
+     }
+
+    }
+    $(document).ready(function () {
+        $("#lstSelectedRoles option").each(function () {
+            $(this).attr("title", $(this).text());
+        });
+    });
+    $(document).ready(function () {
+        $("#lstAvailableRoles option").each(function () {
+            $(this).attr("title", $(this).text());
+        });
+    });
+ </script>

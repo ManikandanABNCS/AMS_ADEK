@@ -1,0 +1,116 @@
+﻿@using ACS.AMS.DAL
+@model DashboardTemplateTable
+<script>
+    function dbObjectSelected(e1, e2) {
+        var selectedItem = this.dataItem(e1.item.index());
+        var objectName = selectedItem.ObjectName;
+        var objectType = selectedItem.ObjectType;
+
+        if ($("#ReportTemplateName").val() == "") {
+            var templateName = objectName.substring(3);
+            if (templateName.startsWith("_"))
+                var templateName = templateName.substring(1);
+
+            $("#ReportTemplateName").val(templateName);
+        }
+
+        var prm = { screen: "Create", queryName: objectName, queryType: objectType, pageNumber: 0, currentPageID: $("#CurrentPageID").val() };
+        loadContentPageToControl("@Url.Action("ReportTemplateFilterFields")?" + $.param(prm), "ReportFilterFieldGrid", false);
+    }
+</script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+    
+@Html.HiddenFor(model => model.CurrentPageID) 
+    @Html.HiddenFor(model => model.DashboardTemplateID)
+@Html.HiddenFor(model => model.QueryString) 
+    @Html.HiddenFor(model => model.StatusID)
+@Html.HiddenFor(model => model.ObjectID) 
+    <div class="list-container">
+        <div class="row">
+            <div class="validationMessage">
+            </div>
+
+            <div class="col-xl-4">
+                @Html.Label("QueryObject") <span style='color: red'>* </span>
+
+                @Html.TextBox("QueryString", Model.QueryString, new { disabled = "disabled", Class = "form-control" })
+                @Html.ValidationMessageFor(model => model.QueryString, " ") 
+                    <div id="errProcedureName"></div>
+            </div>
+               
+                    <div class="col-xl-4">
+                @Html.Label("DashboardTemplateName")
+                <span style='color: red'>* </span>
+                @Html.TextBoxFor(model => model.DashboardTemplateName, new { disabled = "disabled", Class = "form-control" })
+                @Html.ValidationMessageFor(model => model.DashboardTemplateName, " ")
+                <div id="errReportTemplateName"></div>
+            </div>
+            <div class="col-xl-4">
+                @Html.Label("Remarks")
+
+                @Html.TextAreaFor(model => model.Remarks, 3, 40, new { disabled = "disabled", Class = "form-control" })
+                @Html.ValidationMessageFor(model => model.Remarks, " ")
+            </div>
+             <div class="col-xl-4">
+                   @* @Html.Label("Report Template File") 
+
+                    @Html.TextBox("ReportTemplateName", Model.ReportTemplateFile, new {disabled="disabled", Class="form-control" }) 
+                    @Html.ValidationMessageFor(model => model.ReportTemplateFile, " ")*@
+            </div>
+
+
+            <div class="form-group col-12 col-sm-6 col-md-12">
+            </div>
+            <div class="col-xl-6" id="DashboardFieldGrid">
+            </div>
+
+            <div class="col-xl-6" id="DashboardFilterFieldGrid">
+            </div>
+
+            <div class="col-xl-12 text-right add-action-btns">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick = "loadIndexPage('DashboardTemplate')" })
+            </div>
+           
+            
+        </div>
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                EntryPageModel newModel = new EntryPageModel()
+                {
+
+                    EntityInstance = Model as BaseEntityObject,
+                    ControllerName = this.GetType().Name.Substring(0, this.GetType().Name.Length - "Controller".Length),
+                };
+                Html.RenderPartial("BaseViews/AuditLogSingleView", newModel);
+            }
+        </div>
+</div>
+}
+<script language="javascript" type="text/javascript">
+    function GetCurrentPageID() {
+        return $("#CurrentPageID").val();
+    }
+    $(function () {
+        
+        setInitialFocus("@(ViewData.ContainsKey("FocusControl")?ViewData["FocusControl"]:"ReportTemplateName") ");
+        setPageHeading("@Language.GetPageTitle("Dashboard Template Details") ");
+        //setActionHeading("@Language.GetPageTitle("Details") ");
+
+        ProcedureChange();
+    });
+    function ProcedureChange() {
+        prm = { pageNumber: 0, currentPageID: GetCurrentPageID(), detailsPage: true };
+
+        loadContentPageToControl("@Url.Action("DashboardTemplateFilterFields")?" + $.param(prm), "DashboardFilterFieldGrid", false);
+        loadContentPageToControl("@Url.Action("DashboardTemplateFields")?" + $.param(prm), "DashboardFieldGrid", false);
+    }
+
+</script>

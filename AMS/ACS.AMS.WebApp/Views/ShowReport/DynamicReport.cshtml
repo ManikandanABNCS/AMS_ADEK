@@ -1,0 +1,223 @@
+﻿
+    @model int
+
+<script>
+    function loadReportTemplateID() {
+        return {
+            reportTemplateID: @ViewBag.ReportTemplateID 
+        };
+    }
+    function filterforReports() {
+        return {
+            screenFilterName: "Report_<%:ViewBag.ReportTemplateName"
+        };
+    }
+
+    function setRequiredAttr(ctrlName) {
+        var obj = $("#" + ctrlName).data("kendoMultiColumnComboBox");
+
+        if (obj != null) {
+            //if (evt.sender.dataSource.data().length < 1) {
+            //    evt.sender.element.removeAttr("data-val-required");
+            //}
+            //else {
+
+            obj.element.attr("required", "required");
+            obj.element.attr("data-val", "true");
+            obj.element.attr("data-val-required", "This field " + ctrlName + " is required, please choose an option.");
+            //}
+        }
+    }
+</script>
+<style>
+    .ir-dfrm label {
+        display: block;
+        margin-top: 10px;
+    }
+
+    .ir-dfrm input {
+        width: 100%;
+    }
+
+    .entry_wrap > table.entry tr td.ir-dfrm-td {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    button.btn.btn-arrow {
+        margin: 5%;
+        width: 90%;
+    }
+
+    button.btn.btn-btarrow {
+        margin: 2px;
+    }
+</style>
+
+ 
+<form asp-action="GenerateReport" id="myForm" target="_blank"> 
+    <div class="list-container">
+<input type="hidden" name="hdnParameter" id="hdnParameter" value="" />
+<div class="validationMessage" id="validationSummary">
+    @Html.ValidationSummary()
+</div>
+
+        <table class="entry" style="width: 100%;">
+            <tr>
+                <td colspan="2" class="ir-dfrm-td">
+                    <div class="ir-dfrm">
+                        <div class="row">
+                                @{
+                                    DisplayHelper.RenderDynamicFields(this.Html, this, Model, "Report");
+                                }@*//shows error cannot convert void to object*@
+
+                            <div class="col-12 col-sm-4">
+                                @Html.FieldLabel("ReportTemplate", true) 
+
+                              @( Html.Kendo().DropDownList()
+                                    .Name("ReportTemplate")
+                                    .SelectedIndex(0)
+                                    //.Events(e => e.Change("GetReportSearchData"))
+                                    .BindTo(ComboBoxHelper.GetDynamciReportTemplate(Model))
+                                    .HtmlAttributes(DisplayHelper.GetMandatoryFieldAttributes("ReportFormat"))
+                                )
+
+                                <span class="field-validation-error" data-valmsg-for="ReportTemplate" data-valmsg-replace="false"></span>
+                            </div>
+
+                            <div class="col-12 col-sm-4">
+                                @Html.FieldLabel("ReportFormat") 
+
+                               @( Html.Kendo().DropDownList()
+                                    .Name("ReportFormat").SelectedIndex(0)
+                                    .BindTo(ComboBoxHelper.GetReportFormat())
+                                )
+                            </div>
+
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+            </tr>
+
+        </table>
+
+        <table style="width: 100%; margin-top: 2%;">
+            <tr>
+                <td>
+                    <div class="col-12 col-sm-4">
+                        @{
+                                AMSContext db = AMSContext.CreateNewContext();
+                            int reportTemplateId = (int)ViewBag.ReportTemplateID;
+                            var avaliableList = ReportTemplateFieldTable.GetAllReportFieldsForEdit(db, reportTemplateId);
+                        }
+
+                        <table style="width: 640px !important; margin: 0px auto;">
+
+                            <tr>
+                                <td style="width: 320px;">
+                                    <label>@Language.GetString("AvailableOrderbyFields") </label>
+                                    @(Html.ListBox("lstAvailableOrderbyFields", new SelectList(avaliableList,  "Value","Text"), new { @Class="listBoxClass" }))
+                                    
+                                </td>
+
+                                <td>
+                                    <button type="button" title="@Language.GetToolTipText("SelectField") " class="btn btn-arrow" onclick="addOrderbyTemplate('asc')">
+                                        <i class="fa fa-angle-double-right"></i>&nbsp; asc</button>
+                                    <button type="button" title="@Language.GetToolTipText("SelectField") " class="btn btn-arrow" onclick="addOrderbyTemplate('desc')">
+                                        <i class="fa fa-angle-double-right"></i>&nbsp; desc</button>
+
+                                    <button type="button" title="@Language.GetToolTipText("RemoveField") " class="btn btn-arrow" onclick="delOrderbyTemplate()"><i class="fa fa-angle-double-left"></i></button>
+                                </td>
+
+                                <td style="width: 320px;">
+
+                                    <label class="pull-left">
+                                        @Language.GetString("OrderBy:") 
+                                    </label>
+                                    <div class="pull-right">
+
+                                        <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedOrderbyFields','up')"><i class="fa fa-angle-double-up"></i></button>
+                                        <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedOrderbyFields','down')"><i class="fa fa-angle-double-down"></i></button>
+                                    </div>
+                                    <div class="clearfix"></div>
+                                    <input type="hidden" name="hdnlstSelectOrderby" id="hdnlstSelectOrderby" value="" />
+                                 
+                                   @(Html.ListBox("lstSelectedOrderbyFields",new SelectList(new List<SelectListItem>() { },  "Value","Text"), new { @Class="listBoxClass"  }))
+                       
+
+                                </td>
+                                <td>
+                                   
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id="issueDetails" colspan="2"></td>
+
+
+                            </tr>
+                        </table>
+
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5" class="entry_but">
+                    <input type="submit" value="@Language.GetButtonText("Generate Report") " onclick="return validateDataForm()" title="@Language.GetToolTipText("Generate Report") " class="tab_save" />
+                    <input type="reset" value="@Language.GetButtonText("Reset") " title="@Language.GetToolTipText("Cancel") " class="tab_cancel" />
+                </td>
+            </tr>
+        </table>
+
+    </div>
+</form>
+
+<script>
+    $(function () {
+        setPageHeading("@Language.GetPageTitle(ViewBag.ReportTemplateName) ");
+        setInitialFocus("ReportTemplate");
+    });
+
+    function validateDataForm() {
+        
+        var validator = $("#myForm").kendoValidator().data('kendoValidator');
+
+        var ctrl = document.getElementById("lstSelectedOrderbyFields");
+        var jsonobj = [];
+
+        for (i = 0; i < ctrl.length; i++) {
+            var obj = {};
+
+            var option = document.getElementById("lstSelectedOrderbyFields").options.item(i);
+            var selVal = option.value;
+            var SelText = option.text;
+
+            if (option.text.indexOf("-") != -1) {
+                SelText = option.text.split("-")[0];
+                Orderby = option.text.split("-")[1];
+            }
+            obj = { "OrderbyColumnValue": selVal, "OrderbyColumnName": SelText, "OrderbyType": Orderby };
+            jsonobj.push(obj);
+        }
+
+        var jsonserializeObj = JSON.stringify(jsonobj);
+        $("#hdnlstSelectOrderby").val(jsonserializeObj);
+
+        //---Show report param values
+        var list = $("#myForm").serializeArray();
+        $("#hdnParameter").val(JSON.stringify(list));
+        if (validator.validate()) {
+            return true;
+        } else {
+            return false;
+        }
+
+       
+    }
+</script>
+
+
+<script src="@Url.Content("~/Scripts/jquery.validate-vsdoc.js") " type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js") " type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js") " type="text/javascript"></script>

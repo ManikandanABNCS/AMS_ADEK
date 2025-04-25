@@ -1,0 +1,101 @@
+﻿@model IndexPageModel //List<TransactionView>
+@{
+    ViewBag.Title = "Index";
+
+}
+
+
+<div class="list-container">
+    @{
+        DisplayHelper display = new DisplayHelper(this, "AssetRetirement", "TransactionID");
+
+        var gridCtrl = Html.Kendo().Grid<dynamic>()
+        .Name("DetailsGrid");
+        display.AddGridActionColumns(gridCtrl, Url, "AssetRetirementIndex", RightNames.AssetRetirement, transactionRpt: true);
+        display.ConfigureGrid(gridCtrl);
+        display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.AssetRetirement);
+
+        gridCtrl.Render();
+        //display.AddPopUpWindow(this.Html, "Division");
+
+    }
+    @* @{
+        var defaultToolBar = Html.Kendo().ToolBar()
+        .Name("ToolBar")
+        .HtmlAttributes(new { style = "width: 100%;" })
+        .Items(items =>
+        {
+            items.Add().Type(Kendo.Mvc.UI.CommandType.Button).Text(Language.GetButtonText("AddNewRecord")).
+        Id(Guid.NewGuid().ToString())
+        .Template("<img src='/css/images/AddNewRecordIcon.png' alt ='icon' style='Width:30px;height:30px'/>")
+        .HtmlAttributes(new { onclick = "gridButtonClicked(\"AssetRetirement\",\"Create\")" });
+        });
+    }
+    @(
+        Html.Kendo().Grid(Model)
+        .Name("DetailsGrid")
+        .Columns(columns =>
+        {
+          
+            columns.Bound(p => p.TransactionNo);
+            columns.Bound(p => p.CreatedUSer).Title("Created By");
+            columns.Bound(p => p.CreatedDateTime).Format("{0: " + CultureHelper.DateTimeFormat + "}").Title("Created On").Filterable(true);
+            columns.Bound(p => p.Status);
+
+        columns.Template("<center><a class='k-button-icontext' id='#=TransactionID#' href='javascript:AssetRetirementReport(#=TransactionID#)'><img src='/css/images/ReportFunction' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+            .Title(Language.GetString("Report")).Width(50);
+            columns.Template("<center><a class='k-button-icontext' id='#=TransactionID#' href='javascript:AssetRetirementView(#=TransactionID#)'><img src='/css/images/view.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+            .Title(Language.GetString("Details")).Width(50);
+            columns.Template("<center><a class='k-button-icontext' id='#=TransactionID#' href='javascript:AssetRetirementEdit(#=TransactionID#)'><img src='/css/images/view.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+            .Title(Language.GetString("Edit")).Width(50);
+
+        })
+        .ToolBar(toolbar =>
+        {
+            toolbar.ClientTemplate(defaultToolBar.ToClientTemplate().ToString());
+        })
+        .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+        {
+            o.ForString(t => t
+            .Clear()
+            .Contains("Contains")
+            .DoesNotContain("Does Not Contains")
+            .IsEqualTo("Equal To")
+            .IsNotEqualTo("Not EqualTo")
+            .StartsWith("Starts With")
+            .EndsWith("Ends With")
+            );
+        })
+        )
+        .Sortable().Selectable().Pageable()
+        .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+        .DataSource(datasource => datasource
+        .Ajax().Model(p => p.Id(x => x.TransactionID)).PageSize(10)
+        .Read(read => read.Action("_Index", "AssetRetirement")))) *@
+
+</div>
+
+
+
+
+<script>
+    $(function () {
+        setPageHeading("Asset Retirement List");
+    });
+    function AssetRetirementEdit(id) {
+        loadContentPage("/AssetRetirement/Edit?id=" + id);
+    }
+    function AssetRetirementView(id) {
+        loadContentPage("/AssetRetirement/Details?id=" + id);
+    }
+        function ReportFunction(id) {
+        var params = {
+            paramName: "TransactionID",
+            paramVal: id,
+            reportName: "AssetRetirementReceipt"
+        };
+
+        var url = '/ShowReport/ShowReceiptReport?' + jQuery.param(params);
+        window.open(url);
+    }
+</script>

@@ -1,0 +1,16 @@
+﻿@using ACS.AMS.WebApp.Models
+@model ScreenControlViewModel
+
+@{
+    var ctrl = DisplayHelper.CreateMultiColumnComboBox(this.Html, Model);
+    ctrl.Render();
+
+    if (Model.Value != null)
+    {
+        ctrl.AutoBind(true);
+    }
+    if (Model.ChangeScriptFunctionName != null)
+    {
+        ctrl.Events(e => e.Change("\"" + Model.ChangeScriptFunctionName + "\""));
+    }
+}

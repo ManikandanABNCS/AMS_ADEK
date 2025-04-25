@@ -1,0 +1,517 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@model IndexPageModel
+@{
+   
+   
+}
+<script>
+    function poSeleced(e) {
+        debugger;
+        if (e.item) {
+            var dataItem = this.dataItem(e.item.index());
+
+            $("#selectedInvoiceNo").text(dataItem.InvoiceNo);
+            $("#selectedPOLineNo").text(dataItem.dofpo);
+
+            $("#InvoiceNo").val(dataItem.InvoiceNo);
+            $("#POLineNo").val(dataItem.dofpo);
+        } else {
+
+        }
+    }
+    function poChanged(e) {
+        var combobox = $("#PONumber").data("kendoMultiColumnComboBox");
+        if (combobox.selectedIndex < 0) {
+            $("#selectedInvoiceNo").text("");
+            $("#selectedPOLineNo").text("");
+
+            $("#InvoiceNo").val("");
+            $("#POLineNo").val("");
+        }
+    }
+    function AddtionalCost() {
+        return {
+            PoNumber: $("#PONumber").val(),
+            InvoiceNo: $("#InvoiceNo").val(),
+            polineNo: $("#POLineNo").val(),
+            currentPageID: $("#CurrentPageID").val()
+        };
+    }
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+    function Update() {
+        grid = $("#DetailsGrid").data("kendoGrid");
+        var flag = false;
+        var filter = new Array();
+        var ContactIdsList = new Array();
+
+        var poNumber = $("#PONumber").val();
+        var invoiceNo = $("#InvoiceNo").val();
+        var lineno = $("#POLineNo").val();
+
+        if (poNumber != '') {
+            flag = true;
+            filter.push({ field: "PONumber", operator: "contains", value: poNumber });
+            $("#validatepono").remove();
+        }
+        else {
+            flag = false;
+            if ($("#validatepono").val() != "") {
+                $("#errPonumber").after('<span style="color:red;font-weight:normal;" id="validatepono">Select PO Number is Required</span>');
+            }
+        }
+
+        if (invoiceNo != '') {
+            flag = true;
+            filter.push({ field: "InvoiceNo", operator: "contains", value: invoiceNo });
+            $("#validateInvoice").remove();
+        }
+        else {
+            flag = false;
+            if ($("#validateInvoice").val() != "") {
+                $("#errInvoice").after('<span style="color:red;font-weight:normal;" id="validateInvoice">Select Invoice No is Required</span>');
+            }
+        }
+        if (lineno != '') {
+            flag = true;
+            filter.push({ field: "DOFPO_LINE_NUM", operator: "contains", value: lineno });
+            $("#validatepoline").remove();
+        }
+        else {
+            flag = false;
+            if ($("#validatepoline").val() != "") {
+                $("#errpoline").after('<span style="color:red;font-weight:normal;" id="validatepoline">Select PO Line No is Required</span>');
+            }
+        }
+        if (flag) {
+            grid.dataSource.filter({
+                logic: "and",
+                filters: filter
+            });
+        }
+
+    }
+    function DataLoad() {
+        var value = $('#PurchaseOrderNo').val();
+        if (value != null && value != "") {
+            $('#DetailsGrid').data('kendoGrid').dataSource.read({ "purchaseOrderNo": value });
+            $('#DetailsGrid tbody').show();
+        }
+        else {
+            $('#DetailsGrid').data('kendoGrid').dataSource.read({ "purchaseOrderNo": "" });
+            $('#DetailsGrid tbody').hide();
+        }
+    }
+
+    function onError(e, status) {
+        if (e.errors) {
+            var message = "Error:\n";
+
+            var grid = $('#DetailsGrid').data('kendoGrid');
+            var gridElement = grid.editable.element;
+
+            var validationMessageTemplate = kendo.template(
+                "<div id='#=field#_validationMessage' " +
+                "class='k-widget k-tooltip k-tooltip-validation " +
+                "k-invalid-msg field-validation-error' " +
+                "style='margin: 0.5em;' data-for='#=field#' " +
+                "data-val-msg-for='#=field#' role='alert'>" +
+                "<span class='k-icon k-warning'></span>" +
+                "#=message#" +
+                "<div class='k-callout k-callout-n'></div>" +
+                "</div>");
+
+            $.each(e.errors, function (key, value) {
+                if (value.errors) {
+                    gridElement.find("[data-valmsg-for=" + key + "],[data-val-msg-for=" + key + "]")
+                        .replaceWith(validationMessageTemplate({ field: key, message: value.errors[0] }));
+                    gridElement.find("input[name=" + key + "]").focus();
+                }
+            });
+            grid.one("dataBinding", function (e) {
+                e.preventDefault();   // cancel grid rebind
+            });
+        }
+    }
+
+    function CategoryValidation() {
+        var categoryValues = '';
+        var id = 1;
+        var flag = true;
+
+        var grid = $("#DetailsGrid").data('kendoGrid').dataSource;
+        var GridLength = grid.total();
+        if (GridLength == 0) {
+            KendoErrorMsg("Atleast one item detail required to receive PO and Asset Generation");
+            flag = false;
+        }
+
+        $('.category').each(function () {
+            if ($(this).val() == '' || $(this).val() == null) {
+                KendoErrorMsg("Select Category for all the Items");
+                flag = false;
+            }
+            else {
+                if (categoryValues == '') {
+                    categoryValues = $(this).val();
+                }
+                else {
+                    categoryValues = categoryValues + ',' + $(this).val();
+                }
+            }
+            id = id + 1;
+        });
+
+        $('#categoryIDs').val(categoryValues);
+
+        return flag;
+    }
+
+    function filterProducts(e) {
+        return {
+            poNumber: $("#PONumber").val(),
+            text: $("#InvoiceNo").data("kendoMultiColumnComboBox").input.val()
+        };
+    }
+
+    function filterProductsLine(e) {
+        return {
+            poNumber: $("#PONumber").val(),
+            invoiceNo: $("#InvoiceNo").val(),
+            text: $("#POLineNo").data("kendoMultiColumnComboBox").input.val()
+        };
+    }
+
+    function OnPOFromAssetCategoryChanges(text) {
+        var flag = true;
+
+        if (!$("#PO_LINE_ID").val()) {
+            flag = false;
+            if ($("#validatePOLine").val() != "") {
+                $("#errpoLine").after('<span style="color:red;font-weight:normal;" id="validatePOLine">Select PO Line Number is Required</span>');
+            }
+        }
+        else {
+            $("#validatePOLine").remove();
+        }
+
+        if (flag) {
+            opAssetGenerateFromPOPopupOpenWindow(text)
+        }
+    }
+    function poMassChanged(e) {
+
+        var combobox = $("#MassAdditionID").data("kendoMultiColumnComboBox");
+
+        if (combobox.selectedIndex < 0) {
+            $("#selectedMassInvoiceNo").text("");
+            $("#selectedMassPOLineNo").text("");
+            $("#selectedMassItemDesc").text("");
+            $("#selectedInvoiceValue").text("");
+        }
+    }
+    function poMassSeleced(e) {
+
+        if (e.item) {
+            var dataItem = this.dataItem(e.item.index());
+
+            $("#selectedMassInvoiceNo").text(dataItem.InvoiceNo);
+            $("#selectedMassPOLineNo").text(dataItem.POLINENO);
+            $("#selectedMassItemDesc").text(dataItem.ItemDesc);
+            $("#selectedInvoiceValue").text(dataItem.AssetCost);
+
+            $("#AssetCost").val(dataItem.AssetCost);
+        } else {
+
+        }
+    }
+
+    </script>
+<style>
+
+    #ProductID-list .dropdown-header {
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    #ProductID-list .photo {
+        box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+        margin: 0 10px 0 0;
+        width: 50px;
+        height: 50px;
+        /*  border-radius: 50%; */
+        background-size: 100%;
+        background-repeat: no-repeat;
+        display: inline-block;
+    }
+
+    #ProductID-list h3 {
+        margin: 0 0 1px 0;
+        padding: 0;
+        font-size: 1.2em;
+        font-weight: normal;
+    }
+
+    #ProductID-list p {
+        margin: 0;
+        padding: 0;
+        font-size: .8em;
+    }
+</style>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+{
+    <div class="list-container">
+        <div class="row k-text-error">
+
+            @Html.ValidationMessage("12")
+        </div>
+        @Html.Hidden("AssetCost")
+        <input type="hidden" id="ID" name="ID" value="0" />
+        <input type="hidden" id="page" name="page" value="Create" />
+        @Html.Hidden("CurrentPageID", Model.EntityInstance.CurrentPageID)
+        <div class="row">
+            <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabel("Purchase Order No", true)</label> :
+                @(Html.Kendo().MultiColumnComboBox()
+                    .Name("PONumber")
+                    .Placeholder("Select Purchase Order Number")
+                    .DataTextField("PO_NUMBER")
+                    .DataValueField("PO_NUMBER")
+                    .Columns(columns =>
+                    {
+                        columns.Add().Field("PO_NUMBER").Title("PO Number").Width("100px");
+                        columns.Add().Field("InvoiceNo").Title("Invoice No").Width("200px");
+                        columns.Add().Field("dofpo").Title("PO Line No").Width("100px");
+                    })
+                    .HtmlAttributes(new { style = "width:100%;" })
+                    .Filter(FilterType.Contains)
+                    .FilterFields(new string[] { "PO_NUMBER", "InvoiceNo", "dofpo" })
+                    .Events(e => e.Select("poSeleced").Change("poChanged"))
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetAllAssetPONumber", "DataService");
+                        }).ServerFiltering(true);
+                    })
+                    )
+                <div id="errPonumber"></div>
+            </div>
+
+            <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabel("InvoiceNo", false)</label> :
+                <span id="selectedInvoiceNo"></span>
+                @Html.Hidden("InvoiceNo")
+                <div id="errInvoice"></div>
+            </div>
+            <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabel("Po Line Number", false)</label> :
+                <span id="selectedPOLineNo"></span>
+                @Html.Hidden("POLineNo")
+                <div id="errpoline"></div>
+            </div>
+            <div class="col-xl-3 text-right add-action-btns">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Search").Name("AddButton").HtmlAttributes(new { onclick = "Update();" })
+               
+                </div>
+                </div>
+
+        <div style="border: solid 1px #C0CAD1; margin: 5px 0px;" id="transferAssetPart" style="display: none;">
+            <h5 style="background: #C0CAD1; padding: 10px; margin: 0px;">Adjust Against</h5>
+            <div class="transferAsset" style="width:90%">
+
+                <table class="tablefilter">
+                    <tr>
+                        <td class="editor-label" style="width: 15%">
+                            @Html.Label(Language.GetString("PurchaseOrderNo")):
+                        </td>
+
+                        <td class="editor-field" style="width: 35%">
+                            @(Html.Kendo().MultiColumnComboBox()
+                            .Name("MassAdditionID")
+                            .Placeholder("Select Purchase Order Number")
+                            .DataTextField("PO_NUMBER")
+                            .DataValueField("id")
+                            .Columns(columns =>
+                            {
+                            columns.Add().Field("PO_NUMBER").Title("PO Number").Width("100px");
+                            columns.Add().Field("InvoiceNo").Title("Invoice No").Width("200px");
+                            columns.Add().Field("POLINENO").Title("PO Line No").Width("100px");
+                            columns.Add().Field("ItemDesc").Title("Item Desc").Width("200px");
+                            })
+                            .HtmlAttributes(new { style = "width:100%;" })
+                            .Filter(FilterType.Contains)
+                            .FilterFields(new string[] { "PO_NUMBER", "InvoiceNo", "POLINENO","ItemDesc"})
+                            .Events(e => e.Select("poMassSeleced").Change("poMassChanged"))
+                            .DataSource(source =>
+                            {
+                            source.Read(read =>
+                            {
+                            read.Action("GetAllMassAdditionalPONumber", "DataService");
+                            }).ServerFiltering(true);
+                            })
+                            )
+                            <div id="errMassAdditionID"></div>
+                        </td>
+
+                        <td class="editor-label" style="width: 15%">
+                           @Html.Label(Language.GetString("InvoiceNo")) :
+                        </td>
+                        <td class="editor-field" style="width: 10%">
+                            <span id="selectedMassInvoiceNo"></span>
+                        </td>
+
+                        <td class="editor-label" style="width: 15%">
+                           @Html.Label(Language.GetString("Po Line Number")) :
+                        </td>
+                        <td class="editor-field" style="width: 10%">
+                            <span id="selectedMassPOLineNo"></span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="editor-label">
+                           @Html.Label(Language.GetString("Item Description")) :
+                        </td>
+                        <td class="editor-field">
+                            <span id="selectedMassItemDesc"></span>
+                        </td>
+
+                        <td class="editor-label">
+                           @Html.Label(Language.GetString("Invoice Value")) :
+                        </td>
+                        <td class="editor-field" style="width: 10%">
+                            <span id="selectedInvoiceValue"></span>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+          <div id="scrollbarBoth">
+            <table id="Searchgrid" width="@DisplayHelper.IndexPageWidth_Small">
+                <tr>
+                    <td>
+                        @{
+                            //DisplayHelper display = new DisplayHelper(this, "UpdateAssetCost", "AssetID");
+
+                            var gridCtrl = Html.Kendo().Grid<ACS.AMS.WebApp.Models.UpdateAssetCostModel>()
+                               .Name("DetailsGrid")
+                                      .Columns(columns =>
+                                      {
+                                        columns.Bound(p => p.Barcode).Width(100).Title("Barcode").HeaderHtmlAttributes(new { @style = "font-weight:bold" });
+                                        columns.Bound(p => p.CategoryName).Width(150).Title("CategoryName").HeaderHtmlAttributes(new { @style = "font-weight:bold" });
+                                        columns.Bound(p => p.AssetDesc).Width(250).Title("AssetDesc").HeaderHtmlAttributes(new { @style = "font-weight:bold" });
+                                        columns.Bound(p => p.CurrentCost).Width(100).Title("CurrentCost").HeaderHtmlAttributes(new { @style = "font-weight:bold" });
+                                        columns.Bound(p => p.AdditionalCost).Width(100).Title("AdditionalCost").HeaderHtmlAttributes(new { @style = "font-weight:bold" });
+                                        columns.Command(command => { command.Edit(); }).Width(150);
+                                      })
+                                      .Editable(editable => editable.Mode(GridEditMode.InLine))
+                                      .Pageable()
+                                      .Sortable()
+                                      .Scrollable()
+                                      .HtmlAttributes(new { style = "height:550px;" })
+                                       .DataSource(dataSource => dataSource
+                                      .Ajax()
+                                      .PageSize(20)
+                                      .Events(events => events.Error("error_handler"))
+                                      .Model(model =>
+                                      {
+                                          model.Id(p => p.AssetID);
+                                          model.Field(p => p.Barcode).Editable(false);
+                                          model.Field(p => p.CategoryName).Editable(false);
+                                          model.Field(p => p.AssetDesc).Editable(false);
+                                          model.Field(p => p.CurrentCost).Editable(false);
+                                      })
+
+                                      .Read(read => read.Action("_Index", "UpdateAssetCost").Data("AddtionalCost"))
+                            .Update(update => update.Action("_update", "UpdateAssetCost", new { currentPageID = Model.EntityInstance.CurrentPageID }))
+                                  );
+
+                            gridCtrl.Render();
+                            }
+                       
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <table style="width: 50%; margin-bottom: 20px;">
+            <tr>
+                <td class="editor-label">
+                    @Html.FieldLabel("Remarks")
+                </td>
+                <td class="editor-field">
+                    @Html.TextArea("Remarks",null,new {Class="form-control Areacontrol",maxlength = 6000 })
+                  
+                    <div id="errInvoiceNumber"></div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4" class="buttonLocation">
+                    @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type = "submit", onclick = "return checkValidate();" })
+                    @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick = "load('UpdateAssetCost')" })
+
+                </td>
+            </tr>
+        </table>
+    </div>
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading('@Language.GetPageTitle("UpdateAssetCost")');
+        
+    });
+
+    function checkValidate() {
+        var grid = $("#DetailsGrid").data("kendoGrid");
+        var dataSource = grid.dataSource;
+        var totalRecords = dataSource.total();
+        var flag = true;
+
+        var massID = $("#MassAdditionID").val();
+
+
+        if (massID != '') {
+
+            $("#validateMassID").remove();
+        }
+        else {
+            flag = false;
+            if ($("#validateMassID").val() != "") {
+                $("#errMassAdditionID").after('<span style="color:red;font-weight:normal;" id="validateMassID">Select PO Number is Required</span>');
+            }
+        }
+        if (flag) {
+            if (parseInt(totalRecords) > 0) {
+                return true;
+            }
+            else {
+                KendoErrorMsg("There is no record in grid Please search and do the further process");
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+
+
+   
+</script>
+<script src="~/acsscript/common.js"></script>

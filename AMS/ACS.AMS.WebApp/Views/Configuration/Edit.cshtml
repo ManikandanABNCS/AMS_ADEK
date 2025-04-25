@@ -1,0 +1,91 @@
+﻿
+
+@using Kendo.Mvc.UI
+@model Tuple<List<ConfigurationCategoryNameModel>, IQueryable<ConfigurationTable>>
+@{
+    ViewBag.Title = "Edit";
+}
+<script>
+    function navigationHome() {
+        window.location.href = '@Url.Action("Index", "Home")';
+    }
+</script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+{
+
+    <div class="list-container" style="width:70%;margin: 10px auto;">
+        <div class="row" style="Padding-left:10px">
+
+            @{
+
+                var categorytbl = Model.Item1;
+                List<string> categoryName = new List<string>();
+
+                if (categorytbl != null)
+                {
+                    @(
+                                Html.Kendo().TabStrip()
+                                                                      .Name("tabstrip").SelectedIndex(0).HtmlAttributes(new { style = "width:900px;" })
+                                                                      .Scrollable(false)
+                                                                      .Items(tabstrip =>
+                                                                      {
+                                                                          foreach (var citem in categorytbl)
+                                                                          {
+                                                                              var configValues = Model.Item2.Where(a => a.CategoryName == citem.CategoryName).ToList().OrderBy(c => c.DisplayOrderID);
+
+                                                                              tabstrip.Add().Text(citem.CategoryName).HtmlAttributes(new {  })
+
+                                           .Content(
+                               @<text>
+                              <table style="width:800px">
+
+                                                    @foreach (var config in configValues)
+                                                    {
+                                                        if (!config.DisplayConfiguration)
+                                                        {
+                                                            continue;
+                                                        }
+                                                        var lbl = config.ConfiguarationName;
+                                                        var name = "Config_" + config.ConfigurationID;
+
+                                                        <tr>
+                                                            <td>
+                                                                @Html.Label(lbl)
+                                                                </td>
+                                                            <td>
+                                                                @{Html.RenderPartial("ConfigurationControls/ConfigurationControlRenderer", config); }
+                                                                 </td>
+                            <td>
+
+                                                        </tr>
+
+                                                    }
+                                            </table>
+
+
+                            </text>
+                                );
+                                                                          }
+                                                                      })
+                                )
+                }
+            }
+
+
+
+
+            </div>
+            <div class="col-12 text-right add-action-btns">
+                <button type="submit" value="Save" title="Save" class="saveButton" >Save</button>
+
+            </div>
+        </div>
+      
+}
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("Configuration Edit");
+        $("#tabstrip").data("kendoTabStrip").select(0);
+    });
+   
+    </script>

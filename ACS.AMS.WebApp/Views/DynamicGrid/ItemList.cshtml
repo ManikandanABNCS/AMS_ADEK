@@ -1,0 +1,261 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@model IndexPageModel
+@{
+    Layout = "~/Views/Shared/_BlankWithoutMenuLayout.cshtml";
+}
+@* <html> *@
+
+  @*   <head id="Head1" runat="server"> 
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AMS</title>
+
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AMS</title>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery/dist/popper.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+    <link href="@Url.Content("~/lib/kendo-ui/styles/kendo.common.min.css")" rel="stylesheet" type="text/css" />
+    <script src="~/lib/kendo-ui/js/jquery.min.js"></script>
+    <script src="~/lib/kendo-ui/js/jszip.min.js"></script>
+    <script src="~/lib/kendo-ui/js/kendo.all.min.js"></script>
+    <script src="~/lib/kendo-ui/js/kendo.aspnetmvc.min.js"></script>
+
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/ThemeBuilderDesign/dist/css/ThemeBuilderDesign.css" rel="stylesheet" />
+    <link href="~/css/ThemeBuilder.custom.css" rel="stylesheet" type="text/css" />
+    <script src="~/ACSScript/Common.js"></script>
+    <script src="~/ACSScript/ACSDynamicReport.js"></script>
+    @{
+        //var culture = System.Globalization.CultureInfo.CurrentCulture.ToString();
+        var path = Url.Content("~/lib/kendo-ui/js/messages/kendo.messages." + "en-GB" + ".min.js");
+    }
+
+    <script src="@path"></script> *@
+
+     <style>
+        body {
+            background: #fff !important;
+        }
+    </style>
+     
+     <script>
+         function validationPopup() {
+             document.getElementById("errorID").style.visibility = "visible"
+             document.getElementById("ErrorAlert").style.display = "block";
+         }
+      
+         function checkGridColumnValidation() {
+       
+             var flag = true;
+             var lst = document.getElementById("lstSelectedColumns");
+             if (lst.options.length <= 0) {
+                 flag = false;
+                 document.getElementById("errorID").style.visibility = "visible"
+                 document.getElementById("ErrorAlert").style.display = "block";
+             } else {
+                 var hidText = document.getElementById("hdGridSelectedFieldItems");
+                 var hid = document.getElementById("hdGridSelectedFieldItemsIDS");
+                 if (lst.options.length > 0) {
+                     hidText.value = "";
+                     hid.value = "";
+                     for (i = 0; i < lst.options.length; i++) {
+                         hidText.value += lst.options[i].text + ",";
+                         hid.value += lst.options[i].value + ",";
+                     }
+                 }
+             }
+             if (flag)
+                 return true;
+             else
+                 return false;
+         }
+
+    var currentChildWindow;
+    function openChildWindow(name, title, index, url, width, height) {
+
+
+        var name = document.getElementById("CustomizeGridColumnWindow");
+        //$(name).kendoWindow({
+        //    title: title,
+        //    visible: false,
+        //    width: 700,
+        //    height: 500,
+        //    content: {
+        //        url: url
+
+        //    },
+
+        //    draggable: false,
+        //    modal: true,
+        //    resizable: false
+        //});
+        //var window = $(name).data("kendoWindow");
+        //sessionStorage.setItem("checkWindow", true);
+        //AddItemwindow = window;
+        //AddItemwindow.center();
+        //AddItemwindow.open();
+
+        //var container = $("#custom-menu");
+
+        //$("#custom-menu").css({ display: "none" });
+        $(name).kendoWindow({
+            title: title,
+            visible: false,
+            width: width,
+            height: height,
+            content: {
+                url: url,
+                data: { indexName: index }
+            },
+            actions: [
+                "Maximize",
+                "Close"
+            ],
+            draggable: false,
+            modal: true,
+            resizable: true
+        });
+
+        var window = $(name).data("kendoWindow");
+        currentChildWindow = window;
+        currentChildWindow.center();
+        currentChildWindow.open();
+        currentChildWindow.refresh();
+    }
+    function CancelGridPopUp(url) {
+
+        parent.parent.CloseGridFromPopUpWindow(url);
+
+
+    }
+    function CloseGridFromPopUpWindow(url) {
+
+        // alert("" + window.parent);
+        currentChildWindow.close();
+        //alert(showAdvanceSearch);
+        showAdvanceSearch = true;
+        loadDefaultPage(url);
+        //var container = parent.window.doc.getElementById("#custom-menu");
+        //container.hide();
+
+        //$('#DetailsGrid').data('kendoGrid').dataSource.read();
+        //window.location = window.location;
+    }
+
+    </script>
+@* </head> *@
+
+
+@* <body style="width:630px;height:450px"> *@
+    @using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+     <div style="width:630px;height:450px">
+         @Html.ValidationSummary() 
+        @{
+            var PageName = Model.PageName.Contains("/") ? Model.PageName.Substring(0, Model.PageName.IndexOf("/")) : Model.PageName;
+            // AMSContext db =AMSContext.CreateNewContext();
+            switch (PageName)
+            {
+                case "AssetRetirement":
+                    if (string.Compare(Model.ReadActionName, "_Index") == 0)
+                    {
+                        PageName = "AssetRetirementIndex";
+                    }
+                    break;
+                case "AssetTransfer":
+                    if (string.Compare(Model.ReadActionName, "_Index") == 0)
+                    {
+                        PageName = "AssetTransferIndex";
+                    }
+                    break;
+                case "InternalAssetTransfer":
+                    if (string.Compare(Model.ReadActionName, "_Index") == 0)
+                    {
+                        PageName = "InternalAssetTransferIndex";
+                    }
+                    break;
+            }
+
+            var avaliableList = MasterGridNewLineItemTable.GetAvailableGridColumns(PageName);
+                var SelectedList = MasterGridNewLineItemTable.GetSelectedGridColumns(PageName);
+          }
+            @Html.Hidden("Controller",Model.ControllerName)
+            @Html.Hidden("PageName",PageName)
+        @Html.Hidden("PageNameIndex", PageName)
+            @Html.Hidden("Isdynamic",Model.Isdynamic)
+         <div class="row">
+           <div style="display: none">
+                @Html.TextBox("hdGridSelectedFieldItems")
+                @Html.TextBox("hdGridSelectedFieldItemsIDS")
+                @Html.TextBox("hdReportConcatanatedVals")
+            </div>
+            <div class=col-md-12>
+                  <table style="width:100% !important;">
+                           <tr style="display:none;" id="ErrorAlert">
+                                <td colspan="2">
+                                    <label  style="color:red;font-weight:normal;visibility:hidden;" id="errorID" >Please Select Atleast One Column</label>
+                                </td>
+                            </tr>
+                           <tr>
+                            <td style="width: 210px;">
+                                <label class="listBoxHead">@Language.GetString("AvailableColumns:") </label>
+                               
+                                @(Html.ListBox("lstAvailableColumns", new SelectList(avaliableList,  "Value","Text"), new { @Class="listBoxClass",@Style="Width:150px;height:200px" }))
+                                
+                            </td>
+                                <td>
+
+                                <button type="button" style="width:40px;margin-left:23px;" title="@Language.GetToolTipText("SelectField") " class="btn btn-arrow" onclick="addReportFieldsTemplate('lstAvailableColumns','lstSelectedColumns')"><i class="k-icon k-i-caret-double-alt-right" style="font-size:30px"> </i></button>
+                                    <br />
+                                <button type="button" style="width:40px;margin-left:23px;" title="@Language.GetToolTipText("RemoveField") " class="btn btn-arrow" onclick="delReportFieldTemplate('lstAvailableColumns','lstSelectedColumns')"><i class="k-icon k-i-caret-double-alt-left" style="font-size:30px"></i></button>
+                            </td>
+                               <td style="width: 210px;">
+
+                                <label class="listBoxHead pull-left">
+                                    @Language.GetString("SelectedColumns:") 
+                                </label>
+                                <div class="pull-right">
+
+                                    <button type="button" style="width:30px;height:35px;" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedColumns','up')"><i class="k-icon k-i-caret-double-alt-up" style="font-size:30px"></i></button>
+                                    <button type="button" style="width:30px;height:35px;" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedColumns','down')"><i class="k-icon k-i-caret-double-alt-down" style="font-size:30px"></i></button>
+                                </div>
+                                <div class="clearfix"></div>
+
+                                
+                                 @(Html.ListBox("lstSelectedColumns",new SelectList(SelectedList,  "Value","Text"), new { @Class="listBoxClass",@Style="Width:150px;height:200px"  }) )
+                            </td>
+                               </tr>
+                           </table>
+                
+            </div>  
+             <div class="col-md-3 text-right add-action-btns" style="padding-top:10px">
+                  <button type="submit" value="Save" title="Save" class="saveButton" onclick="return checkGridColumnValidation();">Save</button>
+              </div>
+         </div>
+              
+        </div>
+        }
+
+@* </body> *@
+<script language="javascript" type="text/javascript">
+    $(function () {
+       // $(".nav-second-level").niceScroll();
+    });
+    $(document).on("click", "#CheckAll", function () {
+        $('input:checkbox').not(this).prop('checked', this.checked);
+
+    });
+
+   
+</script>
+@* </html> *@
+<script src="~/ACSScript/Common.js"></script>
+

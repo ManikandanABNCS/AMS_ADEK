@@ -1,0 +1,125 @@
+﻿@model List<PeriodModel>
+@{
+    ViewBag.Title = "Index";
+
+}
+@using (Html.AjaxBeginForm("Index","DepreciationApproval",DisplayHelper.GetAjaxOptions()))
+    {
+      
+<div class="list-container">
+
+  
+        @(
+            Html.Kendo().Grid(Model)
+                        .Name("DetailsGrid")
+                        .Columns(columns =>
+                        {
+
+                            if (SessionUser.HasRights(RightNames.DepreciationApproval, UserRightValue.Create))
+                            {
+                                columns.Template("<center><a class='k-button-icontext' id='#=PeriodID#' href='javascript:Undofunction(#=PeriodID#,\"#=depreciationID #\",\"#=Status #\")'><img src='/css/images/approval.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                            .Title(Language.GetString("Approval")).Width(50);
+
+                            }
+                            if (SessionUser.HasRights(RightNames.DepreciationApproval, UserRightValue.Delete))
+                            {
+                                columns.Template("<center><a class='k-button-icontext' id='#=PeriodID#' href='javascript:Rejectfunction(#=PeriodID#,\"#=depreciationID #\",\"#=Status #\")'><img src='/css/images/Reject.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                            .Title(Language.GetString("Reject")).Width(50);
+                            }
+                        if (SessionUser.HasRights(RightNames.DepreciationApproval, UserRightValue.Details))
+                            {
+                                columns.Template("<center><a class='k-button-icontext' id='#=PeriodID#' href='javascript:ViewFunction(#=PeriodID#,\"#=depreciationID #\")'><img src='/css/images/view.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                            .Title(Language.GetString("Details")).Width(50);
+                            }
+                            columns.Bound(o => o.PeriodName).Title(Language.GetString("PeriodName")).Width(50).HeaderHtmlAttributes(new { @style = "font-weight:bold" })
+                                         .ClientTemplate("<div style='width:100px;' class = 'tableContent' title='#=PeriodName #'>#=PeriodName #</div>");
+                    columns.Bound(o => o.StartDate).Title(Language.GetString("StartDate")).Width(50).HeaderHtmlAttributes(new { @style = "font-weight:bold" })
+                                        .Format("{0:" + CultureHelper.ConfigureDateFormat + "}");
+                    columns.Bound(o => o.EndDate).Title(Language.GetString("EndDate")).Width(50).HeaderHtmlAttributes(new { @style = "font-weight:bold" })
+                                        .Format("{0:" + CultureHelper.ConfigureDateFormat + "}");
+                    columns.Bound(o => o.Status).Title(Language.GetString("Status")).Width(150).HeaderHtmlAttributes(new { @style = "font-weight:bold" })
+                                         .ClientTemplate("<div style='width:200px;' class = 'tableContent' title='#=Status #'>#=Status #</div>");
+                   
+
+        })
+        .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+        {
+            o.ForString(t => t
+            .Clear()
+            .Contains("Contains")
+            .DoesNotContain("Does Not Contains")
+            .IsEqualTo("Equal To")
+            .IsNotEqualTo("Not EqualTo")
+            .StartsWith("Starts With")
+            .EndsWith("Ends With")
+            );
+        })
+        )
+        .Sortable().Selectable().Pageable()
+        .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+        .DataSource(datasource => datasource
+        .Ajax().Model(p => p.Id(x => x.PeriodID)).PageSize(10)
+        .Read(read => read.Action("_IndexDetails", "DepreciationApproval")))
+        )
+      
+</div>
+
+}
+
+
+<script>
+    $(function () {
+        setPageHeading("Depreciation Approval List");
+    });
+
+    function Undofunction(periodID, depreciationID, status) {
+      
+        $.ajax({
+            url: '/DepreciationApproval/Approved',
+            type: "Post",
+            async: false,
+            data: { id: periodID, depreciationID: depreciationID, status: status },
+            success: function (data) {
+                if (data.Result == "Success") {
+                    showSuccessMessage(data.message);
+                    $('#remarks').val('');
+                    loadDefaultPage("/DepreciationApproval/Index");
+                    ///loadIndexPage('DepreciationApproval');
+
+                }
+                else {
+                    ShowErrorMesage(data.message);
+                    loadDefaultPage("/DepreciationApproval/Index");
+                    //loadIndexPage('DepreciationApproval');
+                }
+            }
+        });
+    }
+    function Rejectfunction(periodID, depreciationID,status) {
+        $.ajax({
+            url: '/DepreciationApproval/Reject',
+            type: "Post",
+            data: { id: periodID,depreciationID:depreciationID,status:status },
+            success: function (data) {
+                if (data.Result == "Success") {
+                    showSuccessMessage(data.message);
+                    $('#remarks').val('');
+                    loadDefaultPage("/DepreciationApproval/Index");
+                    ///loadIndexPage('DepreciationApproval');
+
+                }
+                else {
+                    ShowErrorMesage(data.message);
+                    loadDefaultPage("/DepreciationApproval/Index");
+                    //loadIndexPage('DepreciationApproval');
+                }
+            }
+        });
+    }
+    function ViewFunction(periodID, depreciationID) {
+       
+        loadDefaultPage("/DepreciationApproval/Details?id=" + periodID + "&depreciationID=" + depreciationID);
+
+    }
+
+</script>

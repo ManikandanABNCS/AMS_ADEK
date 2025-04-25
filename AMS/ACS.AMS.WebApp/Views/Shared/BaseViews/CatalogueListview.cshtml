@@ -1,0 +1,226 @@
+﻿@using ACS.AMS.DAL.DBModel;
+@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+    
+  
+}
+<script type="text/x-kendo-tmpl" id="template">
+
+    <div class="product-column">
+        <div class="product-card">
+        <img src="@Url.Content("~/")#:CatalogueImage#" alt="#:CatalogueImage# image" class="product-image" />
+         <h2 class="product-title">
+             #:VirtualBarcode#
+            </h2>
+        <p class="product-dimensions">
+             # if (Specification) { #
+                    #: Specification #
+                # } else { #
+
+                # } #
+            
+           </p>
+        </div>
+    </div>
+        
+</script>
+<script>
+    function OnLoadProjectData() {
+        return {
+            categoryID: $("#CategoryID").val(),
+            virtualBarcode: $("#VirtualBarcode").val()
+        };
+
+    }
+    function onProductCatalogueChange(e) {
+        debugger;
+        var listView = $("#listView").data("kendoListView");
+        var index = this.select().index(),
+            dataItem = this.dataSource.view()[index];
+        var recordID = dataItem.ProductID;
+        PopupDetails(recordID);
+    }
+
+    function PopupDetails(recordID) {
+
+        url = "/MasterPage/CatalogueProductDetails/" + recordID;
+        popupItemOpenWindow(url, "Details Product");
+    }
+    function popupItemOpenWindow(url, titleCon) {
+
+        var wnd = $("#ViewCatalogue").data("kendoWindow");
+        if (wnd == null)
+            wnd = parent.window.$("#window").data("kendoWindow");
+        wnd.refresh({
+            url: url,
+            iframe: true
+        });
+        
+        wnd.center();
+        wnd.open();
+        wnd.title(titleCon);
+    }
+    function OnPopupItmWindowClose() {
+        var w = window.parent.$("#ViewCatalogue").data("kendoWindow");
+        w.close();
+    }
+    function LoadProductTemplate()
+    {
+        var dataSource = $("#listView").data("kendoListView").dataSource;
+        dataSource.read();
+    }
+    </script>
+<style>
+
+    .catalog-container {
+        background-color: #fff;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        justify-content: center;
+        padding: 44px 37px;
+    }
+
+    .catalog-layout {
+        display: flex;
+        width: 100%;
+        flex-direction: column;
+        border: 2px solid rgba(0, 0, 0, 0.25);
+        height: auto;
+        margin: 0 auto;
+        box-sizing: border-box;
+        padding: 10px;
+    }
+
+    .catalog-header {
+        background-color: #C2EEFF;
+        color: #000;
+        padding: 25px 70px;
+        font: 500 15px Red Hat Text, sans-serif;
+        border: 1px solid rgba(0, 0, 0, 0.25);
+        margin: 5px;
+        text-align:center;
+        font-weight:bold;
+    }
+    .product-grid {
+        gap: 0px;
+        display: flex;
+    }
+    .product-column {
+        display: flex;
+        flex-direction: column;
+        line-height: normal;
+        width: 25%;
+    }
+
+    .product-card {
+        display: flex;
+        flex-grow: 1;
+        padding-bottom: 44px;
+        flex-direction: column;
+        font-family: Red Hat Text, sans-serif;
+        color: #000;
+        border: 1px solid rgba(0, 0, 0, 0.25);
+    }
+
+    .product-image {
+        aspect-ratio: 1.69;
+        object-fit: contain;
+        object-position: center;
+        width: 100%;
+    }
+
+    .product-title {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 12px 19px 0 12px;
+        text-align:center;
+    }
+
+    .product-dimensions {
+        font-size: 12px;
+        font-weight: 400;
+        margin: 16px 11px 0 12px;
+    }
+
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0,0,0,0);
+        border: 0;
+    }
+
+    .k-listview-content
+    {
+    display:flex;
+        flex-wrap: wrap;
+    gap:0
+    }
+    
+
+
+</style>
+<form  method="POST" id="form">
+    @Html.Hidden("CategoryID", (int)ViewBag.CategoryID)
+<div class="list-container">
+        <div class="row DashboardFilterDiv" id="dashboardFilterDiv">
+            <div class="col-xl-2">
+                <label for="fullname">@Html.FieldLabel("VirtualBarcode", false)</label>
+                @Html.TextBox("VirtualBarcode", "", new { @class = "k-textbox", style = "width: 100%;", maxlength = 100, oninput = "LoadProductTemplate()" })
+            </div>
+            <div class="col-xl-2">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Back").Name("cancelButton").HtmlAttributes(new { onclick = "loadIndexPage('SearchByPhoto')" })
+            </div>
+            </div>
+            <div class="row">
+        <div class="catalog-container">
+            <div class="catalog-layout">
+                <div class="catalog-header">@((string)ViewBag.CategoryName)</div>
+                <div class="row">
+            @(Html.Kendo().ListView<ACS.AMS.DAL.DBModel.ProductTable>()
+                .Name("listView")
+                .TagName("div")
+                .ClientTemplateId("template")
+                .DataSource(dataSource => dataSource
+                .Ajax()
+                .Read(read => read.Action("_ProductCatalogue", "MasterPage").Data("OnLoadProjectData"))
+                .PageSize(10)
+                )
+                .Pageable()
+                .Selectable(ListViewSelectionMode.Single)
+                //.Events(events => events.Change("onProductCatalogueChange"))
+                )
+        </div>
+            </div>
+        </div>
+        </div>
+        <div class="clearfix"></div>
+</div>
+    @(Html.Kendo().Window()
+        .Name("ViewCatalogue")
+        .Width(1300)
+        .Visible(false)
+        .Actions(actions => actions.Close())
+        .Height(800)
+        .Draggable()
+        .Resizable()
+        .Iframe(true)
+        .Modal(true)
+        .Scrollable(false)
+        )
+
+</form>
+<script>
+    $(function () {
+        setPageHeading('@Language.GetPageTitle(Model.PageTitle) List');
+         
+       
+       });
+
+  
+</script>

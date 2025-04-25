@@ -1,0 +1,64 @@
+﻿@model string
+
+<style>
+    .k-tool-icon, .k-tool-icon.k-state-hover, .k-tool-icon.k-state-active, .k-tool-icon.k-state-active.k-state-hover {
+        background-image: url('../../Content/kendo/2013.1.514/Default/sprite.png');
+    }
+
+    .k-tool-icon, .k-grouping-dropclue, .k-drop-hint, .k-column-menu .k-sprite {
+        background-image: url('../../Content/kendo/2013.1.514/Default/sprite.png');
+        border-color: transparent;
+    }
+
+        .k-tool-icon.k-state-hover {
+            background-color: #FFF;
+            border: none;
+        }
+
+    .htmleditor .k-header {
+        background-color: #E9E9E9;
+        padding: 5px;
+    }
+
+    .htmleditor {
+        /*margin:20px auto;*/
+        width: 760px;
+    }
+
+        .htmleditor .k-tool-icon {
+            margin: 1px !important;
+        }
+
+    .k-editor-template {
+        width: 200px;
+    }
+
+    .k-dropdown .k-input, .k-dropdown .k-state-focused .k-input, .k-menu .k-popup {
+        text-align: left;
+    }
+</style>
+@(
+
+Html.Kendo().Editor().Name("TemplateFooterBodyContent").Value(Model)
+                                .HtmlAttributes(new { style = "background-color: #E9E9E9;padding: 5px;margin: 20px auto;" })
+                                .Tools(tools => tools.Clear().Bold().Italic().Underline().JustifyLeft().JustifyCenter().JustifyRight().JustifyFull()
+                                .InsertUnorderedList().InsertOrderedList().Outdent().Indent().SubScript().SuperScript()
+                                //.TableEditing()
+                                .ViewHtml().FontName().FontSize()
+        
+                    .CustomTemplate(ct => { ct.Template("<select id='templateFooterTool' style='width: 300px;'></select>"); })
+                    )
+                    .Value(() => { })
+
+                    )
+
+
+<script language="javascript" type="text/javascript">
+    $(document).ready(function () {
+        $("#templateFooterTool").kendoDropDownList({
+
+        });
+        //$("#templateTool").closest(".k-widget").parent().hide();
+    });
+
+</script>

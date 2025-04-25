@@ -1,0 +1,172 @@
+﻿@model DashboardTemplateTable
+@{
+    ViewBag.Title = "Create";
+}
+<script>
+    var objectName = null;
+    var objectType = null;
+
+    function dbObjectSelected(e1, e2) {
+        var selectedItem = this.dataItem(e1.item.index());
+        objectName = selectedItem.ObjectName;
+        objectType = selectedItem.ObjectType;
+
+        //if ($("#ReportTemplateName").val() == "") {
+        var templateName = objectName;
+        if (templateName.toLowerCase().startsWith("dprc_"))
+            var templateName = templateName.substring(5);
+        else
+            if (templateName.toLowerCase().startsWith("dprc"))
+                var templateName = templateName.substring(4);
+            else
+                if (templateName.toLowerCase().startsWith("dvw_"))
+                    var templateName = templateName.substring(4);
+                else
+                    if (templateName.toLowerCase().startsWith("dvw"))
+                        var templateName = templateName.substring(3);
+
+        $("#DashboardTemplateName").val(templateName);
+        //}
+
+        DashboardTemplate_QueryObjectChanged("Create", objectName, objectType, GetCurrentPageID(), loadFieldDetails_Delayed);
+    }
+
+    function loadFieldDetails_Delayed() {
+        debugger;
+        prm = { pageNumber: 0, currentPageID: GetCurrentPageID() };
+        loadContentPageToControl("@Url.Action("DashboardTemplateFilterFields")?" + $.param(prm), "DashboardFilterFieldGrid", false);
+        loadContentPageToControl("@Url.Action("DashboardTemplateFields")?" + $.param(prm), "DashboardFieldGrid", false);
+    }
+
+    function GetCurrentPageID() {
+        return $("#CurrentPageID").val();
+    }
+</script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+   
+    <div class="list-container">
+        <div class="row k-text-error">
+            @* @Html.ValidationSummary()*@
+            @Html.ValidationMessage("12")
+        </div>
+        <div class="row">
+            @Html.HiddenFor(model => model.CurrentPageID)
+            <div class="col-xl-4">
+                <label for="fullname">@Html.Label("QueryObject")</label>
+                <span style='color: red'>* </span>
+                @(Html.Kendo().MultiColumnComboBoxFor(model => model.ObjectID)
+                    .DataTextField("DisplayValue")
+                    .DataValueField("ObjectID")
+                    .Columns(columns =>
+                    {
+                        columns.Add().Field("ObjectName").Title("Object Name").Width("300px");
+                        columns.Add().Field("ObjectType").Title("Type").Width("100px");
+                    })
+                    .AutoBind(false)
+                    .Filter(FilterType.Contains)
+                    .Events(e => e.Select("dbObjectSelected"))
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetDashboardDBObjectsForMCombobox", "DataService");
+                        });
+                    })
+                    )
+             @Html.HiddenFor(model=>model.QueryString," ")
+               
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.QueryString, "", new { @class = "text-danger" })</p>
+                <div id="errProcedureName"></div>
+
+            </div>
+            
+             <div class="col-xl-4">
+
+                <label for="fullname">@Html.FieldLabelFor(model => model.DashboardTemplateName, true)</label>
+                @(Html.TextBoxFor(model => model.DashboardTemplateName, new { Class = "form-control" })
+                    )
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.DashboardTemplateName, "", new { @class = "text-danger" })</p>
+                <div id="errDashboardTemplateName"></div>
+
+            </div>
+            <div class="col-xl-4">
+
+                <label for="fullname">@Html.Label("Remarks")</label>
+                @(Html.TextAreaFor(model => model.Remarks, 3, 40, new { Class = "form-control" })
+                    )
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.Remarks, "", new { @class = "text-danger" })</p>
+
+
+            </div>
+         
+
+           
+            <div class="col-xl-6" id="DashboardFieldGrid">
+            </div>
+            <div class="col-xl-6" id="DashboardFilterFieldGrid">
+            </div>
+
+            <div class="col-xl-12 text-right add-action-btns">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type="submit", onclick = "return onDashboardTemplatevalidation();" })
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="loadIndexPage('DashboardTemplate')" })
+            </div>
+
+          
+        </div>
+    </div>
+}
+
+
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("DashboardTemplate Create");
+
+    });
+    function onDashboardTemplatevalidation() {
+        debugger;
+        var fag = true;
+        if ((!$('#ObjectID').data("kendoMultiColumnComboBox").value()) || ($('#ObjectID').data("kendoMultiColumnComboBox").value()==0)) {
+            fag = false;
+            if ($("#validateProcedure").val() != "") {
+                $("#errProcedureName").after('<span style="color:red;font-weight:normal;" id="validateProcedure">Query Object is Required</span>');
+            }
+        }
+        else {
+            $("#validateProcedure").remove();
+        }
+        if (!$("#DashboardTemplateName").val()) {
+            fag = false;
+            if ($("#validateTemplateName").val() != "") {
+                $("#errDashboardTemplateName").after('<span style="color:red;font-weight:normal;" id="validateTemplateName">Dashboard Template Name is Required</span>');
+            }
+        }
+        else {
+            $("#validateTemplateName").remove();
+        }
+        if (fag) {
+            return true;
+        }
+        else {
+            return false;
+        }
+
+    }
+    function ReloadFilterFields() {
+        var pn = 0;
+        if (typeof GetFilterFieldsPageNumber === "function")
+            pn = GetFilterFieldsPageNumber();
+
+        prm = { pageNumber: pn, currentPageID: GetCurrentPageID() };
+
+        loadContentPageToControl("@Url.Action("DashboardTemplateFilterFields")?" + $.param(prm), "DashboardFilterFieldGrid", false);
+    }
+    function ProcedureChange() {
+        ReloadFilterFields();
+
+        prm = { pageNumber: 0, currentPageID: GetCurrentPageID() };
+        loadContentPageToControl("@Url.Action("DashboardTemplateFields")?" + $.param(prm), "DashboardFieldGrid", false);
+    }
+</script>
+<script src="~/acsscript/reportscripts.js"></script>

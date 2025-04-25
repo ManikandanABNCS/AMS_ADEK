@@ -1,0 +1,370 @@
+﻿@model ReportTable
+@using ACS.AMS.DAL
+@{
+    ViewBag.Title = "Edit";
+  
+}
+<style>
+    .radio input[type="radio"], .radio-inline input[type="radio"], .checkbox input[type="checkbox"], .checkbox-inline input[type="checkbox"] {
+        margin-left: -16px !important;
+    }
+</style>
+<script>
+
+    function onReportEdit(e) {
+
+        var i = e.m.get("Type");
+        if (i != "System.Int32") {
+            $("#isSumField").attr('disabled', true);
+        }
+        if (i == "") {
+            $("#isSumField").attr('disabled', false);
+        }
+        //on row edit replace the Delete and Edit buttons with Update and Cancel
+        $(e.container).find("td:last").html("<a href='javascript: void(0)' class='abutton update' onclick='updateRow(this)' title='update'>button update</a> " +
+            "<a href='javascript: void(0)' class='abutton cancel' onclick='cancelRow(this)' title='cancel'>button cancel</a>"
+            //+ "<a href='javascript: void(0)' class='abutton edit' onclick='editRow()' title='button Edit'>button cancel</a>" +
+            //"<a href='javascript: void(0)' class='abutton delete' onclick='deleteRow()' title='button delete'>button cancel</a>"
+        );
+
+    }
+    function addReportID() {
+        return {
+            text: $("#ReportID").val()
+
+        };
+    }
+    $("#saveButton").click(function (e) {
+
+        var lst = document.getElementById("lstSelectedGroupFields");
+        if (lst.options.length <= 0) {
+
+        } else {
+
+
+            var hidText = document.getElementById("hdReportSelectedItems");
+            var hid = document.getElementById("hdReportSelectedItemsIDS");
+            if (lst.options.length > 0) {
+                hidText.value = "";
+                hid.value = "";
+                for (i = 0; i < lst.options.length; i++) {
+                    hidText.value += lst.options[i].text + ",";
+                    hid.value += lst.options[i].value + ",";
+                }
+            }
+        }
+
+        var lst = document.getElementById("lstSelectedFields");
+        if (lst.options.length <= 0) {
+
+        } else {
+
+
+            var hidText = document.getElementById("hdReportSelectedFieldItems");
+            var hid = document.getElementById("hdReportSelectedFieldItemsIDS");
+            if (lst.options.length > 0) {
+                hidText.value = "";
+                hid.value = "";
+                for (i = 0; i < lst.options.length; i++) {
+                    hidText.value += lst.options[i].text + ",";
+                    hid.value += lst.options[i].value + ",";
+                }
+            }
+        }
+
+    });
+
+    //$(document).on('keypress', '#width_Textbox', function () {
+    $("#width_Textbox").keypress(function () {
+
+        var str = $(this).val();
+        str = str.replace(/[^0-9\.]/g, '');
+        $(this).val(str);
+        if (str.split('.').length > 2) {
+            str = str.replace(/\.+$/, "");
+            $(this).val(str);
+            return false;
+        }
+        var ctrl = document.getElementById("lstSelectedFields");
+        if (ctrl.length > 0) {
+
+        }
+        else {
+            alert("Add Fields to Selected Fields,Select and Enter Width");
+            return false;
+        }
+        var count = $("#lstSelectedFields :selected").length;
+        if (count == 0 || count == -1) {
+            alert(" Select Fields and Enter Width");
+            return false;
+        }
+    });
+</script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+
+        <div class="list-container">
+    <div class="validationMessage">
+        @Html.ValidationSummary()
+    </div>
+    @Html.HiddenFor(m => m.ReportID)
+    @Html.HiddenFor(m => m.ReportTemplateID)
+    @Html.HiddenFor(m => m.ReportName)
+    @Html.HiddenFor(m => m.ReportPageHeight)
+    @Html.HiddenFor(m => m.ReportPageWidth)
+    <div style="display: none">
+        @Html.TextBox("hdReportSelectedItems")
+        @Html.TextBox("hdReportSelectedItemsIDS")
+        @Html.TextBox("hdReportSelectedFieldItems")
+        @Html.TextBox("hdReportSelectedFieldItemsIDS")
+        @Html.TextBox("hdReportConcatanatedVals")
+    </div>
+
+    <div class="">
+        <div class="row">
+            <div class="col-xl-3">
+                <label for="fullname">@Html.Label("Report Template")</label>
+                <div class="k-textbox" style="width:100%">
+                   @* //@reporttemplateName*@
+                   @Model.ReportTemplate.ReportTemplateName
+                </div>
+            </div>
+            <div class="col-xl-3">
+                @Html.FieldLabelFor(m => m.ReportName, true)
+                @Html.TextBoxFor(m => m.ReportName, new { Class = "form-control" })
+            </div>
+            <div class="col-xl-3">
+                @Html.FieldLabelFor(m => m.ReportTitle, true)
+                @Html.TextBoxFor(m => m.ReportTitle, new { Class = "form-control" })
+            </div>
+            <div class="col-xl-3">
+                @Html.Label(Language.GetString("Paper Size"))
+                @(Html.Kendo().DropDownListFor(m => m.ReportPaperSizeID)
+                .HtmlAttributes(new {style="width:100% !important"})
+                .BindTo(ComboBoxHelper.GetAllReportPage())
+                )
+            </div>
+            <div class="col-xl-3">
+                @Html.Label(Language.GetString("LeftMargin:"))
+
+                @Html.TextBoxFor(m => m.ReportLeftMargin, "{0:F2}", new { Class = "form-control", @style = "width:100% !important;display:inline-block;float:left;" })
+            </div>
+            <div class="col-xl-3">
+                @Html.Label(Language.GetString("RightMargin:"))
+                @Html.TextBoxFor(m => m.ReportRightMargin, "{0:F2}", new { Class = "form-control", @style = "width:100% !important;display:inline-block;" })
+            </div>
+            <div class="col-xl-3">
+                @Html.Label(Language.GetString("TopMargin:"))
+                @Html.TextBoxFor(m => m.ReportTopMargin, "{0:F2}", new { Class = "form-control", @style = "width:100% !important;display:inline-block;float:left;" })
+            </div>
+            <div class="col-xl-3">
+                @Html.Label(Language.GetString("BottomMargin:"))
+                @Html.TextBoxFor(m => m.ReportBottomMargin, "{0:F2}", new { Class = "form-control", @style = "width:100% !important;display:inline-block;" })
+            </div>
+                <div class="col-xl-3">
+                    @Html.Label(Language.GetString("ReportPageHeight:"))
+                    @Html.TextBoxFor(model => model.ReportPageHeight, "{0:F2}", new { Class = "form-control", @style = "width:100% !important;display:inline-block;" })
+                </div>
+                <div class="col-xl-3">
+                    @Html.Label(Language.GetString("ReportPageWidth:"))
+                    @Html.TextBoxFor(model => model.ReportPageWidth, "{0:F2}", new { Class = "form-control", @style = "width:100% !important;display:inline-block;" })
+                </div>
+            <span style="color: red;">* All units are in Inches</span>
+        </div>
+            <div class="form-group col-md-12">
+                @{
+                    AMSContext db = AMSContext.CreateNewContext();
+                }
+
+                </div>
+        <div class="row">
+
+                @(Html.Kendo().TabStrip().Name("TabStrip").SelectedIndex(0).HtmlAttributes(new { style = "width:100%;" }).Items(tabstrip =>
+{
+                            tabstrip.Add().Text("Groups").HtmlAttributes(new { style = "color:Black;" })
+              .Content(@<text>
+               
+                   <div class="col-md-12">
+                    @Language.GetString("(Optional)GroupTheInformationOnTheReport")
+                    </div>
+                    <div class="row">
+                            <div class="col-md-3">
+                                <label class="listBoxHead">@Language.GetString("AvailableGroupFields:") </label>
+                                @{
+
+                                        var avaliableGroupList = ReportTemplateFieldTable.GetAvailableGroupFieldsForEdit(db, Model.ReportID);
+                                    }
+                                    @Html.ListBox("lstAvailableGroupFields", new SelectList(avaliableGroupList, "Value", "Text"), new { style = "width:260px;height:200px", @Class = "listBoxClass" })
+
+
+                            </div>
+                                    <div class="col-md-2" style="margin-top: 60px;">
+                                    <table>
+                                        <tr>
+                                            <td>
+                                                <input type="button" title="@Language.GetToolTipText("SelectField") " value="→" class="t-button t-button-icon" onclick="addGroupTemplate()" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <input type="button" title="@Language.GetToolTipText("RemoveField") " Value="←" class="t-button t-button-icon" onclick="delGroupTemplate()" />
+                                            </td>
+                                        </tr>
+                                    </table>
+                            </div>
+                                    <div class="col-md-3" style="margin-top: -40px;">
+                                    <label class="listBoxHead pull-left">
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        <input type="button" title="Select Field" class="t-button t-button-icon" onclick="Listbox_Move('lstSelectedGroupFields','up')" value="↑" />
+                                                    </td>
+                                                    <td>
+
+                                                        <input type="button" title="Select Field" class="t-button t-button-icon" onclick="Listbox_Move('lstSelectedGroupFields','down')" value="↓" />
+                                                    </td>
+                                                </tr>
+
+                                            </table>
+                                        @Language.GetString("GroupBy:")
+                                    </label>
+                                    
+                                    @{
+                                        var SelectedGroupList = ReportTemplateFieldTable.GetSelectedGroupFields(db, Model.ReportID);
+                                    }
+                                    @Html.ListBox("lstSelectedGroupFields", new SelectList(SelectedGroupList, "Value", "Text"), new { style = "width:260px;height:200px", @Class = "listBoxClass" })
+
+                            </div>
+                                    <div id="issueDetails"></div>
+                      
+
+                </div>
+
+                                <div class="col-12 text-right add-action-btns">
+                                    @* <button type="button" value="Back" title="Back" class="cancelButton"  onclick="clickoneback(event)">Back</button> *@
+                                    <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button>
+                                </div>
+
+
+                            </text>);
+tabstrip.Add().Text(Language.GetString("Fields"))
+                                                            .Content(@<text>
+
+              <div>@Language.GetString("Choose the information to display the Report") </div>
+                    <div style="height: 20px;"><span id="noneSelected" style="color: red;"></span></div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label class="listBoxHead">@Language.GetString("AvailableFields:") </label>
+                                    @{
+                                            var avaliableList = ReportTemplateFieldTable.GetAvailableReportFieldsForEdit(db, Model.ReportID);
+                                        }
+
+                                        @Html.ListBox("lstAvailableFields", new SelectList(avaliableList, "Value", "Text"), new { style = "width:260px;height:200px", @Class = "listBoxClass" })
+
+                                </div>
+                                    <div class="col-md-2" style="margin-top: 60px;">
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <input type="button" title="@Language.GetToolTipText("SelectField")" class="t-button t-button-icon" value="→" onclick="addReportFieldsTemplate('lstAvailableFields', 'lstSelectedFields')" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input type="button" title="@Language.GetToolTipText("RemoveField")" class="t-button t-button-icon" value="←" onclick="delReportFieldTemplate('lstAvailableFields', 'lstSelectedFields')" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-3" style="margin-top: -40px;">
+                                       
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <input type="button" title="Select Field" class="t-button t-button-icon" onclick="Listbox_Move('lstSelectedFields','up')" value="↑" />
+                                                </td>
+                                                <td>
+                                                    <input type="button" title="Select Field" class="t-button t-button-icon" onclick="Listbox_Move('lstSelectedFields','down')" value="↓" />
+                                                </td>
+                                            </tr>
+
+                                        </table>
+                                        <label class="listBoxHead pull-left">
+                                            @Language.GetString("SelectedFields:")
+                                        </label>
+                                        @{
+                                            var SelectedList = ReportTemplateFieldTable.GetSelectedReportFieldDatas(db, Model.ReportID);
+                                        }
+                                        @Html.ListBox("lstSelectedFields",new SelectList(SelectedList, "Value", "Text"), new { style = "width:260px;height:200px", @Class = "listBoxClass" })
+
+                                 </div>
+                                <div class="col-md-3">
+                                        <label class="listBoxHead pull-left" style="margin-left: 20px;">
+                                            @Language.GetString("FieldAttributes:")
+                                        </label>
+                                        <div style="width: 250px !important;" class="rptClass">
+
+                                            <span>
+                                                @Html.Label(Language.GetString("Width"))
+                                                <br />
+                                                @Html.TextBox("width_Textbox", "", new { @Class="form-control",onkeyup="return onkeyPressWidthTextBox()" , @style="width: 100% !important;"})
+                                            </span>
+                                            <br />
+
+
+                                        </div>
+                                </div>
+                            </div>
+
+                                <div class="col-12 text-right add-action-btns" style="padding-top: 10px">
+                                    <button type="button" value="Back" title="Back" class="cancelButton" onclick="clickoneback(event)">Back</button>
+                                    @* <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button> *@
+
+                                </div>
+
+                       
+                </text>);
+}))
+        </div>
+            <div class="row">
+
+                <div class="col-xl-12 text-right add-action-btns">
+                    @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("saveButton").HtmlAttributes(new { type="submit", onclick="return addToReportColumnModel();" })
+                    @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="loadIndexPage('Report')" })
+                </div>
+            </div>
+          
+
+    </div>
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                EntryPageModel newModel = new EntryPageModel()
+                {
+
+                    EntityInstance = Model as BaseEntityObject,
+                    ControllerName = this.GetType().Name.Substring(0, this.GetType().Name.Length - "Controller".Length),
+                };
+                Html.RenderPartial("BaseViews/AuditLogSingleView", newModel);
+            }
+        </div>
+</div>
+}
+
+
+    <script language="javascript" type="text/javascript">
+        $(function () {
+            debugger;
+            setInitialFocus("@(ViewData.ContainsKey("FocusControl")?ViewData["FocusControl"]:"ReportName") ");
+            setPageHeading("@Language.GetPageTitle("ReportEdit") ");
+        $("#TabStrip").data("kendoTabStrip").select(0);
+        });
+    </script>
+
+  

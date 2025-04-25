@@ -1,0 +1,118 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@model ImportFormatNewTable
+@{
+    ViewBag.Title = "Details";
+    var data = AMSContext.CreateNewContext();
+    var TableField = ImportTemplateNewTable.GetAvailableFieldsForEdit(data, Model.ImportFormatID, Model.EntityID, (int)Model.ImportTemplateTypeID);
+    var selectedsField = ImportTemplateNewTable.GetSelectedDatas(data, Model.ImportFormatID);
+
+}
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+    
+    <div class="list-container">
+        <div style="display: none">
+            @Html.HiddenFor(model=>model.FormatExtension)
+            @Html.HiddenFor(model=>model.FormatPath)
+            @Html.TextBox("hdSelectedItems")
+            @Html.TextBox("hdSelectedItemsIDS")
+            @Html.TextBox("FormatTextValue")
+        </div>
+        <div class="row k-text-error">
+
+            @Html.ValidationMessage("12")
+            @Html.HiddenFor(model=>model.ImportFormatID)
+            @Html.HiddenFor(model=>model.EntityID)
+            @Html.HiddenFor(model=>model.ImportTemplateTypeID)
+            @Html.HiddenFor(model=>model.TamplateName)
+            @Html.HiddenFor(model=>model.StatusID)
+        </div>
+        <div class="row">
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Import Template Type",true)</label> :
+                @Model.ImportTemplateType.ImportTemplateType
+
+                <div id="errApproveModuleID"></div>
+            </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Choose Master",true)</label> :
+                @Model.Entity.EntityName
+                @*  @(Html.Kendo().DropDownListFor(model => model.FromLocationTypeID)
+                //.Name("FromLocationTypeID")
+                .HtmlAttributes(new { style = "width:200px!important ", disabled = "disabled" })
+                .BindTo(ComboBoxHelper.GetAllLocationType(AMSContext.CreateNewContext(), ""))
+                .OptionLabel("Select From Location Type")
+
+                ) *@
+                <div id="errFromLocationType"></div>
+            </div>
+
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Template Name",true)</label> :
+
+                @Model.TamplateName
+
+                <div id="errToLocationType"></div>
+            </div>
+
+            <div class="col-xl-12">
+
+                <table class="tablefilter" style="width: 544px;margin:0px auto;" id="selectionArea">
+                    <tr>
+                        <td class="editor-label">
+                            @Html.Label("AvailableFields", "Available Fields")
+                        </td>
+                        <td>
+                        </td>
+                        <td class="editor-label">
+                            @Html.Label("lblSelectedFields", "Selected Fields")
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 230px;">
+
+                            @{
+                                var rolelist = TableField;
+                            }
+
+                            @Html.ListBox("lstAvailableFields", new SelectList(rolelist,"Value","Text"), new { style = "height:250px;width:100%" })
+
+                        </td>
+                       
+                        <td style="width: 230px;">
+                            @{
+                                var rolelist1 = selectedsField;
+                            }
+                            @Html.ListBox("lstSelectedFields", new SelectList(selectedsField,"Value","Text"), new { style = "height:250px;width:100%" })
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id="issueDetails">
+                            <span id="noneSelected" style="color: red;"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"><div id="SelectedApprovals"></div></td>
+                    </tr>
+                    @Html.Hidden("hdSelectedItems")
+                    @Html.Hidden("hdNonSelectedItems")
+
+                </table>
+            </div>
+            <div class="col-xl-12 text-right add-action-btns">
+              
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="loadIndexPage('ImportFormat')" })
+            </div>
+
+        </div>
+    </div>
+}
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("Import Format Details");
+       
+    });
+</script>

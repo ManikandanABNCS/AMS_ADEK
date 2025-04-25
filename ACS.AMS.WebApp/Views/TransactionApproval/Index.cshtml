@@ -1,0 +1,140 @@
+﻿@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+    string rightName = ViewBag.rightName;
+    int currentPageId = ViewBag.CurrentPageID;
+    int moduleID = (int)ApproveModuleValue.AssetTransfer;
+    switch(rightName)
+    {
+        case "AssetTransferApproval":
+            moduleID = (int)ApproveModuleValue.AssetTransfer;
+            break;
+        case "AssetRetirementApproval":
+            moduleID = (int)ApproveModuleValue.AssetRetirement;
+            break;
+        case "InternalAssetTransferApproval":
+            moduleID = (int)ApproveModuleValue.InternalAssetTransfer;
+            break;
+        case "AssetApproval":
+            moduleID = (int)ApproveModuleValue.AssetAddition;
+            break;
+        case "AssetMaintenanceRequestApproval":
+            moduleID = (int)ApproveModuleValue.AssetMaintenanceRequest;
+            break;
+        case "AMCScheduleApproval":
+            moduleID = (int)ApproveModuleValue.AMCSchedule;
+            break;
+    }
+}
+<script>
+function multiapprovalAllDoc(val) {
+        var ItemIds1 = [];
+        ItemIds = ItemIds1;
+        var sel = $("input:checkbox", grid.tbody).closest("tr");
+        $.each(sel, function (idx, row) {
+            var item = grid.dataItem(row);
+            $(this).closest('tr').find('[type=checkbox]').prop('checked', true);
+            ItemIds.push(item.ApprovalHistoryID);
+        });
+
+        multiapprovalDoc(val)
+    }
+    function multiapprovalDoc(val) {
+        if (ItemIds.length > 0) {
+            if (val == 'Reject') {
+                if ($('#Remarks').val() == '') {
+                    alert('Please Enter Remarks');
+                    return false;
+                }
+            }
+
+            $.ajax({
+                url: "/TransactionApproval/ApprovalProcess",
+                type: "POST",
+                dataType: "json",
+                async: false,
+                data: {
+                    type: val,
+                    id: ItemIds,
+                    remarks: document.getElementById("Remarks").value,
+                    currentPageID: $("#CurrentPageID").val(),
+                    moduleID: $("#moduleID").val(),
+                    userID: $("#UserID").val(),
+                    enableUpdate:0
+                },
+                success: function (data) {
+                    if (data.Result == "Success") {
+                        showSuccessMessage(data.message);
+                        $('#Remarks').val('');
+                        $("#DetailsGrid").data('kendoGrid').dataSource.read();
+
+                    }
+                    else {
+                        showErrorMessage(data.message);
+                        $('#Remarks').val('');
+                        $("#DetailsGrid").data('kendoGrid').dataSource.read();
+                    }
+                }
+            });
+        }
+        else {
+            if (val == "Approval") {
+                showErrorMessage("Select Atleast One Record to Approve");
+            }
+            else
+                showErrorMessage("Select Atleast One Record to Reject");
+
+            return false;
+        }
+    }
+    </script>
+<div class="list-container">
+    <div class="row">
+        <div class="form-group col-md-12">
+            @Html.Hidden("CurrentPageID", currentPageId)
+            @Html.Hidden("ScreenName", rightName)
+            @Html.Hidden("UserID", SessionUser.Current.UserID)
+            @Html.Hidden("moduleID", moduleID)
+            @{
+                DisplayHelper display = new DisplayHelper(this, "TransactionApproval", "ApprovalHistoryID");
+
+                var gridCtrl = Html.Kendo().Grid<dynamic>()
+                .Name("DetailsGrid") ;
+
+                display.AddGridActionColumns(gridCtrl, Url, "TransactionApproval", RightNames.Asset, addEditColumn: true, addDetailsColumn: true, addDeleteColumn: false, addCheckbox: false, deleteActionName: "_deleteItem", deleteAdditionalData: "CurrentPageID=" + ViewBag.CurrentPageID, approvalCheckbox: true, editAdditionalData: "pageName=" + rightName, detailsAdditionalData: "pageName=" + rightName);
+                // , editScriptFunctionName: "editApprovalRecord"
+                display.ConfigureGrid(gridCtrl, readDataHandler: "defaultGridReadWithAdditionPrarm", readActionName: "_Index");
+                display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.Asset, addNewButtonRequired: false, exportToCSVButtonRequired: false, exportToExcelButtonRequired: false, exportToPDFButtonRequired: false, addDeleteButtonRequired: false);
+                
+                gridCtrl.Render();
+            }
+
+          
+        </div>
+        <div class="form-group col-md-6">
+            <div class="row">
+                <label class="fieldlabel"> Remarks :</label>
+                @Html.TextArea("Remarks", "", 5, 50, new { @class = "k-textbox", style = "width: 594px !important;height:90px; resize:none;", maxlength = 180 })
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-12 text-right add-action-btns">
+       @*  @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Approve All").Name("ApproveAll").HtmlAttributes(new {  style="width: 170px;", onclick="return multiapprovalAllDoc('Approval')" }) *@
+        @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Approve Selected").Name("Approve").HtmlAttributes(new { style="width: 170px;",  onclick="return multiapprovalDoc('Approval')" })
+@*         @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Reject All").Name("RejectAll").HtmlAttributes(new { style="width: 170px;", onclick="return multiapprovalAllDoc('Reject')" })
+        @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Reject selected").Name("Reject").HtmlAttributes(new { style="width: 170px;", onclick="return multiapprovalDoc('Reject')" }) *@
+    </div>
+</div>
+
+
+
+
+<script>
+    $(function () {
+        setPageHeading('@Language.GetPageTitle(ViewBag.rightName)');
+    });
+
+  
+
+</script>

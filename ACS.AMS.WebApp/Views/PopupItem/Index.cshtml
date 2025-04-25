@@ -1,0 +1,151 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+    string screenName = ViewBag.ScreenName;
+}
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery/dist/popper.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+<link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+<link href="@Url.Content("~/lib/kendo-ui/styles/kendo.common.min.css")" rel="stylesheet" type="text/css" />
+<script src="~/lib/kendo-ui/js/jquery.min.js"></script>
+<script src="~/lib/kendo-ui/js/jszip.min.js"></script>
+<script src="~/lib/kendo-ui/js/kendo.all.min.js"></script>
+<script src="~/lib/kendo-ui/js/kendo.aspnetmvc.min.js"></script>
+
+<link href="~/css/site.css" rel="stylesheet" />
+<link href="~/css/ThemeBuilderDesign/dist/css/ThemeBuilderDesign.css" rel="stylesheet" />
+<link href="~/css/ThemeBuilder.custom.css" rel="stylesheet" type="text/css" />
+<script src="~/ACSScript/Common.js"></script>
+<script src="~/ACSScript/ACSDynamicReport.js"></script>
+@{
+    //var culture = System.Globalization.CultureInfo.CurrentCulture.ToString();
+    var path = Url.Content("~/lib/kendo-ui/js/messages/kendo.messages." + "en-GB" + ".min.js");
+}
+
+<script src="@path"></script>
+<script>
+    function OnPopupItmWindowClose() {
+        var w = window.parent.$("#PopupAsset").data("kendoWindow");
+        w.close();
+    }
+    function popupItemConfirmation() {
+        debugger;
+        var flag = true;
+        if (ItemIds.length == 0) {
+            flag = false;
+            if ($("#validateSelectedRole").val() != "") {
+                    $("#errGrid").after('<span style="color:red;font-weight:normal;" id="validateSelectedRole">@Language.GetString("Please Select any one asset")</span>');
+            }
+        }
+        else {  
+            $("#ItemID").val(ItemIds);
+
+            $.ajax({
+                url: '/PopupItem/ValidateAssets',
+                type: "POST",
+                async: false,
+                data: { ids: $("#ItemID").val(), screenName: $("#ScreenName").val(), currentPageID: $("#CurrentPageID").val() },
+                success: function (data) {
+                    if (data.Result == "Success") {
+                        $.ajax({
+                            url: '/PopupItem/AddLineItem',
+                            type: "POST",
+                            async: false,
+                            data: { ids: $("#ItemID").val(), currentPageID: $("#CurrentPageID").val(), screenName: $("#ScreenName").val() },
+                            success: function (data) {
+                                if (data.Result == "Success") {
+                                    debugger;
+                                    OnPopupItmWindowClose();
+                                    window.parent.$("#DetailsGrid").data("kendoGrid").dataSource.read();
+
+                                    window.parent.document.getElementById("transferAssetPart").style.display = "";
+                                }
+                            }
+                        });
+                    }
+                    else 
+                    {
+                        alert(data.Errormsg);
+                    }
+
+                }
+            });
+
+            
+
+        }
+
+       
+
+}
+    </script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+
+    <div class="list-container">
+        <div>
+   @*          <table class="entry1" style="width: 100%;" id="SearchPage">
+                <tr>
+
+                    <td style="text-align: left;"> *@
+            <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+                        @{
+
+                                // <input id="create" type="button" onclick="return popupItemConfirmation();" class="tab_save" style="width: 100px" value="@Language.GetButtonText("SelectAsset")" title="@Language.GetToolTipText("SelectAsset")" />
+
+                                //             <input id="View" type="button" value="@Language.GetButtonText("Close")"
+                                //                    title="@Language.GetToolTipText("Close")" onclick="OnPopupItmWindowClose()" class="tab_save" style="width: 100px" col />
+
+                        @Html.Kendo().Button().Content("Select Asset").Name("searchButton").HtmlAttributes(new {style="width:140px;", onclick="return popupItemConfirmation()" })
+                        <label>&nbsp;&nbsp;</label>
+                        @Html.Kendo().Button().Content("Close").Name("cancelButton").HtmlAttributes(new { onclick="OnPopupItmWindowClose()" })
+                        }
+                        </div>
+                  @*   </td>
+                </tr>
+                </table> *@
+        </div>
+        <div class="row">
+            <div class="form-group col-md-12">
+        @{
+                     @Html.Hidden("ItemID")
+                     @Html.Hidden("ScreenName",screenName)
+                        @Html.Hidden("CurrentPageID", Model.EntityInstance.CurrentPageID)
+            DisplayHelper display = new DisplayHelper(this, "PopupItem", "AssetID");
+
+            var gridCtrl = Html.Kendo().Grid<dynamic>()
+            .Name("DetailsGrid");
+            
+            display.AddGridActionColumns(gridCtrl, Url, "PopupItem", RightNames.Asset,addDeleteColumn:false,addEditColumn:false,addDetailsColumn:false);
+                display.ConfigureGrid(gridCtrl, readDataHandler: "defaultGridReadWithAdditionPrarm");
+            display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.Asset, addNewButtonRequired: false, exportToCSVButtonRequired: false, exportToPDFButtonRequired: false,exportToExcelButtonRequired:false,addDeleteButtonRequired:false,ChangeColumnRequired:false);
+
+            gridCtrl.Render();
+           
+           
+        }
+                <div id="errGrid"></div>
+        </div>
+        </div>
+
+    </div>
+}
+
+
+<script>
+    // $(function () {
+    //     setTimeout(
+    //         function () {
+    //             $("#scrollbarBoth").niceScroll({
+    //                 cursorwidth: "10px",
+    //                 emulatetouch: true
+    //             });
+    //         }, 1000);
+    // });
+</script>

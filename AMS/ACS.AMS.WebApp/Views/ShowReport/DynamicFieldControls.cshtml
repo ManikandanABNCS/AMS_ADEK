@@ -1,0 +1,67 @@
+﻿@using ACS.AMS.DAL
+@{
+    int dynamicFieldID = (int)ViewData["ScreenFilterLineItemID"];
+    int rowCount = (int)ViewData["RowCount"];
+    string filterValue = ViewData["FilterValue"] + "";
+    string logicalOperator = ViewData["LogicalOperator"] + "";
+    string relationalOperator = ViewData["RelationalOperator"] + "";
+
+    AMSContext db = AMSContext.CreateNewContext();
+
+    string fieldDisplayName = "";
+    int fieldTypeCode = 0;
+    string fieldName = "";
+    var filterField = ScreenFilterLineItemTable.GetItem(db, dynamicFieldID);
+
+    fieldDisplayName = filterField.DisplayName;
+    fieldName = filterField.DisplayName;
+    fieldTypeCode = Convert.ToInt32(filterField.FieldType.FieldTypeCode);
+
+    string fieldIDSuffix = "_" + rowCount;
+}
+
+<td style="min-width: 150px;">
+    @(Html.DropDownList("LogicalOperator" + fieldIDSuffix, ComboBoxHelper.GetAllConditions(selectedValue: logicalOperator), new { @class = "form-control form-logical" }))
+</td>
+
+<td align="left" style="min-width: 150px;">@fieldDisplayName</td>
+
+<td style="width: 100px;">
+    @(Html.DropDownList("RelationalOperator" + fieldIDSuffix, ComboBoxHelper.GetAllOperators(fieldTypeCode, relationalOperator), new { onchange = "fnRelationalOperator(this);", @class = "form-control", @style = "width:160px !important;" }))
+</td>
+
+<td colspan="2" style="width: 100%;">
+    @{
+        DynamicFieldValueModel model = new DynamicFieldValueModel();
+        model.ControlName = "DynamicFieldValue" + fieldIDSuffix;
+        model.Value1 = filterValue;
+        model.displayName = fieldDisplayName;
+        model.fieldIDSuffix = fieldIDSuffix;
+
+
+        //string viewName = "~/Views/Shared/ReportFields/" + fieldName + ".ascx";
+        string viewName = "~" + fieldName + ".cshtml";
+        //if ((System.IO.File.Exists(Server.MapPath(viewName))))
+        //{
+        //    Html.RenderPartial(viewName, new ACS.AMS.WebApp.Models.MultiColumnViewModel(model.ControlName, "") { PlaceholderText = "<-- ALL --> " });
+
+        //}
+        //else
+        //{
+
+            if (fieldTypeCode == 4) { fieldTypeCode = 3; }
+            if (fieldTypeCode == 8) { fieldTypeCode = 1; }
+            if (fieldTypeCode == 9) { fieldTypeCode = 2; }
+            if (fieldTypeCode == 10) { fieldTypeCode = 5; }
+
+            Html.RenderPartial("~/Views/Shared/ReportFields/Field_" + fieldTypeCode + ".ascx", model);
+
+        //}
+    }
+    @Html.Hidden("DynamicFieldID" + fieldIDSuffix, dynamicFieldID)
+    @Html.Hidden("RowID" + fieldIDSuffix, rowCount)
+    @Html.Hidden("AutoCompleteDynamicFieldID" + fieldIDSuffix)
+</td>
+<td width="10%">
+    <input type="button" value="Remove" onclick="RemoveFilterRow(@rowCount)" class="btn btn-danger" style="padding:2px 12px;margin:5px 0px;" />
+</td>

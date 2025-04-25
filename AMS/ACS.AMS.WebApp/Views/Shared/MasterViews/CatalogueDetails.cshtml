@@ -1,0 +1,60 @@
+﻿@model int 
+@{
+    var asset = AssetTable.GetItem(AMSContext.CreateNewContext(), Model);
+    var Category = CategoryTable.GetItem(AMSContext.CreateNewContext(), asset.CategoryID);
+    var Product = ProductTable.GetItem(AMSContext.CreateNewContext(), asset.ProductID);
+}
+<style>
+    .horizontal-line {
+        border-bottom: 1px solid black;
+        width: 100%; /* Adjust width as needed */
+        margin: 20px 0; /* Adjust spacing as needed */
+        font-size: 20px;
+    }
+
+</style>
+ <table class="table-bordered asset-tab">
+    <tr>
+        <td style="vertical-align:top" width="50%"><h4 class="assetDocument">@Html.Label(Language.GetString("CategoryCatalogueImage")) </h4>
+            @if(Category.CatalogueImage!=null)
+            {
+                <img id="CategoryCatalogueImage" src="@Url.Content("/" + Category.CatalogueImage)" alt="No Image" width="100%" height="300px" style="margin-top:5px;">
+            }
+
+            </td>
+        <td style="vertical-align:top" width="50%">
+            <h4 class="assetDocument">@Html.Label(Language.GetString("ProductCatalogueImage")) </h4>
+            @if (Product.CatalogueImage != null)
+            {
+                <img id="CategoryCatalogueImage" src="@Url.Content("/" + Product.CatalogueImage)" alt="No Image" width="100%" height="300px" style="margin-top:5px;">
+            }
+            <div class="horizontal-line"></div>
+            <table>
+                <tr>
+                    <td>
+                        <h4 class="assetDocument">@Html.Label(Language.GetString("VirtualBarcode")) </h4>
+                        
+                    </td>
+                    <td>
+                        @if (Product.VirtualBarcode != null)
+                        {
+                            <b> @Product.VirtualBarcode</b>
+                        }
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>
+                        <h4 class="assetDocument">@Html.Label(Language.GetString("Specification")) </h4></td>
+                        <td>
+                        @if (Product.Specification != null)
+                        {
+                            <b> @Product.Specification</b>
+                        }
+                    </td>
+                </tr>
+            </table>
+        </td>
+        </tr>
+     </table>
+
+    

@@ -1,0 +1,146 @@
+﻿@model ACS.AMS.WebApp.Models.LoginModel
+@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@{
+    Layout = null;
+    var data = AMSContext.CreateNewContext();
+}
+<style type="text/css">
+	.has-float-label{display:block;position:relative}
+	.has-float-label label,
+	.has-float-label>span{position:absolute;cursor:text;font-size:75%;opacity:1;-webkit-transition:all .2s;transition:all .2s;top:-.5em;left:.75rem;z-index:3;line-height:1;padding:0 1px}
+	.has-float-label label::after,.has-float-label>span::after{content:" ";display:block;position:absolute;background:#fff;height:2px;top:50%;left:-.2em;right:-.2em;z-index:-1}.has-float-label .form-control::-webkit-input-placeholder{opacity:1;-webkit-transition:all .2s;transition:all .2s}.has-float-label .form-control:placeholder-shown:not(:focus)::-webkit-input-placeholder{opacity:0}.has-float-label .form-control:placeholder-shown:not(:focus)+*{font-size:100%;opacity:.5;top:.7em}.input-group .has-float-label{display:table-cell; width: 100%;margin: 5px 0;}.input-group .has-float-label .form-control{border-radius:.25rem;     box-shadow: none;}
+
+
+.LoginErrorMessage
+{
+        color: #dde144;
+        font-size: 18px;
+        font-weight: 600;
+        position: absolute;
+        left: 585px;
+        top: 480px;
+}
+
+</style>
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>AMS - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    
+    <link href="~/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+    <script src="~/js/jquery.min.js"></script>
+    <script src="~/js/popper.min.js"></script>
+    <script src="~/js/bootstrap.min.js"></script>
+
+    <link href="~/css/NewLogin.css" rel="stylesheet" />
+    @* <link href="~/css/Login.css" rel="stylesheet" /> *@
+    @* <link href="~/css/ThemeBuilder.css" rel="stylesheet" /> *@
+
+    @* <link href="@Url.Content("~/lib/kendo-ui/styles/default-main.css")" rel="stylesheet" type="text/css" /> *@
+    <script src="@Url.Content("~/lib/kendo-ui/js/jquery.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/jszip.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/kendo.all.min.js")"></script>
+    <script src="@Url.Content("~/lib/kendo-ui/js/kendo.aspnetmvc.min.js")"></script>
+
+
+</head>
+<body>
+
+     @using (Html.BeginForm("Login", "Login", FormMethod.Post, new { Name = "Form1" }))
+    {
+        <div class="desktop-5-parent">
+            <div class="desktop-5">
+                <div class="businesspeople-meeting-plan-an-parent">
+                    <img class="businesspeople-meeting-plan-an-icon" alt="" src="~/css/images/businesspeoplemeetingplananalysisgraphcompanyfinancestrat-5-1@2x.png">
+
+                    <img class="businesspeople-meeting-plan-an-icon" alt="" src="~/css/images/abstractlowpolybackgroundwithconnectinglinesdots-1@2x.png">
+
+                    <div class="group-parent">
+                        <div class="group-container">
+                            <div class="group-container">
+                                <div class="group-container">
+                                    <div class="blue-rectangle-login"></div>
+                                    <div class="group-parent1">
+                                        <div class="rectangle-wrapper">
+                                            <div class="group-child">
+
+                                            </div>
+                                            @Html.TextBoxFor(model => model.UserName, new { id = "UserName", @Class = "group-child-textbox", @tabindex = 1, autocomplete = "off" })
+                                        </div>
+                                        <div class="username">Username</div>
+                                    </div>
+                                    <div class="group-parent2">
+                                        <div class="rectangle-container">
+                                           
+                                        </div>
+                                          <div class="form-group">
+
+                                            @Html.PasswordFor(model => model.Password, new { id = "Password", @Class = "rectangle-container-textbox", @tabindex = 2, autocomplete = "off" })
+
+                                            <p class="errmsg">@Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })</p>
+                                            @{
+                                                string errormsg = "";
+                                                if (ViewData["ErrorMesg"] != null)
+                                                {
+                                                    errormsg = ViewData["ErrorMesg"].ToString();
+                                                }
+                                            }
+                                            <span class="LoginErrorMessage">
+                                                @errormsg
+                                            </span>
+                                        </div>
+                                        <div class="password">Password</div>
+                                    </div>
+                                </div>
+
+                                <div class="logo-container">
+                                    <img class="logo" alt="#" src="~/css/images/logo.svg">
+                                </div>
+                                <div class="icon">
+                                    <img class="user-icon" alt="#" src="~/css/images/username.svg">
+                                </div>
+                                <div>
+                                    <img class="lock-icon" alt="#" src="~/css/images/password.svg">
+                                </div>
+                            </div>
+
+                            <div class="rectangle-parent">
+                                <div class="group-inner"></div>
+                                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Log In").Name("login").HtmlAttributes(new { type = "submit" })
+                               
+                            </div>
+                        </div>
+                      @*   <div class="forgot-password">@Html.Kendo().CheckBoxFor(m => m.ForgotPassword).Label("Forgot password?")</div> *@
+                        <div class="remember-me-parent">
+                            <div class="remember-me">
+                                @Html.Kendo().CheckBoxFor(m => m.RememberMe).Label("Remember me")
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</body>
+    
+</html>
+
+<script>
+    $(document).ready(function () {
+        $("#UserName").focus();
+    });
+    function Validation() {
+		
+    }
+</script>

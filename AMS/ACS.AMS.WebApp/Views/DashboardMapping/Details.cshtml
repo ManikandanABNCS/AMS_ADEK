@@ -1,0 +1,207 @@
+﻿@model DashboardMappingTable
+@{
+    ViewBag.Title = "Details";
+}
+<style>
+    .box-col {
+        float: left;
+        padding: 0 3em 1.667em 0;
+    }
+</style>
+<script>
+    function OnSuccessUpload(e) {
+        var fileName = e.response.ImageName;
+        var name = e.response.fileName;
+        if (document.getElementById('IconPath') || $('#IconPath').length > 0) {
+            $("#IconPath").val(fileName);
+        }
+        // var ImgPath = $('#StampImage').attr('src');
+        //    ImgPath = ImgPath.substring(0, ImgPath.lastIndexOf('/') + 1);
+        //    if (name != "" && name != null && name != undefined) {
+        //        $('#StampImage').attr('src', ImgPath + name);
+        //        document.getElementById('StampImage').style.display = 'block';
+        //    }
+        //    else {
+        //        document.getElementById('StampImage').style.display = 'none';
+        //    }
+    }
+    function filterAppID() {
+        return {
+            templateID: $("#DashboardTemplateID").val(),
+            text: $("#FieldName").val()
+        };
+    }
+    function filterXaxisAppID() {
+        return {
+            templateID: $("#DashboardTemplateID").val(),
+            text: $("#XAxisField").val()
+        };
+    }
+    function filterYaxisAppID() {
+        return {
+            templateID: $("#DashboardTemplateID").val(),
+            text: $("#YAxisField").val()
+        };
+    }
+    function filterCategoriesAppID() {
+        return {
+            templateID: $("#DashboardTemplateID").data("kendoMultiColumnComboBox").value(),
+            text: $("#CategoriesField").val()
+        };
+    }
+</script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+{
+
+    <div class="list-container">
+        <div class="row k-text-error">
+            @* @Html.ValidationSummary()*@
+            @Html.ValidationMessage("12")
+        </div>
+        @Html.HiddenFor(model => model.CurrentPageID)
+        @Html.HiddenFor(model => model.DashboardMappingID)
+        @Html.HiddenFor(model => model.DashboardTypeID)
+        @Html.HiddenFor(model => model.DashboardTemplateID)
+        <div class="row">
+            <div class="row">
+                <div class="col-xl-3">
+                    @Html.Label(Language.GetString("DashboardType")) <span style='color: red'>* </span>
+                    @Html.TextBoxFor(model => model.DashboardType.DashboardType, new { Class = "form-control", @readonly = "readonly" })
+                    <div id="errDashboardTypeID"></div>
+                </div>
+                <div class="col-xl-3">
+                    @Html.Label(Language.GetString("Dashboard Template")) <span style='color: red'>* </span>
+                    @Html.TextBoxFor(model => model.DashboardTemplate.DashboardTemplateName, new { Class = "form-control", @readonly = "readonly" })
+                    <div id="errDashboardTemplateID"></div>
+                </div>
+                <div class="col-xl-3">
+                    @Html.FieldLabelFor(model => model.DasboardMappingName, true)
+                    @Html.TextBoxFor(model => model.DasboardMappingName, new { Class = "form-control", @readonly = "readonly" })
+                    <div id="errDasboardMappingName"></div>
+                </div>
+
+
+                <div class="col-xl-3">
+                    @Html.Label(Language.GetString("DashboardHeight:"))
+                    @Html.TextBoxFor(model => model.DashboardHeight, "{0:F2}", new { Class = "form-control", @style = "width:100% !important;display:inline-block;float:left;", @readonly = "readonly" })
+                </div>
+                <div class="col-xl-3">
+                    @Html.Label(Language.GetString("DashboardWeight:"))
+                    @Html.TextBoxFor(model => model.DashboardWeight, "{0:F2}", new { Class = "form-control", @style = "width:100% !important;display:inline-block;", @readonly = "readonly" })
+                </div>
+                <div class="col-xl-3">
+                    @Html.Label(Language.GetString("XAxisTitle:"))
+                    @Html.TextBoxFor(model => model.XAxisTitle, new { Class = "form-control", @style = "width:100% !important;display:inline-block;float:left;", @readonly = "readonly" })
+                    <div id="errXAxisTitle"></div>
+                </div>
+                <div class="col-xl-3">
+                    @Html.Label(Language.GetString("YAxisTitle:"))
+                    @Html.TextBoxFor(model => model.YAxisTitle, new { Class = "form-control", @style = "width:100% !important;display:inline-block;", @readonly = "readonly" })
+                    <div id="errYAxisTitle"></div>
+                </div>
+                <div class="col-xl-3 box-col">
+                    @Html.Label(Language.GetString("DashboardBackGroundColor:"))
+                    @(Html.Kendo().ColorPickerFor(model => model.DashboardBackGrounndColors)
+                        //  .Name("DashboardBackGroundColor")
+                        .Value("#ff0000")
+                        .Format(ColorPickerFormat.Rgb)
+                        .Formats(new string[] { "rgb", "hex" })
+
+                        )
+                    @* @(Html.Kendo().ColorPalette()
+                .Name("metro")
+                .Palette(new string[] {
+                "#ffffff", "#000000", "#d6ecff", "#4e5b6f", "#7fd13b", "#ea157a", "#feb80a", "#00addc", "#738ac8", "#1ab39f",
+                "#f2f2f2", "#7f7f7f", "#a7d6ff", "#d9dde4", "#e5f5d7", "#fad0e4", "#fef0cd", "#c5f2ff", "#e2e7f4", "#c9f7f1",
+                "#d8d8d8", "#595959", "#60b5ff", "#b3bcca", "#cbecb0", "#f6a1c9", "#fee29c", "#8be6ff", "#c7d0e9", "#94efe3",
+                "#bfbfbf", "#3f3f3f", "#007dea", "#8d9baf", "#b2e389", "#f272af", "#fed46b", "#51d9ff", "#aab8de", "#5fe7d5",
+                "#a5a5a5", "#262626", "#003e75", "#3a4453", "#5ea226", "#af0f5b", "#c58c00", "#0081a5", "#425ea9", "#138677",
+                "#7f7f7f", "#0c0c0c", "#00192e", "#272d37", "#3f6c19", "#750a3d", "#835d00", "#00566e", "#2c3f71", "#0c594f"
+                })
+                ) *@
+                </div>
+                @*  <span style="color: red;">* All units are in Inches</span> *@
+            </div>
+            <div style="border: solid 1px #C0CAD1; margin: 5px 0px;" id="MappingFieldPart">
+                <h5 style="background: #C0CAD1; margin: 0px;">Mapping Field Details</h5>
+                <div class="col-md-12" style="width:100%">
+                    
+                   
+                    <table>
+
+                        <tr>
+                            <td colspan="4">
+                                @(
+                                    Html.Kendo().Grid<ACS.AMS.WebApp.Models.DashboardFieldMappingModel>()
+
+                                    .Name("DetailsGrid")
+                                    .Columns(columns =>
+                                    {
+                                        @*   columns.Bound(p => p.ID).Width(100).Visible(false);
+                            columns.Bound(p => p.ID).Width(20).Filterable(false); *@
+                                        columns.Bound(p => p.FieldName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("FieldName"));
+                                        columns.Bound(p => p.XAxisField).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("XAxisField"));
+                                        columns.Bound(p => p.YAxisField).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("YAxisField"));
+                                        columns.Bound(p => p.ColorCode).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("ColorCode"));
+                                        columns.Bound(p => p.IconPath).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("IconPath"));
+                                        columns.Bound(p => p.RedirectPageName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("RedirectPageName"));
+
+                                        columns.Template("<center><a class='k-button-icontext' id='#=DashboardTemplateID#' href='javascript:LoadPOGenerateDelete(#=DashboardTemplateID#, \"#= DashboardTypeID #\",\"#= FieldName #\")'><img src='/css/images/delete-icon.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                                        .Title(Language.GetString("Delete")).Width(50);
+
+                                    }).Filterable()
+                                    .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+                                    .DataSource(datasource => datasource
+                                    .Ajax()//. Model(p => p.Id(x => x.PurchaseOrderID))
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.ID);
+                                        model.Field(p => p.ID).Editable(false);
+                                    })
+                                    .Read(read => read.Action("GetItemList", "DAshboardMapping", new { currentPageID = Model.CurrentPageID, mappingID = Model.DashboardMappingID })))
+                                    .Pageable()
+                                    )
+                            </td>
+
+                        </tr>
+
+                    </table>
+                </div>
+                <div class="col-xl-12 text-right add-action-btns">
+                  
+                    @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick = "loadIndexPage('DashboardMapping')" })
+                </div>
+            </div>
+
+        </div>
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                EntryPageModel newModel = new EntryPageModel()
+                {
+
+                    EntityInstance = Model as BaseEntityObject,
+                    ControllerName = this.GetType().Name.Substring(0, this.GetType().Name.Length - "Controller".Length),
+                };
+                Html.RenderPartial("BaseViews/AuditLogSingleView", newModel);
+            }
+        </div>
+    </div>
+}
+
+
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("DashboardTemplateEdit");
+
+    });
+   
+</script>
+<script src="~/acsscript/reportscripts.js"></script>

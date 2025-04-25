@@ -1,0 +1,101 @@
+﻿@model dynamic
+@using ACS.AMS.DAL
+<script>
+    function ListBoxParam() {
+        return {
+            currentPageID: '@ViewBag.CurrentPageID',
+        };
+    }
+
+   
+    function enableFilterItem(fieldName) {
+        var isEnabled = $("#isEnabled_" + fieldName).is(':checked');
+    }
+
+    function updateFilterItem(fieldName) {
+
+        var isEnabled = $("#isEnabled_" + fieldName).is(':checked');
+
+        var data = {
+            fieldName: fieldName,
+            currentPageID: '@ViewBag.CurrentPageID',
+            isEnabled: isEnabled,
+        };
+        Sever_UpdateData("@Url.Action("UpdateFieldData")", data);
+        enableFilterItem(fieldName);
+    }
+</script>
+<td>
+    <p style="font-style:oblique"> @Html.Label("Column Details") </p>
+</td>
+<td>
+    <table class="table table-striped table-bordered" style="width: 100%">
+        <tr style="text-align: center;">
+            <th style="width: 3%">@Language.GetString("Sel")</th>
+            <th style="width: 10%">@Language.GetString("FieldName") </th>
+           
+        </tr>
+        @{
+            int pageLinesCount = 10;
+            int pageNumber = ViewBag.PageNumber;
+
+            int startingLineCout = pageNumber * pageLinesCount;
+            var model = ViewBag.Datamodel as ACS.AMS.WebApp.Models.NotificationModule.NotificationFieldDataModel;
+
+            var filterLineItems = model.Fields.Skip(startingLineCout).Take(pageLinesCount);
+            //var filterItems = filterLineItems.Where(a => !a.FieldName.EndsWith("ID") && !a.FieldName.StartsWith("Attribute")).ToList();
+            int totalAvailableFilterRecods = model.Fields.Count();
+            int sno = startingLineCout + 1;
+                                                                                                                                                                                                                                        }
+                                                                                                                                                                                                                                        @{
+            foreach (var v in filterLineItems)
+            {
+
+
+                <tr style="border: 1px solid black;">
+                    <td style="border: 1px solid black;">
+                        @Html.CheckBox("isEnabled_" + v.FieldName, v.EnableField, new { onchange = string.Format("updateFilterItem('{0}')", v.FieldName) })
+                    </td>
+                    <td style="border:1px solid black;">@v.FieldName </td>
+                   
+                  
+                   
+                </tr>
+                sno++;
+            }
+        }
+        <tr>
+            @{
+                //Pagination related methods
+                bool firstRequired = pageNumber > 0;
+                bool prevRequired = pageNumber > 0;
+                bool nextRequired = pageNumber < (totalAvailableFilterRecods / pageLinesCount);
+                bool lastRequired = pageNumber < (totalAvailableFilterRecods / pageLinesCount);
+            }
+            <td colspan="13" style="text-align: right;">
+                @if (firstRequired)
+                {
+                      <a href="javascript:NotificationModule_loadLineItemsPage(0, false)">First</a>
+                }
+                else { }  &nbsp; &nbsp;
+                @if (prevRequired)
+                {
+                    <a href="javascript:NotificationModule_loadLineItemsPage(@pageNumber - 1 , false)">Previous</a>
+                }
+                else { }  &nbsp; &nbsp;
+                @if (nextRequired)
+                {
+                    <a href="javascript:NotificationModule_loadLineItemsPage(@pageNumber + 1 , false)">Next</a>
+                }
+                else { }  &nbsp; &nbsp;
+                @if (lastRequired)
+                {
+                    <a href="javascript:NotificationModule_loadLineItemsPage(@totalAvailableFilterRecods/@pageLinesCount , false)">Last</a>
+                }
+                else { }
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                Records @(startingLineCout + 1)  to @(startingLineCout + filterLineItems.Count())  of @totalAvailableFilterRecods
+            </td>
+        </tr>
+    </table>
+</td>

@@ -1,0 +1,33 @@
+﻿@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+
+}
+
+    
+    <div class="list-container">
+
+          @{
+            DisplayHelper display = new DisplayHelper(this,"LanguageContent", "LanguageContentID");
+
+            var gridCtrl = Html.Kendo().Grid<dynamic>()
+                .Name("DetailsGrid");
+
+            display.AddGridActionColumns(gridCtrl, Url, "LanguageContent", RightNames.LanguageContent,addDeleteColumn:false);
+            display.ConfigureGrid(gridCtrl);
+        display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.LanguageContent, addNewButtonRequired: false);
+
+            gridCtrl.Render();
+            //display.AddPopUpWindow(this.Html, "Division");
+
+        }
+    </div>
+<script>
+    $(function () {
+        setPageHeading("LanguageContent List");
+     
+      
+    }); 
+</script>
+
+

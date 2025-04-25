@@ -1,0 +1,30 @@
+﻿@model string 
+<script>
+    function OnCategoryChange() {
+        if (document.getElementById("ProductID") != null) {
+            $("#ProductID").data("kendoMultiColumnComboBox").value("");
+            $("#ProductID").data("kendoMultiColumnComboBox").dataSource.read();
+        }
+
+    }
+</script>
+@(Html.Kendo().DropDownTree()
+       .Name("CategoryID")
+       .Label(label =>
+       {
+           label.Content("Select an category...");
+           label.Floating(true);
+       })
+       .DataTextField("Name")
+       .DataValueField("id").Value(Model)
+       .HtmlAttributes(new { style = "width: 100%" })
+       .Filter(FilterType.Contains)
+       .Events(a=>a.Change("OnCategoryChange"))
+       .DataSource(dataSource => dataSource
+           .Read(read => read
+               .Action("GetCategoryListForDDTree", "DataService")
+           )
+       )
+   )
+    
+    

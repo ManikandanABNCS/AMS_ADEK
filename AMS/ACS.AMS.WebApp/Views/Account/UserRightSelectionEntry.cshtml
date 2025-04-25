@@ -1,0 +1,66 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model int
+@{
+    
+    int userID = Model;
+
+
+}
+
+<script language="javascript" type="text/javascript">
+@{
+    var selectedRights = UserRightView.GetAllRightValues(AMSContext.CreateNewContext()).Where(a => a.UserID == userID).ToList();
+    if (selectedRights.Count > 0)
+    {
+
+        foreach (var right in selectedRights)
+        {
+            string view = "false", create = "false", edit = "false", delete = "false", export = "false", details = "false";
+            int val = int.Parse(right.RightValue + "");
+            if ((val & ((int)UserRightValue.View)) == (int)UserRightValue.View)
+            {
+                view = "true";
+            }
+            if ((val & ((int)UserRightValue.Create)) == (int)UserRightValue.Create)
+            {
+                create = "true";
+            }
+            if ((val & ((int)UserRightValue.Edit)) == (int)UserRightValue.Edit)
+            {
+                edit = "true";
+            }
+            if ((val & ((int)UserRightValue.Delete)) == (int)UserRightValue.Delete)
+            {
+                delete = "true";
+            }
+            if ((val & ((int)UserRightValue.ExportToCSV)) == (int)UserRightValue.ExportToCSV)
+            {
+                export = "true";
+            }
+            if ((val & ((int)UserRightValue.Details)) == (int)UserRightValue.Details)
+            {
+                details = "true";
+            }
+
+      <text>
+    selectRightCheckBoxes(@right.RightID,@right.RightGroupID,@view,@create,@edit,@delete,@export,@details);
+     </text>
+        }
+    }
+    else
+    {
+        var list = UserRightView.GetAllRights(AMSContext.CreateNewContext()).ToList();
+
+        foreach (var right in list)
+        {
+        <text>
+    selectRightCheckBoxes(@right.RightID,@right.RightGroupID, false, false,false,false,false,false);
+    </text>
+        }
+    }
+    }
+</script>

@@ -1,0 +1,86 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model BasePageModel
+@{
+    ViewBag.Title = "Edit";
+    EntryPageHelper entryPage = new EntryPageHelper(Model)
+    {
+        Url = this.Url
+    };
+}
+<script>
+     function OnSuccessUpload(e) {
+        var fileName = e.response.ImageName;
+        if (document.getElementById('StampPath') || $('#StampPath').length > 0) {
+            $("#StampPath").val(fileName);
+        }
+    }
+    function Clearimage() {
+         if (document.getElementById('StampPath') || $('#StampPath').length > 0) {
+             $("#StampPath").val("");
+             document.getElementById('StampImage').src = "#";
+             $('label[id*="imageRemove"]').text('');
+         }
+     }
+     function treeViewSelect(e) {
+        var controlName = $("#PageName").val();
+        if (controlName == "Product") {
+            controlName = "Category";
+        }
+        controlName = controlName + "ID";
+        var datI = $("#treeView").getKendoTreeView().dataItem(e.node);
+        $("#" + controlName).val(datI.id);
+        document.getElementById("NameValue").value = datI.text;
+    }
+    </Script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+    @Html.Hidden("PageName", Model.PageName)
+    @Html.Hidden("primaryKeyID", Model.EntityInstance.GetPrimaryKeyValue())
+    @Html.Hidden("CurrentPageID", Model.EntityInstance.CurrentPageID)
+    @Html.Hidden(Model.EntityInstance.GetPrimaryKeyFieldName(), Model.EntityInstance.GetPrimaryKeyValue())
+
+        <div class="list-container">
+        <div class="row k-text-error">
+        @*     @Html.ValidationSummary() *@
+             @Html.ValidationMessage("12") 
+        </div>
+
+            @{
+                entryPage.CreateTreeviewPageControls(Html, this);
+            }
+
+        <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type="submit" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick=$"loadDynamicIndexPage('{Model.ControllerName}', '{Model.PageName}')" })
+        </div>
+
+    </div>
+
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading('Edit @Language.GetPageTitle(Model.PageTitle)');
+        setInitialFocus('@entryPage.FirstFieldName');
+
+        /* Override the JQuery and kendo validations to avoid date field format issue*/
+        jQuery.extend(jQuery.validator.methods, {
+            date: function (value, element) {
+                return this.optional(element) || kendo.parseDate(value, "@CultureHelper.ConfigureDateFormat") !== null;
+            },
+        });
+
+        kendo.ui.validator.rules.mvcdate = function (input) {
+            return input.val() === "" || kendo.parseDate(input.val(), "@CultureHelper.ConfigureDateFormat") !== null;
+        };
+    });
+,
+     
+</script>
+
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.unobtrusive.min.js"></script>

@@ -1,0 +1,45 @@
+﻿@model Tuple<string,string> 
+@{
+    var lastString = Model.Item1[Model.Item1.Length - 1];
+}
+<script>
+    function GetAdditionReportFilterParam(m1,m2) {
+        //var val = $("#NotificationModuleID").data("kendoComboBox").text();
+        //if (val.indexOf("Select") != 0) {
+        //    return
+        //    {
+        //        moduleID: $("#NotificationModuleID").data("kendoComboBox").value();
+        //    }
+        //}
+        
+        var moduleID = $("#NotificationModuleID").data("kendoDropDownList").value();
+
+        return {
+            notificationModuleID: moduleID
+        };
+    }
+    function FilterChange() { 
+       
+        $("#" + '@Model.Item1').val();
+        $("#DestinationField" + '@lastString').val("@@"+$("#" + '@Model.Item1').data("kendoDropDownList").text());
+    }
+    </script>
+
+@(Html.Kendo().DropDownList().Name(Model.Item1)
+        .HtmlAttributes(new { style = "width:100% !important" })
+        .OptionLabel(Language.GetString("Select")).DataTextField("Text")
+        .DataValueField("Value")
+        .Value(Model.Item2)
+        .Events(e=>e.Change("FilterChange"))
+        .DataSource(source =>
+        {
+            source.Read(read =>
+            {
+                read.Action("GetReportsFilter", "DataService").Data("GetAdditionReportFilterParam");
+
+            })
+            .ServerFiltering(true);
+        })
+        .Enable(true).AutoBind(false).CascadeFrom("NotificationModuleID")
+
+        )

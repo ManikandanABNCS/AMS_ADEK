@@ -1,0 +1,1151 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model EditRegisterModel
+@{
+    ViewBag.Title = "Edit";
+    var data = AMSContext.CreateNewContext();
+    var model = Model;
+    int currentPageID;
+  
+    if (Model.CurrentPageID > 0)
+    {
+        currentPageID = Model.CurrentPageID;
+    }
+    else
+    {
+        currentPageID = SessionUser.Current.GetNextPageID();
+    }
+}
+    <script>
+        function Personvalidation() {
+            var flag = true;
+            if (!flag)
+                return false;
+            else
+                return true;
+        }
+    function OnSuccessUpload(e) {
+        var fileName = e.response.ImageName;
+        var name = e.response.fileName;
+        if (document.getElementById('Person_SignaturePath') || $('#Person_SignaturePath').length > 0) {
+            $("#Person_SignaturePath").val(fileName);
+        }
+      
+
+    }
+        function ClearimageSignature() {
+        $("#Person_SignaturePath").val("");
+        document.getElementById('UploadSingature').src = "#";
+        $('label[id*="imageRemove"]').text('');
+        }
+    function ClearimageStamp() {
+        $("#Person_StampPath").val("");
+        document.getElementById('UploadStamp').src = "#";
+        $('label[id*="imageStampRemove"]').text('');
+    }
+    function FilterDetails(e) {
+
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code == 13) { //Enter keycode
+            e.preventDefault();
+            //return false;
+            $("#SEarchButton").click();
+        }
+    }
+
+    function FilterCategoryDetails(e) {
+
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code == 13) { //Enter keycode
+            e.preventDefault();
+            //return false;
+            $("#SEarchCategoryButton").click();
+        }
+    }
+    var keys = [];
+    var values = [];
+
+    var options = $('#lstLocationFields option');
+    $.each(options, function (index, item) {
+
+        keys.push(item.value);
+        values.push(item.innerHTML);
+
+    })
+
+    var keysCategory = [];
+    var valuesCategory = [];
+
+    var optionsCategory = $('#lstCategoryFields option');
+    $.each(optionsCategory, function (index, item) {
+
+        keysCategory.push(item.value);
+        valuesCategory.push(item.innerHTML);
+
+    })
+
+
+    function enterpressalert() {
+        var query = $("#search-termcustodian").val().toLowerCase();
+        DoListBoxFilter('#lstLocationFields', query, keys, values, '#lstSelectedLocationFields');
+
+    }
+    function ResetSearch() {
+        var query = $("#search-termcustodian").val("");
+        DoListBoxFilter('#lstLocationFields', "", keys, values, '#lstSelectedLocationFields');
+    }
+    function enterCategorySearch() {
+        var query = $("#search-termCategory").val().toLowerCase();
+        DoListBoxFilter('#lstCategoryFields', query, keysCategory, valuesCategory, '#lstSelectedCategoryFields');
+
+    }
+    function ResetCategorySearch() {
+        var query = $("#search-termCategory").val("");
+        DoListBoxFilter('#lstCategoryFields', "", keysCategory, valuesCategory, '#lstSelectedCategoryFields');
+    }
+
+    function checkSelectCustodian(indexAvl, listSelectedListBox) {
+
+        var options = $(listSelectedListBox + ' option');
+        var cnt = 0;
+        $.each(options, function (index, item) {
+            if (indexAvl == item.value) {
+                cnt = cnt + 1;
+            }
+
+        });
+        if (cnt > 0) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    function DoListBoxFilter(listBoxSelector, filter, keys, values, listSelectedListBox) {
+
+        var list = $(listBoxSelector);
+        //   alert(filter);
+
+        var selectBase = '<option value="{0}">{1}</option>';
+        list.empty();
+        for (i = 0; i < values.length; ++i) {
+            var chk = checkSelectCustodian(keys[i], listSelectedListBox);
+            if (chk) continue;
+            var existText = values[i].toLowerCase()//.substring(0, filter.length);
+
+            //if (existText.toLowerCase() == filter.toLowerCase()) {
+            if (filter != "") {
+                if (existText.includes(filter.toLowerCase())) {
+                    var value = values[i];
+                    if (value === "" || value.toLowerCase().indexOf(filter.toLowerCase()) >= 0) {
+                        var temp = '<option value="' + keys[i] + '">' + value + '</option>';
+                        list.append(temp);
+
+                    }
+                }
+            }
+            else {
+                var value = values[i];
+                if (value === "" || value.toLowerCase().indexOf(filter.toLowerCase()) >= 0) {
+                    var temp = '<option value="' + keys[i] + '">' + value + '</option>';
+                    list.append(temp);
+
+                }
+            }
+        }
+
+    }
+    function UserTypeChange(e) {
+        debugger;
+        var type = $("#Person_UserTypeID").val();
+        var Value = null;
+        var tabStrip = $("#TabStrip").data("kendoTabStrip");
+        if (type == "1") {
+            $("#passwordArea").show();
+            $("#confirmpasswordArea").show();
+            $("#tdlabelUser").show();
+            $("#DepartmentArea").hide();
+            // document.getElementById("passwordArea").style.display = "table-row";
+            // document.getElementById("tdlabelUser").style.display = "";
+
+            // document.getElementById("DepartmentArea").style.display = "none";
+
+            $("#nextDiv").show();
+            $("#saveDiv").hide();
+            var Index = tabStrip.contentElements.length;
+            for (i = 1; i < Index; i++) {
+                $(tabStrip.items()[i]).show();
+            }
+            $("#Password").val("");
+            $("#ConfirmPassword").val("");
+            //  $("#UserName").val("");
+        }
+        else if (type == "2") {
+            $("#passwordArea").hide();
+            $("#confirmpasswordArea").hide();
+            $("#tdlabelUser").hide();
+            $("#DepartmentArea").show();
+            // document.getElementById("passwordArea").style.display = "none";
+            // document.getElementById("tdlabelUser").style.display = "none";
+
+            // document.getElementById("DepartmentArea").style.display = "table-row";
+
+            var Index = tabStrip.contentElements.length;
+            for (i = 1; i < Index; i++) {
+                $(tabStrip.items()[i]).hide();
+            }
+            $("#nextDiv").hide();
+            $("#saveDiv").show();
+            $("#Password").val("admin");
+            $("#ConfirmPassword").val("admin");
+            $("#UserName").val($("#Person_PersonCode").val());
+        }
+        else {
+            $("#passwordArea").show();
+            $("#confirmpasswordArea").show();
+            $("#tdlabelUser").show();
+            $("#DepartmentArea").show();
+            // document.getElementById("passwordArea").style.display = "table-row";
+            // document.getElementById("DepartmentArea").style.display = "table-row";
+            // document.getElementById("tdlabelUser").style.display = "";
+
+
+            var Index = tabStrip.contentElements.length;
+            for (i = 1; i < Index; i++) {
+                $(tabStrip.items()[i]).show();
+            }
+            $("#nextDiv").show();
+            $("#saveDiv").hide();
+            $("#Password").val("");
+            $("#ConfirmPassword").val("");
+            //$("#UserName").val("");
+        }
+    }
+    </script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+        @Html.HiddenFor(model => model.Person.PersonID)
+         @Html.HiddenFor(model => model.Person.Culture)
+    @Html.HiddenFor(model => model.Person.StatusID)
+
+    @Html.HiddenFor(model => model.Person.CreatedBy)
+    @Html.HiddenFor(model => model.Person.CreatedFrom)
+     @Html.HiddenFor(model => model.Person.CreatedDateTime)
+    @Html.Hidden("SelectedLocationID")
+    @Html.Hidden("SelectedWarehouseID")
+    @Html.Hidden("SelectedDivisionID")
+    @Html.Hidden("EnableDepartment", AppConfigurationManager.GetValue<bool>(AppConfigurationManager.UserDepartmentMapping))
+    @Html.Hidden("EnableLocation", AppConfigurationManager.GetValue<bool>(AppConfigurationManager.UserLocationMapping))
+    @Html.Hidden("EnableCategory", AppConfigurationManager.GetValue<bool>(AppConfigurationManager.UserCategoryMapping))
+            <div class="list-container">
+        <div class="row k-text-error">
+
+            @Html.ValidationMessage("12")
+        </div>
+                @Html.Hidden("SelectedDivisionID")
+
+              @(Html.Kendo().TabStrip()
+                    .Name("TabStrip").SelectedIndex(0).HtmlAttributes(new { style = "width:100%;" })
+                    .Items(tabstrip =>
+                    {
+                        tabstrip.Add().Selected(true).Text("User").HtmlAttributes(new { style = "color:white;" })
+                       .Content(
+                            @<text>
+
+                        <div class="row">
+
+                                    <div class="col-xl-3">
+                            <label for="fullname">@Html.FieldLabel("PersonCode", true)</label>
+                                       @(Html.Kendo().TextBoxFor(model => model.Person.PersonCode).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;" }))
+                                        <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.PersonCode, "", new { @class = "text-danger" })</p>
+                                        <div id="errorCode"></div>
+
+                                    </div>
+                                    <div class="col-xl-3">
+                                <label for="fullname">@Html.FieldLabel("FirstName", true)</label>
+                                         @(Html.Kendo().TextBoxFor(model => model.Person.PersonFirstName).HtmlAttributes(new { Class = "k-textbox", maxlength = 50, style = "width: 100%;" }))
+                                        <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.PersonFirstName, "", new { @class = "text-danger" })</p>
+                                <div id="errFirstName"></div>
+                                    </div>
+                                    <div class="col-xl-3">
+                                <label for="fullname">@Html.FieldLabel("LastName", true)</label>
+                                         @(Html.Kendo().TextBoxFor(model => model.Person.PersonLastName).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;" }))
+                                        <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.PersonLastName, "", new { @class = "text-danger" })</p>
+                                <div id="errLastName"></div>
+                                    </div>
+                            <div class="col-xl-3">
+                                <label for="fullname">@Html.FieldLabelFor(model => model.Person.DOJ, true)</label>
+                                @(Html.Kendo().DatePickerFor(m => m.Person.DOJ).Max(DateTime.Now.AddDays(30)))
+                                <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.DOJ, "", new { @class = "text-danger" })</p>
+                                <div id="errDOJ"></div>
+                            </div>
+                                    <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabelFor(model => model.Person.MobileNo, true)</label>
+                                @(Html.Kendo().TextBoxFor(model => model.Person.MobileNo).HtmlAttributes(new { Class = "k-textbox", maxlength = 50, style = "width: 100%;", @type = "number" }))
+                                        <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.MobileNo, "", new { @class = "text-danger" })</p>
+                <div id="errmobile"></div>
+                                    </div>
+                            <div class="col-xl-3">
+                                <label for="fullname">@Html.FieldLabelFor(model => model.Person.WhatsAppMobileNo, false)</label>
+                                @(Html.Kendo().TextBoxFor(model => model.Person.WhatsAppMobileNo).HtmlAttributes(new { Class = "k-textbox", maxlength = 12, style = "width: 100%;", @type = "number" }))
+                                <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.WhatsAppMobileNo, "", new { @class = "text-danger" })</p>
+
+                            </div>
+                                    <div class="col-xl-3">
+                                        <label for="fullname">@Html.FieldLabelFor(model => model.Person.EMailID, true)</label>
+                                        @(Html.Kendo().TextBoxFor(model => model.Person.EMailID).HtmlAttributes( new { Class = "k-textbox", maxlength = 12, style = "width: 100%;" }))
+                                        <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.EMailID, "", new { @class = "text-danger" })</p>
+
+                                    </div>
+                                    
+                                    <div class="col-xl-3">
+                                <label for="fullname"> @Html.FieldLabelFor(model => model.Person.UserType, true)</label>
+                                        @(Html.Kendo().DropDownListFor(model => model.Person.UserTypeID).HtmlAttributes(new { Class = "k-textbox", style = "width: 100%;" })
+                .BindTo(ComboBoxHelper.GetUserType(data)).Events(n=>n.Change("UserTypeChange")).OptionLabel("Select"))
+                                        <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.UserTypeID, "", new { @class = "text-danger" })</p>
+                                <div id="errUserType"></div>
+                                    </div>
+                            <div class="col-xl-3">
+                                <label for="fullname"> @Html.FieldLabelFor(model => model.Person.Gender, true)</label>
+                                @(Html.Kendo().DropDownListFor(model => model.Person.Gender).HtmlAttributes(new { Class = "k-textbox", style = "width: 100%;" })
+                                    .BindTo(ComboBoxHelper.GetGender()).OptionLabel("Select"))
+                                <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.Gender, "", new { @class = "text-danger" })</p>
+                                <div id="errGender"></div>
+                            </div>
+
+
+            <div class="col-xl-3" id="tdlabelUser" style="display:table-row">
+                                <label for="fullname">@Html.FieldLabelFor(model => model.UserName, true)</label>
+                                @(Html.Kendo().TextBoxFor(model => model.UserName).HtmlAttributes(new { Class = "k-textbox", maxlength = 50, style = "width: 100%;" }))
+                                <p class="errmsg">@Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })</p>
+                                <div id="errUserName"></div>
+                            </div>
+            <div class="col-xl-3" id="passwordArea" style="display:table-row">
+                                <label for="fullname">@Html.FieldLabelFor(model => model.Password, true)</label>
+                                @Html.Kendo().TextBoxFor(model => model.Password).HtmlAttributes( new { Class = "k-textbox", style = "width: 100%;", autocomplete = "off",type="Password" })
+                                <p class="errmsg">@Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })</p>
+
+                            </div>
+            <div class="col-xl-3" id="confirmpasswordArea" style="display:table-row">
+                                <label for="fullname">@Html.FieldLabelFor(model => model.ConfirmPassword, true)</label>
+                                @Html.Kendo().TextBoxFor(model => model.ConfirmPassword).HtmlAttributes(new { Class = "k-textbox",  style = "width: 100%;", autocomplete = "off" ,type="Password"})
+                                <p class="errmsg">@Html.ValidationMessageFor(model => model.ConfirmPassword, "", new { @class = "text-danger" })</p>
+                            </div>
+                            
+                          @*   <div class="col-xl-3">
+                                        <label for="fullname"> @Html.Label("Status")</label>
+                                        @(Html.Kendo().DropDownListFor(model => model.Person.StatusID).HtmlAttributes(new { Class = "k-textbox", style = "width: 100%;" })
+                                    .BindTo(ComboBoxHelper.GetAllStatuses()))
+                                        <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.StatusID, "", new { @class = "text-danger" })</p>
+                                    </div> *@
+            <div class="col-xl-3" id="DepartmentArea" style="display:none">
+                <label for="fullname">@Html.FieldLabelFor(model => model.Person.Department.DepartmentName, false)</label>
+                                @(Html.Kendo().MultiColumnComboBoxFor(model => model.Person.DepartmentID)
+                                    .Placeholder("Select Department")
+                                    .DataTextField("DepartmentName")
+                                    .DataValueField("DepartmentID")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Add().Field("DepartmentCode").Title("Department Code").Width("100px");
+                                        columns.Add().Field("DepartmentName").Title("DepartmentName").Width("200px");
+
+
+                                    })
+                                    .HtmlAttributes(new { style = "width:300px!important;" })
+                                    .Filter(FilterType.Contains)
+                                    .FilterFields(new string[] { "DepartmentCode", "DepartmentName" })
+
+                                    .DataSource(source =>
+                                    {
+                                        source.Read(read =>
+                                        {
+                                            read.Action("GetAllDepartmentList", "DataService");
+                                        });
+                                    })
+                                    )
+                                <p class="errmsg">@Html.ValidationMessageFor(model => model.ConfirmPassword, "", new { @class = "text-danger" })</p>
+
+                            </div>
+                            <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabelFor(model => model.Person.Designation.DesignationName, false)</label>
+                                @(Html.Kendo().MultiColumnComboBoxFor(model => model.Person.DesignationID)
+                                    .Placeholder("Select Designation")
+                                    .DataTextField("DesignationName")
+                                    .DataValueField("DesignationID")
+                                   
+                                    .Columns(columns =>
+                                    {
+                                        columns.Add().Field("DesignationCode").Title("Designation Code").Width("100px");
+                                        columns.Add().Field("DesignationName").Title("DesignationName").Width("200px");
+
+
+                                    })
+                                    .HtmlAttributes(new { style = "width:300px!important;" })
+                                    .Filter(FilterType.Contains)
+                                    .FilterFields(new string[] { "DesignationCode", "DesignationName" })
+
+                                    .DataSource(source =>
+                                    {
+                                        source.Read(read =>
+                                        {
+                                            read.Action("GetAllDesignationList", "DataService");
+                                        });
+                                    })
+                                    )
+                                <p class="errmsg">@Html.ValidationMessageFor(model => model.ConfirmPassword, "", new { @class = "text-danger" })</p>
+
+                            </div>
+
+                            <div class="col-xl-3">
+
+                                <label for="fullname">@Html.FieldLabel("Upload Signature", true)</label>
+                                @(Html.Kendo().Upload()
+                .Name("Signatureimage")
+                                    .Async(a => a
+                                    .Save("SignatureUpload", "Person", new { currentPageID = Model.CurrentPageID })
+                                    .Remove("SignatureRemove", "Person", new { currentPageID = Model.CurrentPageID })
+                                    .AutoUpload(true)
+                                    ).Multiple(false)
+
+                                    .Events(events => events
+
+
+                                    .Success("OnSuccessUpload")
+                                    )
+                                    .Validation(validation => validation
+                                    .AllowedExtensions(".jpg", ".jpeg", ".png", ".gif")
+                                    //.MaxFileSize(maxFileSize)
+                                    )
+                                    )
+                                @Html.HiddenFor(model=>model.Person.SignaturePath)
+                                      @if (!string.IsNullOrEmpty(Model.Person.SignaturePath))
+                                {
+                                   
+                                    string[] arryDocID1 = Model.Person.SignaturePath.Split("FileStoragePath");
+                                              var url = "/FileStoragePath" + arryDocID1[1];
+                                              <img id="UploadSingature" src="@url" alt="No Image" width="150" height="100" style="margin-top: 5px; display: block">
+                                    <a>
+                                        <label id="imageRemove" style="font-weight: normal" onclick="ClearimageSignature();" title="remove"><u>remove</u></label>
+                                    </a>
+                                }
+                            </div>
+
+
+            <div class="col-12 text-right add-action-btns" id="saveDiv" style="display:none">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new {@class = "saveButton", type="submit", onclick="return Editvalidate();" })
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancel1Button").HtmlAttributes(new { @class = "cancelButton",onclick="loadIndexPage('Person')" })
+            </div>
+            <div class="col-12 text-right add-action-btns" id="nextDiv">
+                @*   <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button> *@
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton1").HtmlAttributes(new { @class = "saveButton", onclick="return clickoneNext(event);" })
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton2").HtmlAttributes(new {@class = "cancelButton", onclick="loadIndexPage('Person')" })
+            </div>
+
+
+
+        </div>
+                              </text>
+        );
+                    tabstrip.Add().Text("Role Approval Mapping").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+                    <div class="row">
+                        <div class="col-xl-3">
+                            <label for="fullname">@Html.FieldLabel("Location", true)</label>
+                            @(Html.Kendo().MultiColumnComboBox()
+                                    .Name("LocationID")
+                                    .Placeholder("Select Location")
+                                    .DataTextField("LocationName")
+                                    .DataValueField("LocationID")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Add().Field("LocationCode").Title("Location Code").Width("100px");
+                                        columns.Add().Field("LocationName").Title("LoationName").Width("200px");
+                                        columns.Add().Field("ParentLocationName").Title("ParentLocationName").Width("100px");
+                                        columns.Add().Field("LoctionType").Title("LoctionType").Width("100px");
+                                    })
+                                    .HtmlAttributes(new { style = "width:300px!important;" })
+                                    .Filter(FilterType.Contains)
+                                    .FilterFields(new string[] { "LocationCode", "LocationName", "ParentLocationName", "LoctionType" })
+
+
+                                    .DataSource(source =>
+                                    {
+                                        source.Read(read =>
+                                        {
+                                            read.Action("GetAllSecondLevelLocationList", "DataService");
+                                        });
+                                    })
+                                    )
+                                <div id="errLoc"></div>
+
+
+
+                            </div>
+                            <div class="col-xl-3">
+                                <label for="fullname">@Html.FieldLabel("ApprovalRole", true)</label>
+                                @(Html.Kendo().MultiColumnComboBox()
+                                    .Name("ApprovalRoleID")
+                                    .Placeholder("Select Approval Role")
+                                    .DataTextField("ApprovalRoleName")
+                                    .DataValueField("ApprovalRoleID")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Add().Field("ApprovalRoleCode").Title("ApprovalRoleCode").Width("100px");
+                                        columns.Add().Field("ApprovalRoleName").Title("ApprovalRoleName").Width("200px");
+
+
+                                    })
+                                    .HtmlAttributes(new { style = "width:300px!important;" })
+                                    .Filter(FilterType.Contains)
+                                    .FilterFields(new string[] { "ApprovalRoleCode", "ApprovalRoleName" })
+
+
+                                    .DataSource(source =>
+                                    {
+                                        source.Read(read =>
+                                        {
+                                            read.Action("GetAllApprovalRoleList", "DataService");
+                                        });
+                                    })
+                                    )
+                                <div id="errrole"></div>
+                                @Html.Hidden("CurrentPageID",currentPageID)
+
+
+                            </div>
+            @if(AppConfigurationManager.GetValue<bool>(AppConfigurationManager.IsMandatoryCategoryType))
+            {
+            <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabel("CategoryType", true)</label>
+                @(Html.Kendo().DropDownList().Name("CategoryTypeID")
+                //.Name("ApproveModuleID")
+                //.HtmlAttributes(new { style = "width:200px!important " })
+                .BindTo(ComboBoxHelper.GetAllCategorytype(AMSContext.CreateNewContext(), "",true))
+                .OptionLabel("Select Category Type")
+
+                )
+                <div id="errCategorytypeID"></div>
+            </div>
+                }
+                else 
+                {
+            var categoryType=CategoryTypeTable.GetCategoryTypeDetails(AMSContext.CreateNewContext(),"All");
+            int? categoryTypeID=null;
+            if(categoryType!=null)
+            {
+            categoryTypeID=categoryType.CategoryTypeID;
+            }
+            else
+            {
+            var type=CategoryTypeTable.insertAllType(AMSContext.CreateNewContext());
+            categoryTypeID=type.CategoryTypeID;
+            }
+            @Html.Hidden("CategoryTypeID",categoryTypeID)
+                }
+              
+                            <div class="col-xl-3">
+                                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Add").Name("AddButton").HtmlAttributes(new {  onclick="return AddLineItem();" })
+                            </div>
+                        </div>
+
+                        <div class="row" style="padding-top:10px">
+                            <div class="col-xl-12">
+                                @(Html.Kendo().Grid<ApprovalRoleModel>()
+                                    .Name("ApprovalRoleDetailGrid")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Bound(p => p.ID).Width(100).Visible(false);
+                                        columns.Bound(p => p.LocationID).Width(100).Visible(false);
+                                        columns.Bound(p => p.ApprovalRoleID).Width(100).Visible(false);
+                                        columns.Bound(p => p.CategoryTypeID).Width(100).Visible(false);
+                                        columns.Bound(p => p.LocationName).Width(70).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Location"));
+                                        columns.Bound(p => p.ApprovalRoleName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovalRole"));
+                                        columns.Bound(p => p.CategoryType).Width(70).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("CategoryType"));
+                                                                columns.Template("<center><a class='k-button-icontext' id='#=ID#' href='javascript:DeleteApproval(#=ID#)'><img src='/css/images/delete-icon.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                                        .Title(Language.GetString("Delete")).Width(50);
+                                    })
+                                    .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                                    {
+                                        o.ForString(t => t.Clear().Contains("Contains").DoesNotContain("Does Not Contains").IsEqualTo("Equal To")
+                                        .IsNotEqualTo("Not EqualTo").StartsWith("Starts With").EndsWith("Ends With"));
+                                    })
+                                    )
+                                    .Sortable().Selectable()
+                                    .Pageable()
+                                    .DataSource(datasource => datasource.Ajax()
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.ID);
+
+                                    })
+                                    .Read(read => read.Action("Approvalindex", "Person", new { currentPageID = currentPageID })
+
+                                    )
+                                    ))
+                            </div>
+                        </div>
+      <div class="col-12 text-right add-action-btns">
+           @*  style=" padding-top: 20px; *@
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton2").HtmlAttributes(new { @class = "saveButton", onclick="return clickoneNext(event);" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton2").HtmlAttributes(new {@class = "cancelButton",  onclick="loadIndexPage('Person')" })
+        </div>
+
+
+    </text>);
+                     tabstrip.Add().Text("Company Mapping").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+                    <table style="width: 100% !important; margin: 0px auto;">
+                        <tr>
+                            <td class="editor-label" style="text-align: center"></td>
+                            <td></td>
+                            <td class="editor-label" style="text-align: center"></td>
+                        <tr>
+                            <td>
+                                <div style="width: 420px; margin: 0px auto;">
+                                    <label class="listBoxHead">@Language.GetString("AvailableCompanies")</label>
+                                    @{
+                                                var avaliableList = ComboBoxHelper.GetAvailableCompanies(data, "Edit", null, Model.Person.PersonID);
+                                            }
+
+                                    @Html.ListBox("lstCompaniesFields", new SelectList(avaliableList,"Value","Text"), new { @Class="listBoxClass" })
+                                            @Html.Hidden("hdCompanySelectedItemsIDS")
+
+                                </div>
+                            </td>
+                           <td style="text-align: center;">
+                                    <button type="button" title="@Language.GetToolTipText("SelectField")" class="btn btn-arrow" onclick="addFieldsTemplate('lstCompaniesFields','lstSelectedCompanyFields')"><i class="fa fa-angle-double-right"></i></button>
+                                <br />
+                                    <button type="button" title="@Language.GetToolTipText("RemoveField")" class="btn btn-arrow" onclick="delFieldTemplate('lstCompaniesFields','lstSelectedCompanyFields')"><i class="fa fa-angle-double-left"></i></button>
+                            </td>
+
+                             <td>
+                                <div style="width: 420px; margin: 0px auto;">
+                                    <label class="listBoxHead pull-left">@Language.GetString("SelectedCompanies")</label>
+                                    <div class="pull-right">
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedCompanyFields','up')"><i class="fa fa-angle-double-up"></i></button>
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedCompanyFields','down')"><i class="fa fa-angle-double-down"></i></button>
+                                    </div>
+                                    <div class="clearfix"></div>
+
+                                    @{
+                                                var SelectedList = ComboBoxHelper.GetSelectedcompanies(data, "Edit", null, Model.Person.PersonID);
+                                    }
+                                            @Html.ListBox("lstSelectedCompanyFields",new SelectList(SelectedList,"Value","Text"), new { @Class="listBoxClass"  })
+
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td id="Td3" colspan="2">
+                                <span id="noneSelectedCompany" style="color: red;"></span>
+                            </td>
+                        </tr>
+                    </table>
+        <div class="col-12 text-right add-action-btns">
+       @*      <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button> *@
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton3").HtmlAttributes(new {@class = "saveButton",  onclick="return clickoneNext(event);" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton3").HtmlAttributes(new { @class = "cancelButton", onclick="loadIndexPage('Person')" })
+        </div>
+
+
+    </text>);
+                   tabstrip.Add().Text("Location Mapping").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+                    <table style="width: 100% !important; margin: 0px auto;">
+                        <tr>
+                <td class="editor-label" style="text-align: center" colspan="1">
+                    <div class="pull-left" style="padding-left:75px;">
+                        <div style="position:relative;width:320px;display:inline-block;">
+                            <span class="searchCategory"><i class="fa fa-search"></i></span>
+                            <input type="text" id="search-termcustodian" name="search-termcustodian" class="form-control" placeholder="Search Location" onkeypress="FilterDetails(event)">
+                            <input id="SEarchButton" type="button" value="@Language.GetButtonText(" Search")" style="display:none;"
+                                   title="@Language.GetToolTipText("Search")" class="tab_save" onclick="enterpressalert()" />
+                        </div>
+                    </div>
+                    <button type="button" value="Reset" title="Reset" class="saveButton" onclick="ResetSearch()">Reset</button>
+                </td>
+                @*  <td></td>
+                <td class="editor-label" style="text-align: center"></td> *@
+
+            </tr>
+            <tr>
+                            <td>
+                                <div style="width: 420px; margin: 0px auto;">
+                                    <label class="listBoxHead">@Language.GetString("AvailableLocation")</label>
+                                    @{
+                                                var avaliableList = ComboBoxHelper.GetAvailableLocation(data, "Edit", null, Model.Person.PersonID);
+                                            }
+
+                                    @Html.ListBox("lstLocationFields", new SelectList(avaliableList,"Value","Text"), new { @Class="listBoxClass" })
+                                            @Html.Hidden("hdLocationSelectedItemsIDS")
+
+                                </div>
+                            </td>
+                           <td style="text-align: center;">
+                                    <button type="button" title="@Language.GetToolTipText("SelectField")" class="btn btn-arrow" onclick="addFieldsTemplate('lstLocationFields','lstSelectedLocationFields')"><i class="fa fa-angle-double-right"></i></button>
+                                <br />
+                                    <button type="button" title="@Language.GetToolTipText("RemoveField")" class="btn btn-arrow" onclick="delFieldTemplate('lstLocationFields','lstSelectedLocationFields')"><i class="fa fa-angle-double-left"></i></button>
+                            </td>
+
+                             <td>
+                                <div style="width: 420px; margin: 0px auto;">
+                                    <label class="listBoxHead pull-left">@Language.GetString("SelectedLocations")</label>
+                                    <div class="pull-right">
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedLocationFields','up')"><i class="fa fa-angle-double-up"></i></button>
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedLocationFields','down')"><i class="fa fa-angle-double-down"></i></button>
+                                    </div>
+                                    <div class="clearfix"></div>
+
+                                    @{
+                                                var SelectedList = ComboBoxHelper.GetSelectedLocation(data, "Edit", null, Model.Person.PersonID);
+                                    }
+                                            @Html.ListBox("lstSelectedLocationFields",new SelectList(SelectedList,"Value","Text"), new { @Class="listBoxClass"  })
+
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td id="Td3" colspan="2">
+                                <span id="noneSelectedLocation" style="color: red;"></span>
+                            </td>
+                        </tr>
+                    </table>
+        <div class="col-12 text-right add-action-btns">
+           @*  <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button> *@
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton5").HtmlAttributes(new {@class = "saveButton",  onclick="return clickoneNext(event);" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton4").HtmlAttributes(new {@class = "cancelButton",  onclick="loadIndexPage('Person')" })
+        </div>
+
+
+    </text>);
+
+                    tabstrip.Add().Text("Category Mapping").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+                    <table style="width: 100% !important; margin: 0px auto;">
+                        <tr>
+                <td class="editor-label" style="text-align: center" colspan="1">
+                    <div class="pull-left" style="padding-left:75px;">
+                        <div style="position:relative;width:320px;display:inline-block;">
+                            <span class="searchCategory"><i class="fa fa-search"></i></span>
+                            <input type="text" id="search-termCategory" name="search-termCategory" class="form-control" placeholder="Search Category" onkeypress="FilterCategoryDetails(event)">
+
+                            <input id="SEarchCategoryButton" type="button" value="@Language.GetButtonText("Search")" style="display:none;"
+                                   title="@Language.GetToolTipText("Search")" class="tab_save" onclick="enterCategorySearch()" />
+                        </div>
+                    </div>
+                    <button type="button" value="Reset" title="Reset" class="saveButton" onclick="ResetCategorySearch()">Reset</button>
+                </td>
+                        <tr>
+                            <td>
+                                <div style="width: 420px; margin: 0px auto;">
+                                    <label class="listBoxHead">@Language.GetString("AvailableCategory")</label>
+                                        @{
+                                                var avaliableList = ComboBoxHelper.GetAvailableCategory(data, "Edit", null, Model.Person.PersonID);
+                                            }
+
+                                            @Html.ListBox("lstCategoryFields", new SelectList(avaliableList, "Value","Text"), new { @Class="listBoxClass" })
+                                            @Html.Hidden("hdCategorySelectedItemsIDS")
+
+                                    </div>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" title="@Language.GetToolTipText("SelectField")" class="btn btn-arrow" onclick="addFieldsTemplate('lstCategoryFields','lstSelectedCategoryFields')"><i class="fa fa-angle-double-right"></i></button>
+                                    <br />
+                                    <button type="button" title="@Language.GetToolTipText("RemoveField")" class="btn btn-arrow" onclick="delFieldTemplate('lstCategoryFields','lstSelectedCategoryFields')"><i class="fa fa-angle-double-left"></i></button>
+                                </td>
+
+                                <td>
+                                    <div style="width: 420px; margin: 0px auto;">
+                                        <label class="listBoxHead pull-left">@Language.GetString("SelectedCategory")</label>
+                                        <div class="pull-right">
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedCategoryFields','up')"><i class="fa fa-angle-double-up"></i></button>
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedCategoryFields','down')"><i class="fa fa-angle-double-down"></i></button>
+                                        </div>
+                                        <div class="clearfix"></div>
+
+                                            @{
+                                                var SelectedList = ComboBoxHelper.GetSelectedCategory(data, "Edit", null, Model.Person.PersonID);
+                                            }
+                                            @Html.ListBox("lstSelectedCategoryFields",new SelectList(SelectedList, "Value","Text"), new { @Class="listBoxClass"  })
+
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id="Td3" colspan="2">
+                                    <span id="noneSelectedCategory" style="color: red;"></span>
+                                </td>
+                            </tr>
+                        </table>
+        <div class="col-12 text-right add-action-btns">
+  @*           <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button> *@
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton6").HtmlAttributes(new {@class = "saveButton",  onclick="return clickoneNext(event);" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton5").HtmlAttributes(new {@class = "cancelButton",  onclick="loadIndexPage('Person')" })
+        </div>
+
+
+    </text>);
+                    tabstrip.Add().Text("Department Mapping").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+                    <table style="width: 100% !important; margin: 0px auto;">
+                        <tr>
+                            <td class="editor-label" style="text-align: center"></td>
+                            <td></td>
+                            <td class="editor-label" style="text-align: center"></td>
+                        <tr>
+                            <td>
+                                <div style="width: 420px; margin: 0px auto;">
+                                    <label class="listBoxHead">@Language.GetString("AvailableDepartment")</label>
+                                        @{
+                                                var avaliableList = ComboBoxHelper.GetAvailableDepartment(data,"Edit",null,Model.Person.PersonID);
+                                            }
+
+                                            @Html.ListBox("lstDepartmentFields", new SelectList(avaliableList,  "Value","Text"), new { @Class="listBoxClass" })
+                                            @Html.Hidden("hdDepartmentSelectedItemsIDS")
+
+                                    </div>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" title="@Language.GetToolTipText("SelectField")" class="btn btn-arrow" onclick="addFieldsTemplate('lstDepartmentFields','lstSelectedDepartmentFields')"><i class="fa fa-angle-double-right"></i></button>
+                                    <br />
+                                    <button type="button" title="@Language.GetToolTipText("RemoveField")" class="btn btn-arrow" onclick="delFieldTemplate('lstDepartmentFields','lstSelectedDepartmentFields')"><i class="fa fa-angle-double-left"></i></button>
+                                </td>
+
+                                <td>
+                                    <div style="width: 420px; margin: 0px auto;">
+                                        <label class="listBoxHead pull-left">@Language.GetString("SelectedDepartment")</label>
+                                        <div class="pull-right">
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedDepartmentFields','up')"><i class="fa fa-angle-double-up"></i></button>
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedDepartmentFields','down')"><i class="fa fa-angle-double-down"></i></button>
+                                        </div>
+                                        <div class="clearfix"></div>
+
+                                            @{
+                                                var SelectedList = ComboBoxHelper.GetSelectedDepartment(data, "Edit", null, Model.Person.PersonID);
+                                            }
+                                            @Html.ListBox("lstSelectedDepartmentFields",new SelectList(SelectedList, "Value","Text"), new { @Class="listBoxClass"  })
+
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id="Td3" colspan="2">
+                                    <span id="noneSelectedDepartment" style="color: red;"></span>
+                                </td>
+                            </tr>
+                        </table>
+        <div class="col-xl-12 text-right add-action-btns">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("saveButton").HtmlAttributes(new { type="submit", onclick="return Editvalidate();" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton6").HtmlAttributes(new {@class = "cancelButton",  onclick="loadIndexPage('Person')" })
+        </div >
+                    </text>);
+           
+              
+                  })
+        )
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                EntryPageModel newModel = new EntryPageModel()
+                {
+                   
+                    EntityInstance = Model.Person as BaseEntityObject,
+                    ControllerName = this.GetType().Name.Substring(0, this.GetType().Name.Length - "Controller".Length),
+                };
+                Html.RenderPartial("BaseViews/AuditLogSingleView", newModel);
+            }
+        </div>
+
+    </div>
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("Edit User");
+        $("#TabStrip").data("kendoTabStrip").select(0);
+        $("#ApprovalRoleDetailGrid").data("kendoGrid").dataSource.read();
+        UserTypeChange();
+    });
+
+    function Editvalidate() {
+        debugger;
+        var fag = true;
+       
+
+        if (!$("#Person_PersonCode").val()) {
+            fag = false;
+            if ($("#validateCode").val() != "") {
+                $("#errorCode").after('<span style="color:red;font-weight:normal;" id="validateCode">@Language.GetString("PersonCode is Required")</span>');
+            }
+        }
+        else {
+            $("#validateCode").remove();
+        }
+
+        if (!$("#Person_PersonFirstName").val()) {
+            fag = false;
+            if ($("#validateFirstName").val() != "") {
+                $("#errFirstName").after('<span style="color:red;font-weight:normal;" id="validateFirstName">@Language.GetString("FirstName is Required")</span>');
+            }
+        }
+        else {
+            $("#validateFirstName").remove();
+        }
+        if (!$("#Person_MobileNo").val()) {
+            fag = false;
+            if ($("#validatemobilee").val() != "") {
+                $("#errmobile").after('<span style="color:red;font-weight:normal;" id="validatemobilee">@Language.GetString("Mobile No is Required")</span>');
+            }
+        }
+        else {
+            $("#validatemobilee").remove();
+        }
+        if (!$("#Person_PersonLastName").val()) {
+            fag = false;
+            if ($("#validateLastName").val() != "") {
+                $("#errLastName").after('<span style="color:red;font-weight:normal;" id="validateLastName">@Language.GetString("LastName is Required")</span>');
+            }
+        }
+        else {
+            $("#validateLastName").remove();
+        }
+
+        if (!$("#Person_DOJ").val()) {
+            fag = false;
+            if ($("#validateDOJ").val() != "") {
+                $("#errDOJ").after('<span style="color:red;font-weight:normal;" id="validateDOJ">@Language.GetString("DOJ is Required")</span>');
+            }
+        }
+        else {
+            $("#validateDOJ").remove();
+        }
+
+        if (!$("#Person_UserTypeID").val()) {
+            fag = false;
+            if ($("#validateUserTypeID").val() != "") {
+                $("#errUserType").after('<span style="color:red;font-weight:normal;" id="validateUserTypeID">@Language.GetString("UserType is Required")</span>');
+            }
+        }
+        else {
+            $("#validateUserTypeID").remove();
+        }
+        if (!$("#Person_Gender").val()) {
+            fag = false;
+            if ($("#validateGender").val() != "") {
+                $("#errGender").after('<span style="color:red;font-weight:normal;" id="validateGender">@Language.GetString("Gender is Required")</span>');
+            }
+        }
+        else {
+            $("#validateGender").remove();
+        }
+        if ($("#Person_UserTypeID").val() != 2) {
+            if (!$("#UserName").val()) {
+                fag = false;
+                if ($("#validateUserName").val() != "") {
+                    $("#errUserName").after('<span style="color:red;font-weight:normal;" id="validateUserName">@Language.GetString("UserNameName is Required")</span>');
+                }
+            }
+            else {
+                $("#validateUserName").remove();
+            }
+
+            var lst = document.getElementById("lstSelectedDepartmentFields");
+            var lstLoc = document.getElementById("lstSelectedLocationFields");
+            var lstCate = document.getElementById("lstSelectedCategoryFields");
+            var lstComp = document.getElementById("lstSelectedCompanyFields");
+            if (lst.options.length <= 0) {
+                if ($("#EnableDepartment").val() == 'True') {
+                    fag = false;
+                    $('#noneSelectedDepartment').html('@Language.GetString("PleaseSelectAnyOneDepartment")');
+                    var tabStrip = $("#TabStrip").data("kendoTabStrip");
+                    tabStrip.select("5");
+                    return false;
+                }
+            }
+            else {
+                $('#noneSelectedDepartment').html('');
+                var hid = document.getElementById("hdDepartmentSelectedItemsIDS");
+                //var hidDept = document.getElementById("DepartmentID");
+                if (lst.options.length > 0) {
+                    for (i = 0; i < lst.options.length; i++) {
+                        hid.value += lst.options[i].value + ",";
+                        //hidDept.value += lst.options[i].value + ",";
+                    }
+                }
+            }
+            if (lstComp.options.length <= 0) {
+                fag = false;
+                $('#noneSelectedCompany').html('@Language.GetString("PleaseSelectAnyOneCompany")');
+                var tabStrip = $("#TabStrip").data("kendoTabStrip");
+                tabStrip.select("2");
+                return false;
+            }
+            else {
+                $('#noneSelectedCompany').html('');
+                var hid = document.getElementById("hdCompanySelectedItemsIDS");
+
+                if (lstComp.options.length > 0) {
+                    for (i = 0; i < lstComp.options.length; i++) {
+                        hid.value += lstComp.options[i].value + ",";
+
+                    }
+                }
+            }
+            if (lstLoc != null) {
+
+                if (lstLoc.options.length <= 0) {
+                    if ($("#EnableLocation").val() == 'True') {
+                        fag = false;
+                        $('#noneSelectedLocation').html('@Language.GetString("PleaseSelectAnyOneLocation")');
+                        var tabStrip = $("#TabStrip").data("kendoTabStrip");
+                        tabStrip.select("3");
+                        return false;
+                    }
+                }
+
+                else {
+                    $('#noneSelectedLocation').html('');
+
+                    var hidLoc = document.getElementById("hdLocationSelectedItemsIDS");
+                    if (lstLoc.options.length > 0) {
+
+                        hidLoc.value = "";
+                        var j;
+                        for (j = 0; j < lstLoc.options.length; j++) {
+                            hidLoc.value += lstLoc.options[j].value + ",";
+                        }
+                    }
+                }
+            }
+            if (lstCate.options.length <= 0) {
+                if ($("#EnableCategory").val() == 'True') {
+                    fag = false;
+                    $('#noneSelectedCategory').html('@Language.GetString("PleaseSelectAnyOneCategory")');
+                    var tabStrip = $("#TabStrip").data("kendoTabStrip");
+                    tabStrip.select("4");
+                    return false;
+                }
+            }
+
+            else {
+                $('#noneSelectedCategory').html('');
+
+                var hidCate = document.getElementById("hdCategorySelectedItemsIDS");
+                if (lstCate.options.length > 0) {
+
+                    hidCate.value = "";
+                    var k;
+                    for (k = 0; k < lstCate.options.length; k++) {
+
+                        hidCate.value += lstCate.options[k].value + ",";
+                    }
+                }
+            }
+        }
+
+        if (!fag)
+            return false;
+        else
+            return true;
+    }
+    function AddLineItem() {
+      
+        var fag = true;
+        if (!$("#LocationID").data("kendoMultiColumnComboBox").input.val()) {
+            fag = false;
+            if ($("#validateLocation").val() != "") {
+                $("#errLoc").after('<span style="color:red;font-weight:normal;" id="validateLocation">@Language.GetString("Location Name is Required")</span>');
+            }
+        }
+        else {
+            $("#validateLocation").remove();
+        }
+        if ('@(AppConfigurationManager.GetValue<bool>(AppConfigurationManager.IsMandatoryCategoryType))' == 'True') {
+            if (!$("#CategoryTypeID").val()) {
+                fag = false;
+                if ($("#validatetype").val() != "") {
+                    $("#errCategorytypeID").after('<span style="color:red;font-weight:normal;" id="validatetype">@Language.GetString("CategoryTypeIsRequired")</span>');
+                }
+            }
+            else {
+                $("#validatetype").remove();
+            }
+        }
+        if (!$("#ApprovalRoleID").data("kendoMultiColumnComboBox").input.val()) {
+            fag = false;
+            if ($("#validateRole").val() != "") {
+                $("#errrole").after('<span style="color:red;font-weight:normal;" id="validateRole">@Language.GetString("Approval Role Name is Required")</span>');
+            }
+        }
+        else {
+            $("#validateRole").remove();
+        }
+        var data = {
+
+            currentPageID: '@currentPageID',
+            locationID: $("#LocationID").data("kendoMultiColumnComboBox").value(),
+            approvalroleID: $("#ApprovalRoleID").data("kendoMultiColumnComboBox").value(),
+            categorytypeID: $("#CategoryTypeID").val(),
+        }
+        if (!fag) {
+            return false;
+        }
+
+        else {
+            Sever_PostData("/Person/AddLineItem", data, addApprovalDetails_Success, addApprovalDetails_Failure);
+            return true;
+        }
+
+
+    }
+    function addApprovalDetails_Success(e) {
+        $("#LocationID").data("kendoMultiColumnComboBox").value("");
+        $("#ApprovalRoleID").data("kendoMultiColumnComboBox").value("");
+        if ('@(AppConfigurationManager.GetValue<bool>(AppConfigurationManager.IsMandatoryCategoryType))' == 'True') {
+            $("#CategoryTypeID").data("kendoDropDownList").value("");
+        }
+        $("#ApprovalRoleDetailGrid").data("kendoGrid").dataSource.read();
+        setInitialFocus("LocationID");
+    }
+    function addApprovalDetails_Failure(data) {
+        showErrorMessage(data.responseText);
+        //setInitialFocus("UniformSetID");
+    }
+    function DeleteApproval() {
+    }
+    function DeleteApproval(id) {
+        debugger
+        deleteRecord("Person", "ApprovalRoleDetailGrid", id, '/Person/_DeleteLineItem', "currentPageID=" + '@currentPageID');
+    }
+</script>

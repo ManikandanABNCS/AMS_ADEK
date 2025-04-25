@@ -1,0 +1,27 @@
+﻿@model string 
+
+@(Html.Kendo().MultiColumnComboBox()
+                                                    .Name("EmployeeID")
+                                                    .Placeholder("Select Employee Name")
+                                                    .DataTextField("PersonName")
+                                                    .Value(Model)
+                                                    .DataValueField("UserID")
+                                                    .Columns(columns =>
+                                                    {
+                                                        columns.Add().Field("PersonCode").Title("Person Code").Width("100px");
+                                                        columns.Add().Field("PersonName").Title("PersonName").Width("200px");
+                                                        columns.Add().Field("EMailID").Title("EMail ID").Width("100px");
+                                                        columns.Add().Field("UserName").Title("UserName").Width("100px");
+                                                    })
+                                                    .HtmlAttributes(new { style = "width:300px!important;" })
+                                                    .Filter(FilterType.Contains)
+                                                    .FilterFields(new string[] { "PersonCode", "PersonName", "EMailID", "UserName" })
+                                                    
+                                                    .DataSource(source =>
+                                                    {
+                                                        source.Read(read =>
+                                                        {
+                                                            read.Action("GetAllLoginUserList", "DataService");
+                                                        }).ServerFiltering(true);
+                                                    })
+                                                    )

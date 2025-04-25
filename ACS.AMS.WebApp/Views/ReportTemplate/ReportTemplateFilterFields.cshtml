@@ -1,0 +1,257 @@
+﻿
+
+    @model dynamic
+@using ACS.AMS.DAL
+    <style>
+        button.btn.btn-btarrow {
+            padding: 2px 2px 2px 2px;
+            margin: 0px !important;
+            font-size: 18px !important;
+            text-align: center !important;
+        }
+
+            button.btn.btn-btarrow:hover {
+                background-color: #86754d;
+                color: #fff;
+            }
+    </style>
+    <script>
+    function GetFilterFieldsPageNumber() {
+        return @ViewBag.PageNumber;
+    }
+        function ListBoxParam() {
+            return {
+                currentPageID: '@ViewBag.CurrentPageID',
+            };
+        }
+
+        function uiControlChanged(e) {
+            var fieldName = this.element[0].getAttribute("FieldName");
+            updateFilterItem(fieldName);
+        }
+
+        function enableFilterItem(fieldName) {
+            
+            var isEnabled = $("#isEnabled_" + fieldName).is(':checked');
+
+            //enable or disable the controls if its not selected/selected
+            $("#IsMandatory_" + fieldName).prop("disabled", !isEnabled);
+            $("#fieldType_" + fieldName).data("kendoDropDownList").enable(isEnabled);
+            $("#filterType_" + fieldName).data("kendoDropDownList").enable(isEnabled);
+        }
+
+        function updateFilterItem(fieldName) {
+            
+            var isEnabled = $("#isEnabled_" + fieldName).is(':checked');
+            var isMandatory = $("#IsMandatory_" + fieldName).is(':checked');
+            var filterField = $("#fieldType_" + fieldName).val();
+            var filterType = $("#filterType_" + fieldName).val();
+
+            //alert(isEnabled + ", " + isMandatory + ", " + filterField + ", " + filterType);
+
+            var data = {
+                fieldName: fieldName,
+                currentPageID: '@ViewBag.CurrentPageID',
+                isEnabled: isEnabled,
+                isMandatory: isMandatory,
+                filterFieldID: filterField,
+                filterTypeID: filterType
+            };
+
+            Sever_UpdateData("@Url.Action("UpdateFilterField")", data);
+
+            enableFilterItem(fieldName);
+        }
+
+        function Sever_IncreaseOrderData(url, data, successCallBack, failureCallBack) {
+            $.ajax({
+                url: url,
+                type: "GET",
+                data: data,
+                success: function (data) {
+                  
+                    ProcedureChange();
+                    if (successCallBack != null)
+                        successCallBack(data);
+                    else {
+                        if ((data != null) && (data != ''))
+                            alert(data);
+                    }
+                },
+                failure: function (data) {
+                    if (failureCallBack != null)
+                        failureCallBack(data);
+                    else {
+                        if (data != null)
+                            alert(data.responseText);
+                        else
+                            alert("Unknown Error Occurred");
+                    }
+                },
+                error: function (data) {
+                    if (failureCallBack != null)
+                        failureCallBack(data);
+                    else {
+                        if (data != null)
+                            alert(data.responseText);
+                        else
+                            alert("Unknown Error Occurred");
+                    }
+                }
+            });
+        }
+
+   
+        function OrderNumberIncrease(fieldName, action) {
+          
+            console.log("t");
+            var isEnabled = $("#isEnabled_" + fieldName).is(':checked');
+            var isMandatory = $("#IsMandatory_" + fieldName).is(':checked');
+            var filterField = $("#fieldType_" + fieldName).val();
+            var filterType = $("#filterType_" + fieldName).val();
+
+            //alert(isEnabled + ", " + isMandatory + ", " + filterField + ", " + filterType);
+
+            var data = {
+                fieldName: fieldName,
+                currentPageID: '@ViewBag.CurrentPageID',
+                isEnabled: isEnabled,
+                isMandatory: isMandatory,
+                filterFieldID: filterField,
+                filterTypeID: filterType
+            };
+
+            if (action == "Increase") {
+            Sever_IncreaseOrderData("@Url.Action("MoveUpField")", data);
+
+            } else {
+            Sever_IncreaseOrderData("@Url.Action("MoveDownField")", data);
+
+            }
+
+            enableFilterItem(fieldName);
+        }
+
+    </script>
+    <td>
+        <p style="font-style: oblique">@Html.Label("Filter Field Details")</p>
+    </td>
+    <td>
+        <table class="table table-striped table-bordered" style="width: 100%" id="filterFieldsTable">
+            <tr style="text-align: center;">
+                <th style="width: 3%">@Language.GetString("Order")</th>
+                <th style="width: 3%">@Language.GetString("Sel")</th>
+                <!-- Checkbox For Enabling Filter -->
+                <th style="width: 35%">@Language.GetString("FieldName")</th>
+                <th style="width: 35%">@Language.GetString("FilterField")</th>
+                <!-- Drop down from FieldTypeTable -->
+                <th style="width: 20%">@Language.GetString("FieldType")</th>
+                <th style="width: 17%">@Language.GetString("Mandatory")</th>
+            </tr>
+        @{
+
+            AMSContext db = AMSContext.CreateNewContext();
+            int pageLinesCount = 10;//AppConfigurationManager.GetValue<int>(AppConfigurationManager.NoOfRecordsInGrid);
+            int pageNumber = ViewBag.PageNumber;
+
+               int startingLineCout = pageNumber * pageLinesCount;
+            var model = ViewBag.FilterDataModel as ACS.AMS.WebApp.Models.ReportTemplate.FilterFieldDataModel;
+
+               var filterLineItems = model.FilterFields.Skip(startingLineCout).Take(pageLinesCount);
+               filterLineItems = filterLineItems.OrderBy(x => x.OrderNo);
+               var allFields = model.Fields;
+
+               int totalAvailableFilterRecods = model.FilterFields.Count();
+               int sno = startingLineCout + 1;
+                   }
+               @{
+
+                   foreach (var v in filterLineItems)
+                   {
+                       string fieldDesc = null;
+                       if (v.FieldTypeID != null)
+                       {
+                           var fieldItem = AFieldTypeTable.GetItem(db, (int)v.FieldTypeID);
+                           fieldDesc = fieldItem.FieldTypeDesc;
+                       }
+
+
+
+                <tr style="border: 1px solid black;">
+                    <td style="border: 1px solid black;">
+                        <button type="button" title="Up" class="btn btn-btarrow" onclick="javascript:OrderNumberIncrease('@v.QueryField','Increase')"><i class="k-icon k-i-caret-double-alt-up"></i></button>
+                        <button type="button" title="Down" class="btn btn-btarrow" onclick="javascript:OrderNumberIncrease('@v.QueryField','Decrease')"><i class="k-icon k-i-caret-double-alt-down"></i></button>
+
+                    </td>
+                    <td style="border: 1px solid black;">
+                        @Html.CheckBox("isEnabled_" + v.QueryField, v.EnableFilter, new { onchange = string.Format("updateFilterItem('{0}')", v.QueryField) })
+                    </td>
+                    <td style="border: 1px solid black;">@v.QueryField </td>
+                    <td style="border: 1px solid black;">
+                        @(Html.Kendo().DropDownList()
+               .Name("fieldType_" + v.QueryField)
+               .BindTo(ComboBoxHelper.GetAllFieldTypes(v.FieldTypeID + ""))
+               .OptionLabel("<--SELECT-->")
+                   .HtmlAttributes(new { style = "width: 100%;", FieldName = v.QueryField, FilterTypeDesc = v.FilterTypeDesc })
+                   .Events(e => e.Change("uiControlChanged"))
+                            )
+                    </td>
+                    <td style="border: 1px solid black;">
+                        @(Html.Kendo().DropDownList()
+               .Name("filterType_" + v.QueryField)
+               .BindTo(ComboBoxHelper.GetAllFilterFieldTypes(v.ScreenFilterTypeID + ""))
+               .HtmlAttributes(new { style = "width: 100%;", FieldName = v.QueryField, FilterTypeDesc = v.FilterTypeDesc })
+               .Events(e => e.Change("uiControlChanged"))
+                       )
+                    </td>
+                    <td style="border: 1px solid black;">@Html.CheckBox("IsMandatory_" + v.QueryField, v.IsMandatory, new { onchange = string.Format("updateFilterItem('{0}')", v.QueryField) })</td>
+                </tr>
+                <script>
+                    enableFilterItem('@v.QueryField');
+                </script>
+                       sno++;
+                   }
+                   }
+                <tr>
+                  @{ 
+                                  //Pagination related methods
+                                  bool firstRequired = pageNumber > 0;
+                                  bool prevRequired = pageNumber > 0;
+                                  bool nextRequired = pageNumber < (totalAvailableFilterRecods / pageLinesCount);
+                                  bool lastRequired = pageNumber < (totalAvailableFilterRecods / pageLinesCount);
+                              }
+                    <td colspan="13" style="text-align: right;">
+                        @if (firstRequired)
+                        { 
+                            <a href="javascript:ReportTemplate_loadFilterLineItemsPage(0, true)">First</a> 
+                            }
+                        else
+                        {
+                        }
+                        &nbsp; &nbsp;
+                        @if (prevRequired)
+                        { 
+                            <a href="javascript:ReportTemplate_loadFilterLineItemsPage(@pageNumber - 1, true)">Previous</a> 
+                        }
+                        else
+                        {
+                        }  &nbsp; &nbsp;
+                        @if (nextRequired)
+                        { 
+                            <a href="javascript:ReportTemplate_loadFilterLineItemsPage(@pageNumber + 1, true)">Next</a>  }
+                        else
+                        { 
+                        }  &nbsp; &nbsp;
+                        @if (lastRequired)
+                        { 
+                            <a href="javascript:ReportTemplate_loadFilterLineItemsPage(@totalAvailableFilterRecods/@pageLinesCount , true)">Last</a> 
+                        }
+                        else
+                        {
+                        }
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                Records @(startingLineCout + 1)  to @(startingLineCout + filterLineItems.Count())  of @totalAvailableFilterRecods
+                    </td>
+                </tr>
+        </table>
+    </td>

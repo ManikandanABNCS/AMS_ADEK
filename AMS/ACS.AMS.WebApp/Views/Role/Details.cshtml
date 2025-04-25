@@ -1,0 +1,73 @@
+﻿@using ACS.AMS.DAL.DBModel
+@model User_RoleTable
+@{
+    ViewBag.Title = "Details";
+    string description = ViewBag.Description;
+
+}
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+    @Html.HiddenFor(c => c.RoleID)
+
+        <div class="list-container">
+            <div class="row">
+                <div class="col-xl-4">
+                    <label for="fullname">@Html.LabelFor(model => model.RoleName, true)</label>
+                    <div class="k-textbox" style="width: 100%;">
+                        @Model.RoleName
+                    </div>
+
+                </div>
+                <div class="col-xl-4">
+                    <label for="fullname">@Html.LabelFor(model => model.Description, true)</label>
+                    <div class="k-textbox" style="width: 100%;">
+                        @Model.Description
+                    </div>
+
+                </div>
+                <div class="col-xl-4">
+                    <label for="fullname">@Html.LabelFor(model => model.IsActive, true)</label>
+                    <div class="k-textbox" style="width: 100%;">
+                        @(Model.IsActive?"Yes":"No")
+                    </div>
+
+                </div>
+                <div class="col-xl-4">
+                    <label for="fullname">@Html.LabelFor(model => model.IsDeleted, true)</label>
+                    <div class="k-textbox" style="width: 100%;">
+                        @(Model.IsDeleted?"Yes":"No")
+                    </div>
+
+                </div>
+
+                <div class="col-12 text-right add-action-btns">
+                    <button type="button" value="Cancel" title="Cancel" class="cancelButton" onclick="loadIndexPage('Role')">Cancel</button>
+                </div>
+            </div>
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                EntryPageModel newModel = new EntryPageModel()
+                {
+
+                    EntityInstance = Model as BaseEntityObject,
+                    ControllerName = this.GetType().Name.Substring(0, this.GetType().Name.Length - "Controller".Length),
+                };
+                Html.RenderPartial("BaseViews/AuditLogSingleView", newModel);
+            }
+        </div>
+        </div>
+       
+}
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("Role Details");
+        setPageHeadingSub("Details");
+    });
+</script>

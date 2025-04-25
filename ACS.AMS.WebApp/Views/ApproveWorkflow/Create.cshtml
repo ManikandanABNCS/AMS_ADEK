@@ -1,0 +1,372 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model ApproveWorkflowTable
+@{
+    ViewBag.Title = "Create";
+    var data = AMSContext.CreateNewContext();
+    var approvalRole = ComboBoxHelper.GetAvailableApprovalRole(data);
+   
+}
+<script>
+    function delRole() {
+        var ctrl = document.getElementById("lblSelectedApprovalRoles");
+        for (i = 0; i < ctrl.length; i++) {
+            if (ctrl[i].selected) {
+                document.getElementById("lblAvailableApprovalRoles").appendChild(document.getElementById("lblSelectedApprovalRoles").options.item(i));
+                i--;
+            }
+        }
+    }
+
+    function addRole() {
+        var ctrl = document.getElementById("lblAvailableApprovalRoles");
+        for (i = 0; i < ctrl.length; i++) {
+            if (ctrl[i].selected) {
+                document.getElementById("lblSelectedApprovalRoles").appendChild(document.getElementById("lblAvailableApprovalRoles").options.item(i));
+                i--;
+            }
+        }
+    }
+
+    function delAll() {
+        var len = document.getElementById("lblSelectedApprovalRoles").length - 1;
+        for (i = len; i >= 0; i--) {
+            document.getElementById("lblAvailableApprovalRoles").appendChild(document.getElementById("lblSelectedApprovalRoles").item(i));
+        }
+    }
+    function addAll() {
+        var len = document.getElementById("lblAvailableApprovalRoles").length - 1;
+        for (i = len; i >= 0; i--) {
+            document.getElementById("lblSelectedApprovalRoles").appendChild(document.getElementById("lblAvailableApprovalRoles").item(i));
+        }
+    }
+
+    function SelectToLocationType() { 
+        
+        $("#ToLocationTypeID").data("kendoDropDownList").value();
+        var availableList = $('#lblAvailableApprovalRoles');
+        $.get("/DataService/GetAvaliblityApprovalRoleList?locationTypeID=" + $("#ToLocationTypeID").data("kendoDropDownList").value(), function (response) {
+            var result = response;
+            var listItems = [];
+            var listedSelectedItem = [];
+            var available = result.availableFields;
+           
+            if (available.length > 0) {
+                for (var key in available) {
+                    listItems.push('<option value="' +
+                        available[key].Value + '">' + available[key].Text
+                        + '</option>');
+                   
+                }
+            }
+            //remove all items from listbox
+            $('#lblAvailableApprovalRoles option').each(function (i, option) { $(option).remove(); });
+            //groupComboBox.remove();
+            availableList.append(listItems.join(''));
+            $('#lblSelectedApprovalRoles option').each(function (i, option) { $(option).remove(); });
+        });
+        /*}*/
+    }
+
+    function Listbox_Move(ListID, direction) {
+        var listbox = document.getElementById(ListID);
+        var selIndex = listbox.selectedIndex;
+        if (-1 == selIndex) {
+            $.when(KendoErrorMsg("Please Select any options to move ")
+            ).done(function () {
+
+            });
+
+        }
+        var increment = -1;
+        if (direction == 'up') {
+            increment = -1;
+        }
+        else {
+            increment = 1;
+        }
+        if ((selIndex + increment) < 0 || (selIndex + increment) > (listbox.options.length - 1)) {
+            return;
+        }
+        var selValue = listbox.options[selIndex].value;
+        var selText = listbox.options[selIndex].text;
+        listbox.options[selIndex].value = listbox.options[selIndex + increment].value;
+        listbox.options[selIndex].text = listbox.options[selIndex + increment].text;
+
+        listbox.options[selIndex + increment].value = selValue;
+        listbox.options[selIndex + increment].text = selText;
+
+        listbox.selectedIndex = selIndex + increment;
+    }
+
+    function OnModuleChange() { 
+        if ('@(AppConfigurationManager.GetValue<bool>(AppConfigurationManager.IsMandatoryLocationType))' == 'True') {
+            if ('AssetTransfer' != $("#ApproveModuleID").data("kendoDropDownList").text()
+                && 'InternalAssetTrasfer' != $("#ApproveModuleID").data("kendoDropDownList").text()) {
+                document.getElementById("toLocationDiv").style.display = 'none';
+            }
+            else {
+                document.getElementById("toLocationDiv").style.display = '';
+            }
+            // if ('InternalAssetTrasfer' == $("#ApproveModuleID").data("kendoDropDownList").text()) { 
+            $("#FromLocationTypeID").data("kendoDropDownList").dataSource.read();
+            $("#FromLocationTypeID").data("kendoDropDownList").value("");
+            $("#ToLocationTypeID").data("kendoDropDownList").dataSource.read();
+            $("#ToLocationTypeID").data("kendoDropDownList").value("");
+            //  }
+        }
+    }
+    function FromLocationData(e)
+    {
+        return {
+            moduleID: $("#ApproveModuleID").data("kendoDropDownList").value(),
+            text: $("#FromLocationTypeID").val()
+        };
+    }
+    function ToLocationData(e) {
+        return {
+            moduleID: $("#ApproveModuleID").data("kendoDropDownList").value(),
+            text: $("#ToLocationTypeID").val()
+        };
+    }
+    </script>
+
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+
+    <div class="list-container">
+        <div class="row k-text-error">
+
+            @Html.ValidationMessage("12")
+        </div>
+        <div class="row">
+            <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabel("Approval Module",true)</label> :
+                @(Html.Kendo().DropDownListFor(model=>model.ApproveModuleID)
+                    //.Name("ApproveModuleID")
+                    .HtmlAttributes(new { style = "width:200px!important " })
+                    .BindTo(ComboBoxHelper.GetAllApproveModule(AMSContext.CreateNewContext(), ""))
+                    .OptionLabel("Select Approve Module")
+                    .Events(events=>events.Change("OnModuleChange"))
+                    )
+                  
+                    <div id="errApproveModuleID"></div>
+                </div>
+         @if(AppConfigurationManager.GetValue<bool>(AppConfigurationManager.IsMandatoryLocationType))
+{
+            <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabel("From Location Type",true)</label> :
+                @(Html.Kendo().DropDownListFor(model => model.FromLocationTypeID)
+                    //.Name("FromLocationTypeID")
+                    .HtmlAttributes(new { style = "width:200px!important " })
+                  //  .BindTo(ComboBoxHelper.GetAllLocationType(AMSContext.CreateNewContext(), ""))
+                    .OptionLabel("Select From Location Type")
+                    .DataTextField("Text")
+                    .DataValueField("Value")
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetLocationTypeFields", "DataService").Data("FromLocationData");
+                        })
+                        .ServerFiltering(true);
+                    })
+                    .Enable(true).AutoBind(false)//.CascadeFrom("DashboardTemplateID")
+
+                    )
+               
+                <div id="errFromLocationType"></div>
+            </div>
+           
+            <div class="col-xl-3" id="toLocationDiv" style="display:none;">
+                <label for="fullname">@Html.FieldLabel("To Location Type",true)</label> :
+                @(Html.Kendo().DropDownListFor(model => model.ToLocationTypeID)
+                  //  .Name("ToLocationTypeID")
+                    .HtmlAttributes(new { style = "width:200px!important " })
+                    //  .BindTo(ComboBoxHelper.GetAllLocationType(AMSContext.CreateNewContext(), ""))
+                    .OptionLabel("Select To Location Type")
+                    .DataTextField("Text")
+                    .DataValueField("Value")
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetLocationTypeFields", "DataService").Data("ToLocationData");
+                        })
+                        .ServerFiltering(true);
+                    })
+                    .Enable(true).AutoBind(false)//.CascadeFrom("DashboardTemplateID")
+
+                    )
+
+                    
+                <div id="errToLocationType"></div>
+                </div>
+            }
+            else
+            {
+                @Html.HiddenFor(model=>model.FromLocationTypeID)
+                @Html.HiddenFor(model => model.ToLocationTypeID)
+            }
+
+            <div class="col-xl-12">
+
+                <table class="tablefilter" style="width: 544px;margin:0px auto;" id="selectionArea">
+                    <tr>
+                        <td class="editor-label">
+
+                            @Html.Label("lblAvailableApprovalRoles", "Available Approval Roles")
+                        </td>
+                        <td>
+                        </td>
+                        <td class="editor-label">
+
+                            @Html.Label("lblSelectedApprovalRoles", "Selected Approval Roles")
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 300px;">
+
+                            @{
+                                var rolelist = approvalRole;
+                            }
+
+                            @Html.ListBox("lblAvailableApprovalRoles", new SelectList(rolelist,"Value","Text"), new { style = "height:250px;width:100%" })
+
+                        </td>
+                        <td>
+                            <button style="width: 28px; width: 30px; margin-bottom: 5px;" type="button" title="Select Field" class="t-button t-button-icon btn-Move" onclick="Listbox_Move('lblSelectedApprovalRoles','up')"><i class="fa fa-angle-double-up"></i></button>
+                            <br />
+
+                            <input type="button" value=">>" title="SelectRole" class="t-button t-button-icon" onclick="addRole()" />
+                            <input type="button" value="<<" title="RemoveRole" class="t-button t-button-icon" onclick="delRole()" />
+                           <br/>
+                            <button style="width: 28px; width: 30px" type="button" title="Select Field" class="t-button t-button-icon btn-Move" onclick="Listbox_Move('lblSelectedApprovalRoles','down')"><i class="fa fa-angle-double-down"></i></button>
+
+
+                        </td>
+                        <td style="width: 300px;">
+                           
+                            @{
+                                var rolelist1 = "";
+                            }
+                            @Html.ListBox("lblSelectedApprovalRoles", new SelectList(rolelist1), new { style = "height:250px;width:100%" })
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id="issueDetails">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"><div id="SelectedApprovals"></div></td>
+                    </tr>
+                    
+                    @Html.Hidden("hdSelectedItems")
+                    @Html.Hidden("hdNonSelectedItems")
+
+                </table>
+            </div>
+            <div class="col-xl-12 text-right add-action-btns">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type="submit", onclick="return addItemsToHiddenFields();" })
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="loadIndexPage('ApproveWorkflow')" })
+            </div>
+           
+            </div>
+        </div>
+
+    }
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("Approval Workflow");
+    });
+
+    function addItemsToHiddenFields() {        
+        var flag = true;
+        var moduleID = $("#ApproveModuleID").data("kendoDropDownList").value();
+
+        if (!$("#ApproveModuleID").data("kendoDropDownList").value()) {
+            flag = false;
+            if ($("#validateApproveModuleID").val() != "") {
+                $("#errApproveModuleID").after('<span style="color:red;font-weight:normal;" id="validateApproveModuleID">@Language.GetString("Approve Module is Required")</span>');
+            }
+        }
+        else {
+            $("#validateApproveModuleID").remove();
+        }
+        // if (!$("#CategoryTypeID").data("kendoDropDownList").value()) {
+        //     flag = false;
+        //     if ($("#validateCategoryTypeID").val() != "") {
+        //         $("#errCategoryTypeID").after('<span style="color:red;font-weight:normal;" id="validateCategoryTypeID">@Language.GetString("Category Type is Required")</span>');
+        //     }
+        // }
+        // else {
+        //     $("#validateCategoryTypeID").remove();
+        // }
+        if ('@(AppConfigurationManager.GetValue<bool>(AppConfigurationManager.IsMandatoryLocationType))'=='True')
+        {
+
+            if (!$("#FromLocationTypeID").data("kendoDropDownList").value()) {
+                flag = false;
+                if ($("#validateFromLocation").val() != "") {
+                    $("#errFromLocationType").after('<span style="color:red;font-weight:normal;" id="validateFromLocation">@Language.GetString("From Location Name is Required")</span>');
+                }
+            }
+            else {
+                $("#validateFromLocation").remove();
+            }
+            if ('AssetTransfer' == $("#ApproveModuleID").data("kendoDropDownList").text()) {
+                if (!$("#ToLocationTypeID").data("kendoDropDownList").value()) {
+                    flag = false;
+                    if ($("#validateToLocation").val() != "") {
+                        $("#errToLocationType").after('<span style="color:red;font-weight:normal;" id="validateToLocation">@Language.GetString("To Location Name is Required")</span>');
+                    }
+                }
+                else {
+                    $("#validateToLocation").remove();
+                }
+            }
+        }
+        var lst = document.getElementById("lblSelectedApprovalRoles");
+        var hid = document.getElementById("hdSelectedItems");
+        if (hid.value != "") {
+            hid.value = "";
+        }
+        if (lst.options.length > 0) {
+            for (i = 0; i < lst.options.length; i++) {
+                hid.value += lst.options[i].value + ",";
+            }
+        }
+
+        var lst = document.getElementById("lblAvailableApprovalRoles");
+        var hid = document.getElementById("hdNonSelectedItems");
+
+        if (lst.options.length > 0) {
+            for (i = 0; i < lst.options.length; i++) {
+                hid.value += lst.options[i].value + ",";
+            }
+        }
+        if (!$("#hdSelectedItems").val())
+        {
+            flag = false;
+            if ($("#validateSelectedRole").val() != "") {
+                $("#SelectedApprovals").after('<span style="color:red;font-weight:normal;" id="validateSelectedRole">@Language.GetString("Please Select any one Approval Role")</span>');
+            }
+        }
+        else {
+            $("#validateSelectedRole").remove();
+        }
+
+        if (flag) {
+            return true;
+
+        }
+        else {
+            return false;
+        }
+    }
+</script>

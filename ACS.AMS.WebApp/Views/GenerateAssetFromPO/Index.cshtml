@@ -1,0 +1,715 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@model IndexPageModel
+@{
+   
+   
+}
+@* <script src="~/ACSScript/GenerateAssetFromPO.js"></script> *@
+<script>
+    function OnPOLineItemChange(e) {
+        $.ajax({
+            contentType: 'application/json',
+            type: 'GET',
+            async: false,
+            url: '/DataService/GetAssetPOType',
+            data: {
+                poLineItemID: $("#PO_LINE_ID").val()
+            },
+            success: function (data) {
+                if (data.Success == true) {
+                    debugger;
+                    $("#assetTypeHidden").val(data.assetType);
+
+                    var iNum = parseInt(data.qty);// - parseInt(data.generateQty)
+
+                    $("#Quantity").data('kendoNumericTextBox').value(iNum);
+                    $("#POQuantity").val(iNum);
+                    $("#POQty").val(iNum);
+                    // $("#ProductName").val(data.prodName);
+                    $("#PurchaseOrderID").val(data.purchaseOrderID);
+                    $("#CategoryID").data("kendoDropDownTree").dataSource.read();
+                    //$("#LocationID").data("kendoDropDownTree").dataSource.read();
+                    //$("#DetailsGrid").data('kendoGrid').dataSource.read();
+                }
+            },
+            error: function () {
+                alert("Asset Type is Empty");
+            }
+        });
+    }
+
+    function filterProducts(e) {
+        return {
+            poNumber: $("#PO_HEADER_ID").val(),
+            text: $("#PO_LINE_ID").data("kendoMultiColumnComboBox").input.val()
+        };
+    }
+
+    function OnPOChange(e) {
+        $("#CategoryID").val("");
+        $("#LocationID").val("");
+        $("#CategoryName").val("");
+        $("#ProductName").val('');
+        $("#POQuantity").val('');
+        $("#POQty").val('');
+        $("#Quantity").data('kendoNumericTextBox').value('');
+        $("#UnitCost").data('kendoNumericTextBox').value('');
+        $("#ID").val('');
+        $("#PurchaseOrderID").val('');
+
+    }
+    function OnPOFromAssetCategoryChanges(text) {
+        var flag = true;
+
+        if (!$("#PO_LINE_ID").val()) {
+            flag = false;
+            if ($("#validatePOLine").val() != "") {
+                $("#errpoLine").after('<span style="color:red;font-weight:normal;" id="validatePOLine">Select PO Line Number is Required</span>');
+            }
+        }
+        else {
+            $("#validatePOLine").remove();
+        }
+
+        if (flag) {
+            opAssetGenerateFromPOPopupOpenWindow(text);
+        }
+    }
+    function opAssetGenerateFromPOPopupOpenWindow(title, row) {
+        var id = $("#assetTypeHidden").val();
+
+        row = row || 0;
+        url = "/Popup/Index?id=" + id + "&row=" + row;
+        popupWindow(url, title);
+    }
+    function popupWindow(url, titleCon) {
+        var wnd = $("#window").data("kendoWindow");
+        if (wnd == null)
+            wnd = parent.window.$("#window").data("kendoWindow");
+        wnd.refresh({
+            url: url
+        });
+
+        wnd.center();
+        wnd.open();
+        wnd.title(titleCon);
+    }
+    function ParamForDDTree() {
+        return {
+            typeID: $("#assetTypeHidden").val()
+        }
+    }
+    function ProductData() {
+        return {
+            text: $("#ProductID").data("kendoMultiColumnComboBox").input.val(),
+            categoryID: $("#CategoryID").val(),
+           
+        }
+    }
+    function TreeListChange()
+    {
+        $("#ProductID").data("kendoMultiColumnComboBox").value("");
+        $("#ProductID").data("kendoMultiColumnComboBox").dataSource.read();
+    }
+    function OnSelectProduct() {
+       
+            var fag = true;
+            if (!$("#CategoryID").val()) {
+                fag = false;
+                if ($("#validateCategory").val() != "") {
+                    $("#errCategory").after('<span style="color:red;font-weight:normal;" id="validateCategory">CategoryName is Required</span>');
+                     $("#ProductID").data("kendoMultiColumnComboBox").value("");
+                     $("#ProductID").data("kendoMultiColumnComboBox").text("");
+                }
+            }
+            else {
+                $("#validateCategory").remove();
+            }
+        
+    }
+    </script>
+<style>
+
+    #ProductID-list .dropdown-header {
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    #ProductID-list .photo {
+        box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+        margin: 0 10px 0 0;
+        width: 50px;
+        height: 50px;
+         border-radius: 50%;
+        background-size: 100%;
+        background-repeat: no-repeat;
+        display: inline-block;
+    }
+
+    #ProductID-list h3 {
+        margin: 0 0 1px 0;
+        padding: 0;
+        font-size: 1.2em;
+        font-weight: normal;
+    }
+
+    #ProductID-list p {
+        margin: 0;
+        padding: 0;
+        font-size: .8em;
+    }
+</style>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+{
+    <div class="list-container">
+        <div class="row k-text-error">
+
+            @Html.ValidationMessage("12")
+        </div>
+
+        <div class="row">
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Purchase Order No", true)</label> :
+                @(Html.Kendo().MultiColumnComboBox()
+                    .Name("PO_HEADER_ID")
+                    .Placeholder("Select Purchase Order Number")
+                    .DataTextField("PO_NUMBER")
+                    .DataValueField("PO_HEADER_ID")
+                    .Columns(columns =>
+                    {
+                        columns.Add().Field("PO_NUMBER").Title("PO Number").Width("100px");
+                        columns.Add().Field("VENDOR_NAME").Title("Vendor Name").Width("200px");
+                        columns.Add().Field("VENDOR_NUMBER").Title("Vendor Number").Width("100px");
+                        columns.Add().Field("PO_DATE").Title("PO Date").Width("100px");
+                    })
+                    .HtmlAttributes(new { style = "width:100%;" })
+                    .Filter(FilterType.Contains)
+                    .FilterFields(new string[] { "PO_NUMBER", "VENDOR_NAME", "VENDOR_NUMBER", "PO_DATE" })
+                    .Events(a => { a.Change("OnPOChange"); })
+                    //.MinLength(3)
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetAllPONumber", "DataService");
+                        });
+                    })
+                    )
+                @Html.Hidden("PoNumber")
+
+                @Html.Hidden("POLineNumber")
+                @Html.Hidden("CurrentPageID", Model.EntityInstance.CurrentPageID)
+                <div id="errAppPages"></div>
+            </div>
+
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Purchase Order Line Number", true)</label> :
+                @(Html.Kendo().MultiColumnComboBox()
+                    .Name("PO_LINE_ID")
+                    .Placeholder("Select Purchase Order Line Number")
+                    .HtmlAttributes(new { style = "width:100%;" })
+                    .DataTextField("DisplayText")
+                    .DataValueField("PO_LINE_ID")
+                    .Columns(columns =>
+                    {
+                        columns.Add().Field("LINE_NUM").Title("Line No").Width("100px");
+                        columns.Add().Field("ITEM_DESCRIPTION").Title("Item Desc").Width("200px");
+                        columns.Add().Field("QUANTITY").Title("QUANTITY").Width("100px");
+                    })
+                    .Events(a => a.Change("OnPOLineItemChange"))
+
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetAllPOLineitemNumber", "DataService").Data("filterProducts");
+                        }).ServerFiltering(true);
+                    }).Enable(true)
+                    .AutoBind(true).CascadeFrom("PO_HEADER_ID")
+                    )
+
+                <div id="errpoLine"></div>
+            </div>
+
+            <div style="border: solid 1px #C0CAD1; margin: 5px 0px;" id="transferAssetPart">
+                <h4 style="background: #C0CAD1; margin: 0px;">Item Details</h4>
+
+                <div class="transferAsset" style="width:100%">
+                    <table class="entry" style="width:100%">
+                        <tr>
+                            <td class="editor-label" style="width: 10%;">
+                                @Html.Label(Language.GetString("CategoryName"))
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    @* @Html.TextBox("CategoryName",null,new{Class="form-control" ,@onkeydown = "ValidateKey(event);",@onblur = "ongroupBoxchangeevent(this.value,'CategoryID');"} ) *@
+
+                                    @(Html.Kendo().DropDownTree()
+                                        .Name("CategoryID")
+                                        .Label(label =>
+                                        {
+                                            label.Content("Select an category...");
+                                            label.Floating(true);
+                                        })
+                                        .DataTextField("Name")
+                                        .DataValueField("id")
+                                        .HtmlAttributes(new { style = "width: 100%" })
+                                        .Filter(FilterType.Contains)
+                                        .DataSource(dataSource => dataSource
+                                        .Read(read => read
+                                        .Action("GetCategoryListForDDTree", "DataService").Data("ParamForDDTree")
+                                        
+                                        )
+                                        .Events(a=>a.Change("TreeListChange"))
+                                        )
+                                        )
+                                    <input type="hidden" id="assetTypeHidden" />
+                                    <div id="errCategory"></div>
+
+                                    @* <span class="input-group-btn">
+                                <button class="btn btn-add" type="button" onclick="OnPOFromAssetCategoryChanges('@Language.GetString("SelectCategory")')"><i class="fa fa-hand-o-up"></i></button>
+                                <input type="hidden" id="assetTypeHidden" />
+                                </span> *@
+                                    @* @Html.Hidden("CategoryID") *@
+                                    @Html.Hidden("LineItemIdentityID")
+                                </div>
+                            </td>
+                            <td class="editor-label" style="width: 10%;">
+                                @Html.Label(Language.GetString("ProductName"))
+                            </td>
+                            <td style="width: 23%">
+                               @*  @Html.TextBox("ProductName", "", new { Class = "form-control Areacontrol", style = "width: 100%", maxlength = 200 }) *@
+                                @(Html.Kendo().MultiColumnComboBox()
+                                    .Name("ProductID")
+                                    .DataTextField("ProductName")
+                                    .DataValueField("ProductID")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Add()
+                                        .Field("CatalogueImage")
+                                        .Title("Catalogue")
+                                        .Template("<span class=\"k-state-default photo\" style=\"background-image: url(#:data.CatalogueImage#);\" ></span>")
+                                        .HeaderTemplate("<span class=\"dropdown-header\">Image</span>")
+                                        .Width("100px");
+
+                                        columns.Add().Field("ProductCode").Title("Product Code").Width("100px");
+                                        columns.Add().Field("ProductName").Title("ProductName").Width("200px");
+                                        columns.Add().Field("CategoryName").Title("CategoryName").Width("100px");
+                                        columns.Add().Field("VirtualBarcode").Title("VirtualBarcode").Width("100px");
+                                    })
+                                  
+                                    .HtmlAttributes(new { style = "width: 100%;" })
+                                    .DataSource(source =>
+                                    {
+                                        source.Read(read =>
+                                        {
+                                            read.Action("ProductDetailsAgainstCategory", "DataService").Data("ProductData");
+                                        });
+                                    })
+                                    .Events(a=>a.Select("OnSelectProduct"))
+                                    .Filter(FilterType.Contains)
+                                    .FilterFields(new string[] { "ProductCode", "productName", "CategoryName", "VirtualBarcode" })
+
+                                    .Height(300)
+                                    )
+                                @Html.Hidden("PurchaseOrderID")
+                                @Html.Hidden("ID", 0)
+                                <div id="errProduct"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="editor-label" style="width: 10%;">
+                                @Html.Label(Language.GetString("UnitCost"))
+                            </td>
+                            <td style="width: 23%">
+                                @(
+                                    Html.Kendo().NumericTextBox<decimal>()
+                                    .Name("UnitCost")
+                                    .Format("#.".PadRight(2 + 2, '0'))
+                                    .Min(0).Max(9999999999)
+                                    .Decimals(2)
+                                    .HtmlAttributes(new { maxlength = "10", style = "width: 100%;" })
+                                    )
+                                <div id="errunitCost"></div>
+                            </td>
+                            <td class="editor-label" style="width: 10%;">
+                                @Html.Label(Language.GetString("Quantity"))
+                            </td>
+                            <td style="width: 23%">
+                                @(
+                                    Html.Kendo().NumericTextBox()
+                                    .Name("Quantity")
+                                    .Format("#")
+                                    .Decimals(0)
+                                    .HtmlAttributes(new { maxlength = "10", style = "width: 100%;" })
+                                    )
+                                <div id="errQuantity"></div>
+                            </td>
+                        </tr>
+                        <tr>
+
+                            <td class="editor-label" style="width: 10%;">
+                                @Html.Label(Language.GetString("PurchaseQuantity"))
+                            </td>
+                            <td style="width: 23%">
+                                @Html.TextBox("POQty", null, new { Class = "form-control", @readonly = "readonly", style = "width: 100%", maxlength = 6000 })
+                                @Html.Hidden("POQuantity")
+                            </td>
+                            <td class="editor-label" style="width: 10%;">
+                                @Html.Label(Language.GetString("Department"))
+                            </td>
+                            <td>
+                                @(
+                                    Html.Kendo().MultiColumnComboBox()
+                                    .Name("DepartmentID")
+                                    .Placeholder("Select Department")
+                                    .DataTextField("DepartmentName")
+                                    .DataValueField("DepartmentID")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Add().Field("DepartmentCode").Title("Department Code").Width("100px");
+                                        columns.Add().Field("DepartmentName").Title("Department").Width("200px");
+                                    })
+                                    .HtmlAttributes(new { style = "width:100% !important;" })
+                                    .Filter(FilterType.Contains)
+                                    .FilterFields(new string[] { "DepartmentCode", "DepartmentName" })
+                                    .DataSource(source =>
+                                    {
+                                        source.Read(read =>
+                                        {
+                                            read.Action("GetAllDepartmentList", "DataService");
+                                        });
+                                    })
+                                    )
+                                <div id="errDepartment"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="editor-label" style="width: 10%;">
+                                @Html.Label(Language.GetString("Location"))
+                            </td>
+                            <td>
+                               @*  @Html.Hidden("LocationID", 31) *@
+                                @(Html.Kendo().DropDownTree()
+                                    .Name("LocationID")
+                                    .Label(label =>
+                                    {
+                                        label.Content("Select an Location...");
+                                        label.Floating(true);
+                                    })
+                                    .DataTextField("Name")
+                                    .DataValueField("id")
+                                    .HtmlAttributes(new { style = "width: 100%" })
+                                    .Filter(FilterType.Contains)
+                                    .DataSource(dataSource => dataSource
+                                    .Read(read => read
+                                    .Action("GetLocationListForDDTree", "DataService")
+                                    )
+                                    )
+                                    )
+                                <div id="errLocation"></div>
+
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="col-xl-12 text-right add-action-btns">
+                        @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Add").Name("AddButton").HtmlAttributes(new { onclick = "return onItemCreateform();" })
+                    </div>
+                    <table>
+                        <tr>
+                            <td>
+                        <tr>
+                            <td colspan="4">
+                                        @(
+                                            Html.Kendo().Grid<ACS.AMS.WebApp.Models.POModel>()
+
+                                            .Name("DetailsGrid")
+                                            .Columns(columns =>
+                                            {
+                                                columns.Bound(p => p.id).Width(100).Visible(false);
+                                               @*  columns.Bound(p => p.id).Width(20).Filterable(false); *@
+                                                columns.Bound(p => p.PoNumber).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("PoNumber"));
+                                                columns.Bound(p => p.POLineNumber).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("PoLineNumber"));
+                                                columns.Bound(p => p.CategoryName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("CategoryName"));
+                                                columns.Bound(p => p.ProductName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("ProductName"));
+                                                columns.Bound(p => p.DepartmentName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("DepartmentName"));
+                                                columns.Bound(p => p.Quantity).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("Quantity"));
+                                                columns.Bound(p => p.UnitCost).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(Language.GetString("UnitCost"));
+                                                columns.Template("<center><a class='k-button-icontext' id='#=CategoryID#' href='javascript:LoadPOGenerateDelete(#=CategoryID#, \"#= PoNumber #\", \"#= POLineNumber #\", \"#= ProductName #\")'><img src='/css/images/delete-icon.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                                                .Title(Language.GetString("Delete")).Width(50);
+
+                                            }).Filterable()
+                                            .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+                                            .DataSource(datasource => datasource
+                                            .Ajax()//. Model(p => p.Id(x => x.PurchaseOrderID))
+                                            .Model(model =>
+                                            {
+                                                model.Id(p => p.id);
+                                                model.Field(p => p.id).Editable(false);
+                                            })
+                                            .Read(read => read.Action("GetItemList", "GenerateAssetFromPO", new { currentPageID = Model.EntityInstance.CurrentPageID })))
+                                            .Pageable()
+                                            )
+                            </td>
+
+                        </tr>
+
+                    </table>
+                </div>
+            </div>
+
+
+            <div class="col-xl-12 text-right add-action-btns">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type = "submit", onclick = "return onvalidation();" })
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick = "loadDefaultPage('@Url.Action('Dashboard', 'Dashboard')');" })
+            </div>
+        </div>
+    </div>
+}
+@(Html.Kendo().Window()
+       .Name("window")
+       .Width(1300)
+       .Visible(false)
+       .Actions(actions => actions.Close())
+       .Height(550)
+       .Draggable()
+       .Resizable()
+       .Iframe(true)
+       .Modal(true)
+.Scrollable(false)
+)
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("Generate Asset From PO");
+        
+    });
+
+    function onvalidation() {     
+            var flag = true;
+            var grid = $("#DetailsGrid").data('kendoGrid').dataSource;
+            var GridLength = grid.total();
+            if (GridLength == 0) {
+                alert("Atleast one item detail required to receive PO and Asset Generation");
+                flag = false;
+            }
+        if (flag) {
+            return true;
+        }
+        else 
+        {
+            return false;
+        }
+    }
+
+    function hiddenvalues(id, name) {
+        $("#" + name).val(id);
+    }
+    function ongroupBoxchangeevent(textbox, ID) {
+        if (!textbox) {
+            hiddenvalues(textbox, ID);
+        }
+    }
+    function LoadPOGenerateDelete(id, ponumber, polineno, productName) {
+        var obj = {
+            categoryID: id,
+            currentPageID: $("#CurrentPageID").val(),
+            PoNumber: ponumber,
+            POLineNumber: polineno,
+            ProductName: productName
+        }
+
+        Sever_PostData("/GenerateAssetFromPO/DeleteModelData", obj, ItemDelte_SubmitItemDetails_Success, IssueDetails_SubmitItemDetails_Failure);
+    }
+
+    function onItemCreateform() {
+        debugger;
+
+        $("#PoNumber").val($("#PO_HEADER_ID").data("kendoMultiColumnComboBox").text());
+        $("#POLineNumber").val($("#PO_LINE_ID").data("kendoMultiColumnComboBox").text());
+       
+
+        var fag = true;
+        if (!$("#CategoryID").val()) {
+            fag = false;
+            if ($("#validateCategory").val() != "") {
+                $("#errCategory").after('<span style="color:red;font-weight:normal;" id="validateCategory">CategoryName is Required</span>');
+            }
+        }
+        else {
+            $("#validateCategory").remove();
+        }
+        if (!$("#ProductID").data("kendoMultiColumnComboBox").value()) {
+
+            fag = false;
+            if ($("#validateProduct").val() != "") {
+                $("#errProduct").after('<span style="color:red;font-weight:normal;" id="validateProduct">Product Name is Required</span>');
+            }
+        }
+        else {
+            $("#validateProduct").remove();
+        }
+        if (!$("#DepartmentID").data("kendoMultiColumnComboBox").value()) {
+
+            fag = false;
+            if ($("#validateDepartment").val() != "") {
+                $("#errDepartment").after('<span style="color:red;font-weight:normal;" id="validateDepartment">Department Name is Required</span>');
+            }
+        }
+        else {
+            $("#validateDepartment").remove();
+        }
+        if (!$("#LocationID").val()) {
+            fag = false;
+            if ($("#validateLocation").val() != "") {
+                $("#errLocation").after('<span style="color:red;font-weight:normal;" id="validateLocation">LocationName is Required</span>');
+            }
+        }
+        else {
+            $("#validateLocation").remove();
+        }
+        var qty = $("#Quantity").data("kendoNumericTextBox").value();
+        if (qty == null || qty <= 0) {
+            fag = false;
+            if ($("#validateQuantity").val() != "") {
+                $("#errQuantity").after('<span style="color:red;font-weight:normal;" id="validateQuantity">Quantity is Required</span>');
+            }
+        }
+        else {
+            $("#validateQuantity").remove();
+        }
+        var qty = $("#UnitCost").data("kendoNumericTextBox").value();
+        if (qty == null || qty <= 0) {
+            fag = false;
+            if ($("#validateunity").val() != "") {
+                $("#errunitCost").after('<span style="color:red;font-weight:normal;" id="validateunity">UnitCost is Required</span>');
+            }
+        }
+        else {
+            $("#validateunity").remove();
+        }
+
+        if ('True' == 'False') {
+            if (parseInt($("#Quantity").data('kendoNumericTextBox').value()) > parseInt(document.getElementById("POQuantity").value)) {
+                fag = false;
+                if ($("#validateQuantity").val() != "") {
+                    $("#errQuantity").after('<span style="color:red;font-weight:normal;" id="validateQuantity">Quantity should not be greater than PO Qunatity</span>');
+                }
+            }
+            else {
+                $("#validateQuantity").remove();
+            }
+        }
+
+        if (fag) {
+            //var obj = $("#form0").serialize();
+            var obj = {
+                id: $("#LineItemIdentityID").val(),
+                CategoryID: $("#CategoryID").val(),
+                CategoryName: $("#CategoryName").val(),
+                ProductID: $("#ProductID").data("kendoMultiColumnComboBox").value(),
+                POQuantity: parseInt(document.getElementById("POQuantity").value) - parseInt($("#Quantity").data('kendoNumericTextBox').value()),
+                Quantity: parseInt($("#Quantity").data('kendoNumericTextBox').value()),
+                DepartmentID: $("#DepartmentID").val(),
+                DepartmentName: $("#DepartmentID").data("kendoMultiColumnComboBox").text(),
+                UnitCost: $("#UnitCost").data("kendoNumericTextBox").value(),
+                PoNumber: $("#PoNumber").val(),
+                POLineNumber: $("#POLineNumber").val(),
+                PO_HEADER_ID: $("#PO_HEADER_ID").val(),
+                PO_LINE_ID: $("#PO_LINE_ID").val(),
+                currentPageID: $("#CurrentPageID").val(),
+                PurchaseOrderID: $("#PurchaseOrderID").val(),
+                        LocationID: $("#LocationID").val(),
+                
+            }
+
+            Sever_PostData("/GenerateAssetFromPO/AddLineItems", obj, ItemRequest_SubmitItemDetails_Success, IssueDetails_SubmitItemDetails_Failure);
+        }
+
+    }
+    function Sever_PostData(url, data, successCallBack, failureCallBack) {
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            success: function (responce) {
+                if (successCallBack != null) successCallBack(responce);
+            },
+            failure: function (responce) {
+                if (failureCallBack != null)
+                    failureCallBack(responce);
+                else
+                    alert(response.responseText);
+            },
+            error: function (responce) {
+                if (failureCallBack != null)
+                    failureCallBack(responce);
+                else
+                    alert(response.responseText);
+            }
+        });
+    }
+
+    function ItemDelte_SubmitItemDetails_Success(data) {
+        if (data != '') {
+        }
+        else {
+            $("#CategoryID").val("");
+            $("#CategoryName").val("");
+            $("#LocationID").data('kendoDropDownTree').value('');
+            $("#UnitCost").data('kendoNumericTextBox').value('');
+            // var currentqty = parseInt(document.getElementById("POQuantity").value) - parseInt($("#Quantity").data('kendoNumericTextBox').value());
+            // $("#POQuantity").val(currentqty);
+            // $("#POQty").val(currentqty);
+            $("#POQuantity").val('');
+            $("#POQty").val('');
+            $("#ID").val('');
+            $("#Quantity").data('kendoNumericTextBox').value('');
+            $("#ProductName").val('');
+            $("#DepartmentID").data("kendoMultiColumnComboBox").text('');
+            $("#PO_HEADER_ID").data("kendoMultiColumnComboBox").value("");
+            $("#PO_LINE_ID").data("kendoMultiColumnComboBox").value("");
+        }
+        setInitialFocus("CategoryName");
+        $("#DetailsGrid").data('kendoGrid').dataSource.read();
+    }
+
+    function ItemRequest_SubmitItemDetails_Success(data) {
+        if (data != '') {
+            setInitialFocus("CategoryName");
+            $("#DetailsGrid").data('kendoGrid').dataSource.read();
+        }
+        else {
+            $("#CategoryID").data('kendoDropDownTree').value('');
+            $("#LocationID").data('kendoDropDownTree').value('');
+            $("#CategoryName").val("");
+            $("#UnitCost").data('kendoNumericTextBox').value('');
+            // var currentqty = parseInt(document.getElementById("POQuantity").value) - parseInt($("#Quantity").data('kendoNumericTextBox').value());
+            // $("#POQuantity").val(currentqty);
+            // $("#POQty").val(currentqty);
+            $("#POQuantity").val('');
+            $("#POQty").val('');
+            $("#ID").val('');
+            $("#Quantity").data('kendoNumericTextBox').value('');
+            $("#ProductName").val('');
+            $("#DepartmentID").data("kendoMultiColumnComboBox").text('');
+            setInitialFocus("CategoryName");
+            $("#DetailsGrid").data('kendoGrid').dataSource.read();
+        }
+        
+        
+    }
+
+    function IssueDetails_SubmitItemDetails_Failure(data) {
+        setInitialFocus("CategoryName");
+        $('#POQty').html('');
+    }
+
+
+
+   
+</script>
+<script src="~/acsscript/common.js"></script>

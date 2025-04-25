@@ -1,0 +1,246 @@
+.body {
+    font-family: Red Hat Text;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding: 0;
+    margin: 0;
+    min-height: 100%;
+}
+
+.blue-rectangle-login,
+.businesspeople-meeting-plan-an-icon,
+.businesspeople-meeting-plan-an-parent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: fill;
+}
+
+.blue-rectangle-login {
+    filter: blur(1px);
+    border-radius: 20px;
+    background-color: #011e64;
+    border: 1px solid var(--color-white);
+    box-sizing: border-box;
+    width: 350px;
+    height: 430px;
+    margin: 250px;
+    left: 300px;
+    padding: 150px;
+    top: -100px;
+}
+
+
+.group-child {
+    position: absolute;
+    top: 290px;
+    left: 585px;
+    box-shadow:none;
+    border-radius: 30px;
+    background-color: white;
+    width: 280px;
+    height: 50px;
+}
+
+.enterusername,
+.username {
+    position: absolute;
+    top: 300px;
+    left: 680px;
+    display: inline-block;
+    width: 148px;
+    height: 25px;
+    font-family: inherit;
+}
+
+.username {
+    top: 260px;
+    left: 600px;
+    font-size: var(--font-size-5xl);
+    color: white;
+/*    font-family: lexend deca;*/
+}
+
+
+
+.rectangle-container {
+    position: absolute;
+    left: 585px;
+    box-shadow: none;
+    border-radius: 30px;
+    background-color: white;
+    width: 280px;
+    height: 50px;
+}
+
+.group-item {
+    top: 0;
+    border-radius: 50px;
+    background-color: var(--color-white);
+}
+
+.rectangle-container {
+    top: 380px;
+    box-shadow: none;
+}
+
+.enterpassword,
+.password {
+    position: absolute;
+    top: 390px;
+    left: 685px;
+    display: inline-block;
+    width: 145px;
+    height: 25px;
+}
+
+.password {
+    top: 350px;
+    left: 600px;
+    font-size: var(--font-size-5xl);
+    color: white;
+    width: 112px;
+    height: 30px;
+    font-family: inherit;
+}
+
+.user-icon {
+    position: relative;
+    top: 275px;
+    left: 585px;
+    width: 60px;
+    height: 50px;
+}
+
+.lock-icon {
+    position: relative;
+    top: 314px;
+    left: 585px;
+    width: 60px;
+    height: 50px;
+}
+
+.logo {
+    position: absolute;
+    top: 120px;
+    left: 665px;
+    width: 200px;
+    height: 185px;
+}
+
+#login {
+    position: absolute;
+    top: -50px;
+    left: 470px;
+    color: rgb(0, 0, 0);
+    display: inline-block;
+    width: 55px;
+    height: 25px;
+    font-weight: bold;
+    font-family: inherit;
+}
+
+.rectangle-parent {
+    position: absolute;
+    top: 568px;
+    left: 202px;
+    width: 138px;
+    height: 48px;
+    color: #000;
+}
+
+    .rectangle-parent #login {
+        background-color: aqua;
+        border-radius: 20px;
+        width: 100px;
+        height: 35px;
+    }
+
+
+.forgot-password,
+.remember-me {
+    position: absolute;
+    display: inline-block;
+}
+
+.forgot-password {
+    top: 430px;
+    left: 750px;
+    font-size: 13px;
+    text-decoration: underline;
+    color: aqua;
+    font-family: inherit;
+}
+
+.remember-me {
+    top: 0;
+    left: 0;
+    width: 142px;
+    height: 24.6px;
+}
+
+.rectangle-div {
+    position: absolute;
+    top: 2px;
+    left: 100px;
+    border: 2px solid white;
+    box-sizing: border-box;
+    width: 15px;
+    height: 13px;
+}
+
+.remember-me-parent {
+    position: absolute;
+    top: 455px;
+    left: 600px;
+    width: 176px;
+    height: 24.6px;
+    color: white;
+    font-family: inherit;
+}
+
+
+.rectangle-container-textbox {
+    position: absolute;
+    left: 645px;
+    /* box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25) inset, 0 4px 4px rgba(0, 0, 0, 0.25); */
+    /* border-radius: 30px; */
+    border-bottom-right-radius: 30px;
+    border-top-right-radius: 30px;
+    /* border-left: none; */
+    border: none;
+    background-color: white;
+    width: 225px;
+    height: 50px;
+    box-shadow: none;
+    top: 380px;
+}
+
+.group-child-textbox {
+    position: absolute;
+    top: 290px;
+    left: 645px;
+    border: none;
+    border-bottom-right-radius: 30px;
+    border-top-right-radius: 30px;
+    box-shadow: none;
+    /*  border-radius: 30px;*/
+    background-color: white;
+    width: 225px;
+    height: 50px;
+    box-shadow: none;
+}
+
+input[type="password"]:focus {
+    outline: none; /* Removes the default focus outline */
+    border: none; /* Removes the border */
+    /* Add any other styling you desire for the focused state */
+}
+input[type="text"]:focus {
+    outline: none; /* Removes the default focus outline */
+    border: none; /* Removes the border */
+    /* Add any other styling you desire for the focused state */
+}

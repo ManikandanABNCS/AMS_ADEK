@@ -1,0 +1,426 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@using ACS.WebAppPageGenerator.Models.SystemModels;
+@using ACS.AMS.WebApp;
+
+@using Kendo.Mvc.UI
+
+@model BasePageModel
+@{
+    int currentPageId = Model.EntityInstance.CurrentPageID;
+    
+    EntryPageHelper entryPage = new EntryPageHelper(Model)
+    {
+        AddControlsInSingleColumnForLessItems = false
+    };
+}
+<script>
+    function popupitemSelection() {
+        url = "/PopupItem/Index?currentPageID=" + $("#CurrentPageID").val() + '&sceenName=AMCSchedule';
+        popupItemOpenWindow(url, "Asset Details");
+    }
+    function popupItemOpenWindow(url, titleCon) {
+
+        var wnd = $("#PopupAsset").data("kendoWindow");
+        if (wnd == null)
+            wnd = parent.window.$("#window").data("kendoWindow");
+        wnd.refresh({
+            url: url
+        });
+
+        wnd.center();
+        wnd.open();
+        wnd.title(titleCon);
+    }
+    function onSelect(e) {
+        if (e.files.length > 5) {
+            alert("Please select max 5 files.");
+            e.preventDefault();
+        }
+    }
+
+    function OnSuccessUpload(e) {
+
+    }
+
+    function OnComplete(e) {
+
+    }
+
+    function OnExcelSuccessUpload(e) {
+        var Error = e.response.error;
+        var FilePath = e.response.FilePath;
+        if (Error) {
+            alert(Error);
+            $("#loadingmaskApproval").css("display", "none");
+            $(".k-upload-files.k-reset").remove();
+            e.preventDefault();
+            return;
+        }
+        $("#DetailsGrid").data("kendoGrid").dataSource.read();
+        $("#loadingmaskApproval").css("display", "none");
+    }
+
+    function OnExcelComplete(e) {
+
+    }
+
+    function ErrorUploadExcel(e) {
+        $(".k-upload-files.k-reset").remove();
+        $("#loadingmaskApproval").css("display", "none");
+        alert(e.XMLHttpRequest.response);
+    }
+    function onExcelupload(e) {
+        $("#loadingmaskApproval").css("display", "block");
+    }
+</script>
+<style>
+    #UniformSetID-list .photo{
+    box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+    margin: 0 10px 0 0;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    display: inline-block;
+    }
+</style>
+
+@using (Html.AjaxBeginForm("AMCScheduleCreate", "AMCSchedule", DisplayHelper.GetAjaxOptions()))
+    {
+    @Html.Hidden("PageName", Model.PageName)
+    @Html.Hidden("CurrentPageID", currentPageId)
+
+        <div class="list-container">
+              @(Html.Kendo().TabStrip()
+                .Name("TabStrip").SelectedIndex(0).HtmlAttributes(new { style = "width:100%;" })
+                .Items(tabstrip =>
+                {
+                    tabstrip.Add().Text("AMC").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+                    <div class="row k-text-error">
+                        @Html.ValidationMessage("12")
+                    </div>
+                    @{
+                        entryPage.CreatePageControls(Html, this);
+                    }
+                    <div class="LineItemPartition">
+         
+                    <div class="row" id="uniformItemSingle">
+                <div class="col-xl-4" style="padding-left:20px">
+                                    <label for="fullname">@Html.FieldLabel("Import Excel", false)</label>
+                                    @(
+                                        Html.Kendo().Upload()
+                                        .Name("fileNames")
+                                        .Async(a => a
+                                        .Save("ImportUpload", "AMCSchedule", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                    .Remove("ImportRemove", "AMCSchedule", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                                        .AutoUpload(true)
+                                        ).Multiple(false)
+
+                                        .Events(events => events
+                                        //.Select("onSelect")
+
+                                        .Success("OnExcelSuccessUpload").Complete("OnExcelComplete").Upload("onExcelupload")
+                                        .Error("ErrorUploadExcel")
+                                        )
+
+                                        .Validation(validation => validation
+                                        .AllowedExtensions(".xls", ".xlsx")
+
+                                        )
+                                        )
+                    @Html.ActionLink("Download Format", "DownloadFile", new { fileName = "UploadAMCScheduleAsset.xls" })
+                                </div>
+                                <div class="col-xl-2" style="padding-left: 600px;padding-top: 25px;">
+                                    @{
+                                        @Html.Kendo().Button().Content("Search Asset").Name("searchButton").HtmlAttributes(new { onclick = "return popupitemSelection()" })
+                                    }
+                                </div>
+                               
+          
+                        </div>
+
+                   
+                    <div class="row" style="padding-top:10px">
+                        <div class="col-xl-12">
+                            
+
+                            @(Html.Kendo().Grid<TransactionLineItemModel>()
+                                    .Name("DetailsGrid")
+                                .Columns(columns =>
+                                {
+                                    columns.Bound(p => p.ID).Width(100).Visible(false);
+                                    columns.Bound(p => p.ID).Width(20).Filterable(false)
+                                    .ClientTemplate("<input type='checkbox' id=='#=ID#' value='#=ID#' onclick='enableGridLineItemRow(this)' class='GridLineItemGridClass' />")
+                                    .ClientHeaderTemplate("<input id='selectAllLineItemID' name='selectAllLineItemID' type='checkbox' onclick='selectAllGridLineItemClicked(this)'  />")
+                                    .HeaderHtmlAttributes(new { @style = "font-weight:bold; text-align: lieft" })
+                                    .Sortable(false).Filterable(false);
+                                    columns.Bound(p => p.TransactionLineItemID).Width(100).Visible(false);
+                                columns.Bound(p => p.AssetCode).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("AssetCode"));
+                                columns.Bound(p => p.Barcode).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Barcode"));
+                columns.Bound(p => p.CategoryHierarchy).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("CategoryHierarchy"));
+                columns.Bound(p => p.AssetDescription).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("AssetDescription"));
+                columns.Bound(p => p.LocationHierarchy).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("LocationHierarchy"));
+                columns.Bound(p => p.LocationType).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("LocationType"));
+                                    columns.Template("<center><a class='k-button-icontext' id='#=ID#' href='javascript:DeleteAMCSchedule(#=ID#)'><img src='/css/images/delete-icon.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                                    .Title(Language.GetString("Delete")).Width(50);
+                                })
+                                .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                                {
+                                    o.ForString(t => t.Clear().Contains("Contains").DoesNotContain("Does Not Contains").IsEqualTo("Equal To")
+                                                                .IsNotEqualTo("Not EqualTo").StartsWith("Starts With").EndsWith("Ends With"));
+                                })
+                                )
+                                .Sortable().Selectable()
+                                .Pageable()
+                                .DataSource(datasource => datasource.Ajax()
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.ID);
+                                    model.Field(p => p.ID).Editable(false);
+                                })
+                                .Read(read => read.Action("_LineItemindex", "AMCSchedule", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                    
+                                )
+                                ))
+                        </div>
+                        </div>
+        </div>
+                             <div class="col-12 text-right add-action-btns" id="nextDiv" style="padding-top:15px">
+            
+                            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton1").HtmlAttributes(new { @class = "saveButton", onclick="return clickoneNext(event);" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton2").HtmlAttributes(new { @class = "cancelButton",onclick = $"LoadIndexPage('AMCSchedule','{Model.PageName}')" })
+                            </div >
+    </text>);
+      tabstrip.Add().Text("Activity").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+                    <div class="row">
+            @Html.Hidden("ActitivtyLineItemIdentityID")
+            <div class="col-xl-4">
+                                <label for="fullname">@Html.FieldLabel("ActivityRemarks", true)</label>
+                                @(Html.Kendo().TextArea().Name("ActivityRemarks").Rows(3))
+                                    <div id="errActivityRemarks"></div>
+                            </div>
+                            <div class="col-xl-4">
+                                <label for="fullname">@Html.FieldLabel("ActivityStartDate", true)</label>
+                @(Html.Kendo().DatePicker().Name("ActivityStartDate").Format(CultureHelper.ConfigureDateFormat).Events(e => e.Change("onActivityStartDatePicker")))
+                <div id="errActivityStartDate"></div>
+                            </div>
+                            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("ActivityEndDate", true)</label>
+                @(Html.Kendo().DatePicker().Name("ActivityEndDate").Format(CultureHelper.ConfigureDateFormat).Events(e => e.Change("onActivityEndDatePicker")))
+                <div id="errActivityEndDate"></div>
+                            </div>
+                        <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+                            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Add").Name("addButton1").HtmlAttributes(new { onclick = $"addActivity()" })
+                        </div>
+                    </div>
+        <div class="row" style="padding-top:10px">
+            <div class="col-xl-12">
+           
+
+                @(Html.Kendo().Grid<TransactionScheduleModel>()
+                .Name("ActivityDetailGrid")
+                .Columns(columns =>
+                {
+                columns.Bound(p => p.ID).Width(100).Visible(false);
+                columns.Bound(p => p.ID).Width(20).Filterable(false)
+                .ClientTemplate("<input type='checkbox' id=='#=ID#' value='#=ID#' onclick='enableGridLineItemRow(this)' class='GridLineItemGridClass' />")
+                .ClientHeaderTemplate("<input id='selectAllLineItemID' name='selectAllLineItemID' type='checkbox' onclick='selectAllGridLineItemClicked(this)'  />")
+                .HeaderHtmlAttributes(new { @style = "font-weight:bold; text-align: lieft" })
+                .Sortable(false).Filterable(false);
+                columns.Bound(p => p.TransactionScheduleID).Width(100).Visible(false);
+                columns.Bound(p => p.Activity).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Activity"));
+                columns.Bound(p => p.ActivityStartDate).Width(200).Format("{0:" + CultureHelper.ConfigureDateFormat + "}").HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ActivityStartDate"));
+                columns.Bound(p => p.ActivityEndDate).Width(100).Format("{0:" + CultureHelper.ConfigureDateFormat + "}").HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ActivityEndDate"));
+                columns.Template("<center><a class='k-button-icontext' id='#=ID#' href='javascript:EditActivity(#=ID#)'><img src='/css/images/Edit-icon.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                .Title(Language.GetString("Edit")).Width(50);
+                columns.Template("<center><a class='k-button-icontext' id='#=ID#' href='javascript:DeleteActivity(#=ID#)'><img src='/css/images/delete-icon.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                .Title(Language.GetString("Delete")).Width(50);
+                })
+                .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                {
+                o.ForString(t => t.Clear().Contains("Contains").DoesNotContain("Does Not Contains").IsEqualTo("Equal To")
+                .IsNotEqualTo("Not EqualTo").StartsWith("Starts With").EndsWith("Ends With"));
+                })
+                )
+                .Sortable().Selectable()
+                .Pageable()
+                .DataSource(datasource => datasource.Ajax()
+                .Model(model =>
+                {
+                model.Id(p => p.ID);
+                model.Field(p => p.ID).Editable(false);
+                })
+                .Read(read => read.Action("_ActivityLineItemindex", "AMCSchedule", new { currentPageID = Model.EntityInstance.CurrentPageID })
+
+                )
+                ))
+            </div>
+        </div>
+
+        <div class="col-12 text-right add-action-btns" id="nextDiv" style="padding-top:15px">
+
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton2").HtmlAttributes(new { @class = "saveButton", onclick="return clickoneNext(event);" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton3").HtmlAttributes(new { @class = "cancelButton",onclick = $"LoadIndexPage('AMCSchedule','{Model.PageName}')" })
+        </div>
+    </text>);
+                }))
+                   
+        <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type="submit"})
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick = $"LoadIndexPage('AMCSchedule','{Model.PageName}')" })
+        </div>
+     </div>
+}
+
+
+
+@(Html.Kendo().Window()
+        .Name("PopupAsset")
+        .Width(1300)
+        .Visible(false)
+        .Actions(actions => actions.Close())
+        .Height(550)
+        .Draggable()
+        .Resizable()
+        .Iframe(true)
+        .Modal(true)
+.Scrollable(false)
+)
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading('Create @Language.GetPageTitle(Model.PageTitle)');
+        setInitialFocus('@entryPage.FirstFieldName');
+        $("#TabStrip").data("kendoTabStrip").select(0);
+    });
+  
+ 
+
+    function addActivity() {
+        debugger;
+        var flag = true;
+        if (!$("#ActivityRemarks").val()) {
+            if ($("#validateerror").val() != "") {
+                $("#errActivityRemarks").after('<span style="color:red;font-weight:normal;" id="validateerror">@Language.GetString("Activity is required")</span>');
+            }
+            flag = false;
+        }
+        else {
+            $("#validateerror").remove();
+        }
+        if (!$("#ActivityStartDate").val()) {
+            if ($("#validateerror2").val() != "") {
+                $("#errActivityStartDate").after('<span style="color:red;font-weight:normal;" id="validateerror2">@Language.GetString("ActivityStartDate is required")</span>');
+            }
+            flag = false;
+        }
+        else {
+            $("#validateerror2").remove();
+        }
+        if (!$("#ActivityEndDate").val()) {
+            if ($("#validateerror3").val() != "") {
+                $("#errActivityEndDate").after('<span style="color:red;font-weight:normal;" id="validateerror3">@Language.GetString("ActivityEndDate is required")</span>');
+            }
+            flag = false;
+        }
+        else {
+            $("#validateerror3").remove();
+        }
+        if (flag)
+        {
+            debugger;
+            var AR = $("#ActivityRemarks").val();
+            var SD = $("#ActivityStartDate").val();
+            var ED = $("#ActivityEndDate").val();
+            var data = {
+                id: $("#ActitivtyLineItemIdentityID").val(),
+                currentPageID: '@Model.EntityInstance.CurrentPageID',
+                activityRemarks: AR,
+                activityStartDate: SD,
+                activityEndDate: ED,
+                pageName: '@Model.PageName'
+            }
+
+            Sever_PostData("/AMCSchedule/AddActivity", data, addItemDetails_Success, addItemDetails_Failure);
+        }
+        else
+        {
+            return flag;
+        }
+      
+    }
+    function addItemDetails_Success(data) {
+        if (data=="")
+        {
+            //clear the item Form
+            $("#ActitivtyLineItemIdentityID").val("");
+            $("#ActivityRemarks").val("");
+            $("#ActivityStartDate").val("");
+            $("#ActivityEndDate").val("");
+            $("#ActivityDetailGrid").data('kendoGrid').dataSource.read();
+        }
+        else
+        {
+            showErrorMessage(data);
+        }
+       
+
+    }
+    function addItemDetails_Failure(data) {
+        showErrorMessage(data.responseText);
+        //setInitialFocus("UniformSetID");
+    }
+    function DeleteActivity(id) {
+        debugger
+        $("#ActitivtyLineItemIdentityID").val("");
+        $("#ActivityRemarks").val("");
+        $("#ActivityStartDate").val("");
+        $("#ActivityEndDate").val("");
+        deleteRecord("AMCSchedule", "ActivityDetailGrid", id, '/AMCSchedule/_DeleteActivity', "currentPageID=" + '@Model.EntityInstance.CurrentPageID');
+    }
+    function EditActivity(id) {
+        $.ajax({
+            contentType: 'application/json',
+            type: 'GET',
+            async: false,
+            url: '/AMCSchedule/LoadActivityEditData',
+            data: {
+                currentPageID: '@Model.EntityInstance.CurrentPageID',
+                id: id
+            },
+            success: function (data) {
+                debugger;
+                if (data.Success == true) {
+                    $("#ActitivtyLineItemIdentityID").val(data.result[0].ID)
+                    $("#ActivityRemarks").val(data.result[0].Activity);
+                    $("#ActivityStartDate").val(data.result[0].ActivityStartDate);
+                    $("#ActivityEndDate").val(data.result[0].ActivityEndDate);
+                }
+            },
+            error: function () {
+            }
+
+        });
+       
+    }
+    function DeleteMultipleActivity(pageName, gridName, recordID, url, additionalData) {
+        $("#ActitivtyLineItemIdentityID").val("");
+        $("#ActivityRemarks").val("");
+        $("#ActivityStartDate").val("");
+        $("#ActivityEndDate").val("");
+        DeleteMultipleGridLineItemDetailRecord(pageName, gridName, recordID, url, additionalData);
+    }
+    function DeleteAMCSchedule(id) {
+        debugger
+        deleteRecord("AMCSchedule", "DetailsGrid", id, '/AMCSchedule/_DeleteLineItem', "currentPageID=" + '@Model.EntityInstance.CurrentPageID');
+    }
+</script>

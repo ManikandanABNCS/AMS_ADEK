@@ -1,0 +1,319 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@using ACS.WebAppPageGenerator.Models.SystemModels;
+@using ACS.AMS.WebApp;
+
+@using Kendo.Mvc.UI
+
+@model BasePageModel
+@{
+    int currentPageId = Model.EntityInstance.CurrentPageID;
+    
+    EntryPageHelper entryPage = new EntryPageHelper(Model)
+    {
+        AddControlsInSingleColumnForLessItems = false
+    };
+}
+<script>
+ 
+    
+    
+
+    
+</script>
+<style>
+    #UniformSetID-list .photo{
+    box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+    margin: 0 10px 0 0;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    display: inline-block;
+    }
+</style>
+
+@using (Html.AjaxBeginForm("AssetMaintenanceRequestCreate", "AssetMaintenanceRequest", DisplayHelper.GetAjaxOptions()))
+    {
+    @Html.Hidden("PageName", Model.PageName)
+    @Html.Hidden("CurrentPageID", currentPageId)
+
+        <div class="list-container">
+        <div class="row k-text-error">
+            @Html.ValidationMessage("12")
+        </div>
+        @{
+            entryPage.CreatePageControls(Html, this);
+        }
+        <div class="LineItemPartition">
+            <div style="margin:10px">
+        <div class="row" id="uniformItemSingle">
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Asset", true)</label>
+                @(Html.Kendo().MultiColumnComboBox().Name("AssetID")
+                    .DataTextField("DisplayValue")
+                    .DataValueField("AssetID")
+                    .Columns(columns =>
+                    {
+                        columns.Add().Field("AssetCode").Title("AssetCode").Width("100px");
+                        columns.Add().Field("Barcode").Title("Barcode").Width("300px");
+                    })
+                    .AutoBind(false)
+                    .Filter(FilterType.Contains)
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetAllMulticolumncomboboxAsset", "DataService");
+                        });
+                    })
+                    )
+                <div id="errAssetID"></div>
+                @Html.Hidden("LineItemIdentityID")
+            </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("MaintenanceRemarks", true)</label>
+                @(Html.Kendo().TextArea().Name("MaintenanceRemarks").Rows(3))
+                <div id="errMaintenanceRemarks"></div>
+            </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("AdjustmentValue", true)</label>
+                @(Html.Kendo().IntegerTextBox().Name("AdjustmentValue").Value(1).Max(99999))
+                <div id="errAdjustmentValue"></div>
+            </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("IsNetBookAdjustment", true)</label>
+                @Html.CheckBox("IsNetBookAdjustment", false)
+       
+                <div id="errIsNetBookAdjustment"></div>
+            </div>
+           
+            <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Add").Name("addButton1").HtmlAttributes(new { onclick = $"addAssetMaintenanceRequestItemClicked()" })
+            </div>
+        </div>
+        <div class="row" style="padding-top:10px">
+            <div class="col-xl-12">
+                @{
+                    string deleteAdditionalData = null;
+                    deleteAdditionalData = (deleteAdditionalData + "&" ?? string.Empty) + "pageName=" + "AssetMaintenanceRequest" + "&currentPageID=" + currentPageId;
+                    var defaultToolBar = this.Html.Kendo().ToolBar()
+                    .Name("ToolBar")
+                    .HtmlAttributes(new { style = "width: 100%;" })
+                    .Items(items =>
+                    {
+                        items.Add().Type(Kendo.Mvc.UI.CommandType.Spacer);
+
+                        if (SessionUser.HasRights(RightNames.AssetMaintenanceRequest, UserRightValue.Delete))
+                        {
+                            items.Add().Type(Kendo.Mvc.UI.CommandType.Button).Text(Language.GetButtonText("Delete")).Id(Guid.NewGuid().ToString())
+                                .Template("<a class='' style='min-width: 25px;' title='" + Language.GetToolTipText("DeleteItemButton") + "' href='javascript:DeleteMultipleTransactionGridLineItemDetailRecord"
+                        + "(\"AssetMaintenanceRequest\", \"" + "GridLineItemDetailGrid" + "\", \"" + "" + "\", \"" +
+                                Url.Action("DeleteAllLineItem")
+                                + "\", \"" + deleteAdditionalData + "\")'>"
+                                + "<img src='/css/images/delete-icon.png' alt ='icon' style='Width:15px;height:20px'/></a>")
+                                .HtmlAttributes(new
+                                {
+                            @controllerName = "AssetMaintenanceRequest",
+                                    @actionName = "DeleteAllLineItem"
+                                });
+
+                          
+                        }
+                    });
+                }
+              
+
+                @(Html.Kendo().Grid<TransactionLineItemModel>()
+                    .Name("GridLineItemDetailGrid")
+                    .Columns(columns =>
+                    {
+                        columns.Bound(p => p.ID).Width(100).Visible(false);
+                        columns.Bound(p => p.ID).Width(20).Filterable(false)
+                        .ClientTemplate("<input type='checkbox' id=='#=ID#' value='#=ID#' onclick='enableGridLineItemRow(this)' class='GridLineItemGridClass' />")
+                        .ClientHeaderTemplate("<input id='selectAllLineItemID' name='selectAllLineItemID' type='checkbox' onclick='selectAllGridLineItemClicked(this)'  />")
+                        .HeaderHtmlAttributes(new { @style = "font-weight:bold; text-align: lieft" })
+                        .Sortable(false).Filterable(false);
+                        columns.Bound(p => p.TransactionLineItemID).Width(100).Visible(false);
+                    columns.Bound(p => p.AssetCode).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("AssetCode"));
+                    columns.Bound(p => p.Barcode).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Barcode"));
+                    columns.Bound(p => p.MaintenanceRemarks).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("MaintenanceRemarks"));
+                    columns.Bound(p => p.AdjustmentValue).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("AdjustmentValue"));
+                    columns.Bound(p => p.IsNetBookAdjustment).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("IsNetBookAdjustment"))
+                        .ClientTemplate("<div class='text-overflow-dynamic-container'><span class='text-overflow-dynamic-ellipsis'>#if (IsNetBookAdjustment) { # Yes #} else {# No #}#</div>");
+                        columns.Template("<center><a class='k-button-icontext' id='#=ID#' href='javascript:EditAssetMaintenanceRequestLineItem(#=ID#)'><img src='/css/images/Edit-icon.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                        .Title(Language.GetString("Edit")).Width(50);
+                        columns.Template("<center><a class='k-button-icontext' id='#=ID#' href='javascript:DeleteAssetMaintenanceRequestLineItem(#=ID#)'><img src='/css/images/delete-icon.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                        .Title(Language.GetString("Delete")).Width(50);
+                    })
+                    .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                    {
+                        o.ForString(t => t.Clear().Contains("Contains").DoesNotContain("Does Not Contains").IsEqualTo("Equal To")
+                                                    .IsNotEqualTo("Not EqualTo").StartsWith("Starts With").EndsWith("Ends With"));
+                    })
+                    )
+                    .ToolBar(toolbar =>
+                    {
+                        toolbar.ClientTemplate(defaultToolBar.ToClientTemplate().ToString());
+                    })
+                    .Sortable().Selectable()
+                    .Pageable()
+                    .DataSource(datasource => datasource.Ajax()
+                    .Model(model =>
+                    {
+                        model.Id(p => p.ID);
+                        model.Field(p => p.ID).Editable(false);
+                    })
+                    .Read(read => read.Action("_LineItemindex", "AssetMaintenanceRequest", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                    
+                    )
+                    ))
+            </div>
+            </div>
+              </div>
+        </div>
+        <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type="submit"})
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick = $"LoadIndexPage('AssetMaintenanceRequest','{Model.PageName}')" })
+        </div>
+    </div>
+}
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading('Create @Language.GetPageTitle(Model.PageTitle)');
+        setInitialFocus('@entryPage.FirstFieldName');
+    });
+  
+ 
+
+    function addAssetMaintenanceRequestItemClicked() {
+        debugger;
+        var flag = true;
+        if (!$("#AssetID").val()) {
+            if ($("#validateerror").val() != "") {
+                $("#errAssetID").after('<span style="color:red;font-weight:normal;" id="validateerror">@Language.GetString("Asset is required")</span>');
+            }
+            flag = false;
+        }
+        else {
+            $("#validateerror").remove();
+        }
+        if (!$("#AdjustmentValue").val()) {
+            if ($("#validateerror2").val() != "") {
+                $("#errAdjustmentValue").after('<span style="color:red;font-weight:normal;" id="validateerror2">@Language.GetString("AdjustmentValue is required")</span>');
+            }
+            flag = false;
+        }
+        else {
+            $("#validateerror2").remove();
+        }
+        if (!$("#MaintenanceRemarks").val()) {
+            if ($("#validateerror3").val() != "") {
+                $("#errMaintenanceRemarks").after('<span style="color:red;font-weight:normal;" id="validateerror3">@Language.GetString("Maintenance Remarks is required")</span>');
+            }
+            flag = false;
+        }
+        else {
+            $("#validateerror3").remove();
+        }
+        if (flag)
+        {
+            debugger;
+            var aID = $("#AssetID").val();
+            var aV = $("#AdjustmentValue").val();
+            var mR = $("#MaintenanceRemarks").val();
+            var check = $("#IsNetBookAdjustment").is(':checked');
+            var data = {
+                id: $("#LineItemIdentityID").val(),
+                currentPageID: '@Model.EntityInstance.CurrentPageID',
+                assetID: aID,
+                maintenanceRemarks:mR,
+                adjustmentValue: aV,
+                isNetBookAdjustment: check,
+                pageName: '@Model.PageName'
+            }
+
+            Sever_PostData("/AssetMaintenanceRequest/AddLineItem", data, addItemDetails_Success, addItemDetails_Failure);
+        }
+        else
+        {
+            return flag;
+        }
+      
+    }
+    function addItemDetails_Success(data) {
+        if (data=="")
+        {
+            //clear the item Form
+            $("#LineItemIdentityID").val("");
+            $("#AssetID").data("kendoMultiColumnComboBox").value("");
+            $("#MaintenanceRemarks").val("");
+            $("#AdjustmentValue").data("kendoNumericTextBox").value("1");
+            $('#IsNetBookAdjustment').prop('checked', false);
+            $("#GridLineItemDetailGrid").data('kendoGrid').dataSource.read();
+        }
+        else
+        {
+            showErrorMessage(data);
+        }
+       
+
+    }
+    function addItemDetails_Failure(data) {
+        showErrorMessage(data.responseText);
+        //setInitialFocus("UniformSetID");
+    }
+    function DeleteAssetMaintenanceRequestLineItem(id) {
+        debugger
+        $("#LineItemIdentityID").val("");
+        $("#AssetID").data("kendoMultiColumnComboBox").value("");
+        $("#MaintenanceRemarks").val("");
+        $('#IsNetBookAdjustment').prop('checked', false);
+        deleteRecord("AssetMaintenanceRequest", "GridLineItemDetailGrid", id, '/AssetMaintenanceRequest/_DeleteLineItem', "currentPageID=" + '@Model.EntityInstance.CurrentPageID');
+    }
+    function EditAssetMaintenanceRequestLineItem(id) {
+        $.ajax({
+            contentType: 'application/json',
+            type: 'GET',
+            async: false,
+            url: '/AssetMaintenanceRequest/LoadEditData',
+            data: {
+                currentPageID: '@Model.EntityInstance.CurrentPageID',
+                id: id
+            },
+            success: function (data) {
+                debugger;
+                if (data.Success == true) {
+                    $("#LineItemIdentityID").val(data.result[0].ID)
+                    $("#MaintenanceRemarks").val(data.result[0].MaintenanceRemarks);
+                    $("#AssetID").data("kendoMultiColumnComboBox").value(data.result[0].AssetID);
+                    $("#AdjustmentValue").data("kendoNumericTextBox").value(data.result[0].AdjustmentValue);
+                    if (data.result[0].IsNetBookAdjustment) {
+                        $('#IsNetBookAdjustment').prop('checked', true);
+                    }
+                    else {
+                        $('#IsNetBookAdjustment').prop('checked', false);
+                    }
+
+                    
+                }
+            },
+            error: function () {
+            }
+
+        });
+       
+    }
+    function DeleteMultipleTransactionGridLineItemDetailRecord(pageName, gridName, recordID, url, additionalData) {
+        $("#LineItemIdentityID").val("");
+        $("#AssetID").data("kendoMultiColumnComboBox").value("");
+        $("#MaintenanceRemarks").val("");
+        $("#AdjustmentValue").data("kendoNumericTextBox").value("1");
+        $('#IsNetBookAdjustment').prop('checked', false);
+        DeleteMultipleGridLineItemDetailRecord(pageName, gridName, recordID, url, additionalData);
+    }
+    
+</script>

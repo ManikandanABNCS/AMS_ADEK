@@ -1,0 +1,95 @@
+﻿@using Microsoft.AspNetCore.Http
+@using ACS.AMS.DAL.DBContext
+@using ACS.AMS.DAL
+@inject IHttpContextAccessor HttpContextAccessor
+@inject AMSContext _context;
+@{
+ 
+   var userName = SessionUser.Current.Username;
+}
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AMS</title>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery/dist/popper.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+  
+    <link href="@Url.Content("~/lib/kendo-ui/styles/kendo.common.min.css")" rel="stylesheet" type="text/css" />
+    <script src="~/lib/kendo-ui/js/jquery.min.js"></script>
+    <script src="~/lib/kendo-ui/js/jszip.min.js"></script>
+    <script src="~/lib/kendo-ui/js/kendo.all.min.js"></script>
+    <script src="~/lib/kendo-ui/js/kendo.aspnetmvc.min.js"></script>
+
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/ThemeBuilderDesign/dist/css/ThemeBuilderDesign.css" rel="stylesheet" />
+    <link href="~/css/ThemeBuilder.custom.css" rel="stylesheet" type="text/css" />
+    <link href="~/css/font-awesome.css" rel="stylesheet" type="text/css" />
+    <script src="~/ACSScript/Common.js"></script>
+    <script src="~/ACSScript/ACSDynamicReport.js"></script>
+    <script src="~/ACSScript/ReportScripts.js"></script>
+    @{
+        //var culture = System.Globalization.CultureInfo.CurrentCulture.ToString();
+        var path = Url.Content("~/lib/kendo-ui/js/messages/kendo.messages." + "en-GB" + ".min.js");
+    }
+
+    <script src="@path"></script>
+   
+</head>
+
+<body class="@CultureHelper.GetBodyClass()">
+    
+
+    <main id="main" class="main">
+        <section id="workingArea">
+            
+            @RenderBody()
+        </section>
+
+        <footer class="footer text-center d-flex align-items-center">
+            <div class="copyright" style="width: 100%;"> &copy;ACS, All Rights Reserved @DateTime.Now.Year. </div>
+        </footer>
+    </main>
+
+</body>
+</html>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+@await RenderSectionAsync("Scripts", required: false)
+
+<script>
+    function LogOut() {
+        window.location.href = '/Login/Login';
+    }
+  function ChangePassword() {
+      loadContentPage('/Account/ChangePassword');
+    }
+    $(document).ready(function () {
+        $("#menu").kendoMenu();
+    });
+    function onMenuSelected(e) {
+    
+        var item = $(e.item);
+        var url = item.attr("NavigateURL");
+        tapidindexholder = 0; /* Tap Index Holder */
+        gridpageindexholder = 1; /* grid Index Holder */
+
+        //    e.stopPropagation();
+        //    CloseMenu(item.attr("ParentIndex"));
+
+        if (url != null) {
+            if (url.toString().indexOf("()") > -1) {
+                //hideLoadingMask();
+                eval(url);
+            }
+            else
+                loadContentPage(url);
+        }
+    }
+</script>

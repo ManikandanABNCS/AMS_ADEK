@@ -1,0 +1,369 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model dynamic
+@{
+    Layout = "~/Views/Shared/_BlankLayout.cshtml";
+    int userID = ViewBag.userID;
+    int ApprovalHistoryID = ViewBag.ApprovalHistoryID;
+    int currentPageID = ViewBag.currentPageID;
+    var res = TransactionTable.GetRetirementresult(AMSContext.CreateNewContext(), ApprovalHistoryID, userID, 1003);
+
+    var UserName = User_LoginUserTable.GetExistingUser(AMSContext.CreateNewContext(), res.Result.CreatedBy).UserName;
+    var inidoc = DocumentTable.GetDocumentDetails(AMSContext.CreateNewContext(), res.Result.TransactionID, "AssetRetirement");
+    var approvalDoc = DocumentTable.GetDocumentDetails(AMSContext.CreateNewContext(), ApprovalHistoryID, "AssetRetirementApproval");
+}
+
+<script>
+    function multiapprovalDoc(val) {
+
+        // var UniformRequestID = $("#UniformRequestID").val();
+        // ItemIds.push(UniformRequestID);
+  
+            if (val == 'Reject') {
+                if ($('#Remarks').val() == '') {
+                    alert('Please Enter Remarks');
+                    return false;
+                }
+            }
+
+            $.ajax({
+            url: "/AssetRetirementApproval/EmailSingleApproval",
+                type: "POST",
+                dataType: "json",
+                async: false,
+                data: {
+                    type: val,
+                    id: $("#ApprovalHistoryID").val(),
+                    remarks: document.getElementById("Remarks").value,
+                currentPageID: $("#CurrentPageID").val(),
+                userID: $("#UserID").val(),
+                },
+                success: function (data) {
+                    
+                    if (data.Result == "Success") {
+                        showSuccessMessage(data.message);
+                        //loadContentPageToControl("@Url.Action("Index")");
+                    $('#remarks').val(''); 
+                    window.location.reload();
+
+                    }
+                    else {
+                    ShowErrorMesage(data.message);
+                    window.location.reload();
+                        
+                    }
+                }
+            });
+        
+     
+    }
+    function GetUniformsetFilters(e) {
+        var selectedEmpID = $("#PersonID").val();
+        if ((selectedEmpID == null) || (selectedEmpID == ''))
+            selectedEmpID = -1;
+
+        var val = "";
+        if ((e.filter != null) && (e.filter.filters != null) && (e.filter.filters[0] != null))
+            val = e.filter.filters[0].value;
+
+        return {
+            employeeID: selectedEmpID,
+            text: val
+        };
+    }
+    function OnSuccessUpload(e) {
+
+
+    }
+    function OnComplete(e) {
+
+    }
+</script>
+
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+
+   @*  @Html.Hidden("primaryKeyID", Model.EntityInstance.GetPrimaryKeyValue())
+    @Html.Hidden(Model.EntityInstance.GetPrimaryKeyFieldName(), Model.EntityInstance.GetPrimaryKeyValue()) *@
+
+    
+
+    <div class="list-container">
+        <div class="row k-text-error">
+            @* @Html.ValidationSummary()*@
+            @Html.ValidationMessage("12")
+            @Html.Hidden("CurrentPageID", currentPageID)
+            @Html.Hidden("UserID", userID)
+        </div>
+
+        <div class="row">
+            <div class="col-xl-4">
+                @Html.Hidden("ApprovalHistoryID",ApprovalHistoryID)
+                <label for="fullname">@Html.FieldLabel("TransactionNo", false)</label>
+                @(Html.TextBox("TransactionNo", res.Result.TransactionNo, new { Class = "form-control", disabled = "disabled" }))
+            </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("CreatedBy", false)</label>
+                @(Html.TextBox("CreatedBy", UserName, new { Class = "form-control", disabled = "disabled" }))
+            </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("CreatedDateTime", false)</label>
+                @(Html.TextBox("CreatedDateTime", @res.Result.CreatedDateTime.ToString("dd/MM/yyyy hh:mm:ss"), new { Class = "form-control", disabled = "disabled" }))
+            </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Initiator Document Name", false)</label>
+                @{
+                    int i = 0;
+                    foreach (var doc in inidoc)
+                    {
+                        string ids = "filePath" + i + "";
+                        string[] arryDocID = doc.FilePath.Split("FileStoragePath");
+                        @Html.ActionLink(doc.DocumentName, "DownloadFile", new { fileName = arryDocID[1] })
+                        <br/>
+                       // <a> <label id='@ids' style="font-weight: normal" onclick="downloadDocument('@arryDocID[1]')" title="@doc.DocumentName"><u>@doc.DocumentName</u></label>
+
+                       //  </a>
+                        i = i + 1;
+                    }
+                    // string[] arryDocID = res.Result.InitorDoc.Split(';');
+                    // foreach (var doc in arryDocID)
+                    // {
+                    //     string ids = "filePath" + i + "";
+
+                    //     <label id='@ids' style="font-weight: normal" onclick="downloadDocument('/ApprovalUploadedFiles/<%:Model.DisposalReferenceNo %>/<%: lst.FileName %>')" title="<%:lst.FileName  %>"><u><%: lst.FileName %></u></label></a>
+                    //     i = i + 1;
+                    // }
+                }
+               @*  @(Html.TextBox("DocumentName", res.Result.InitorDoc, new { Class = "form-control", disabled = "disabled" })) *@
+            </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Approval Document Name", false)</label>
+                @{
+                    int j = 0;
+                    foreach (var doc in approvalDoc)
+                    {
+                        string ids = "filePath" + j + "";
+                        string[] arryDocID = doc.FilePath.Split("FileStoragePath");
+                        @Html.ActionLink(doc.DocumentName, "DownloadFile", new { fileName = arryDocID[1] })
+                        <br />
+                       // <a> <label id='@ids' style="font-weight: normal" onclick="downloadDocument('@arryDocID[1]')" title="@doc.DocumentName"><u>@doc.DocumentName</u></label>
+
+                       //  </a>
+                        j = j + 1;
+                    }
+                    }
+                
+            </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Document Upload", false)</label>
+                @(
+                    Html.Kendo().Upload()
+                    .Name("UploadDoc")
+                    .Async(a => a
+                    .Save("EmailDocumentUpload", "AssetRetirementApproval", new { currentPageID = currentPageID, id = ViewBag.ApprovalHistoryID })
+                    .Remove("EmailDocumentRemove", "AssetRetirementApproval", new { currentPageID = currentPageID, id = ViewBag.ApprovalHistoryID })
+                    .AutoUpload(true)
+                    ).Multiple(true)
+
+                    .Events(events => events
+                    //.Select("onSelect")
+
+                    .Success("OnSuccessUpload").Complete("OnComplete")
+                    )
+
+                    .Validation(validation => validation
+                    .AllowedExtensions(".txt", ".doc", ".docx", ".pdf", ".xls", ".xlsx")
+                    //  .MaxFileSize(maxFileSize)
+                    )
+                    )
+            </div>
+        </div>
+
+
+        <div class="row" style="padding-top:10px">
+            <div class="col-xl-12">
+                @(Html.Kendo().Grid<TransactionLineItemViewForTransfer>()
+                    .Name("DetailGrid")
+                    .Columns(columns =>
+                    {
+                        columns.Bound(p => p.TransactionID).Visible(false);
+                    columns.Bound(p => p.Barcode).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Barcode"));
+                    columns.Bound(p => p.CategoryHierarchy).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("CategoryHierarchy"));
+                    columns.Bound(p => p.AssetDescription).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("AssetDescription"));
+                    columns.Bound(p => p.OldLocationName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("OldLocationName"));
+                        //columns.Bound(p => p.NewLocationName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title("New Location Name");
+                       
+                    })
+
+                    .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                    {
+                        o.ForString(t => t
+                        .Clear()
+                        .Contains("Contains")
+                        .DoesNotContain("Does Not Contains")
+                        .IsEqualTo("Equal To")
+                        .IsNotEqualTo("Not EqualTo")
+                        .StartsWith("Starts With")
+                        .EndsWith("Ends With")
+                        );
+                    })
+                    )
+                    .Sortable().Selectable()
+                    .Pageable()
+
+                    .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+                    .DataSource(datasource => datasource
+                    .Ajax()
+                    .Read(read => read.Action("_LineItemindex", "AssetRetirementApproval", new { id = ViewBag.ApprovalHistoryID }))
+
+                    ))
+            </div>
+         
+        </div>
+
+        <div class="row" style="padding-top:10px">
+        <div class="col-xl-6">
+            <label class="fieldlabel"> Remarks :</label>
+            @Html.TextArea("Remarks", "", 5, 50, new { @class = "k-textbox form-control", style = "width: 594px !important;height:90px; resize:none;", maxlength = 180 })
+        </div>
+    </div>
+        <div class="row" style="padding-top:10px">
+            <div class="col-xl-12">
+                <label class="fieldlabel"> Approval History Details :</label>
+                @(Html.Kendo().Grid<ApprovalHistoryView>()
+                    .Name("DetailGrid1")
+                    .Columns(columns =>
+                    {
+                        columns.Bound(p => p.ApprovalHistoryID).Visible(false);
+                        columns.Bound(p => p.ApprovalRoleName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovalRoleName"));
+                        columns.Bound(p => p.UserName).Width(100).ClientTemplate("#= tagsName(UserName) #").HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovalRoleName"));
+                        columns.Bound(p => p.ApprovalStatus).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovalStatus"));
+                        columns.Bound(p => p.Remarks).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Remarks"));
+                        columns.Bound(p => p.DocumentName).ClientTemplate("#= tagsTemplate(DocumentName,ApprovalHistoryID) #").Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("DocumentUploaded"));
+                        columns.Bound(p => p.ApprovedBy).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovedBy"));
+                        columns.Bound(p => p.ApprovedDatetime).Width(100).Format("{0:" + CultureHelper.DateFormat + "}").HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovedDateTime"));
+
+                    })
+
+                    .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                    {
+                        o.ForString(t => t
+                        .Clear()
+                        .Contains("Contains")
+                        .DoesNotContain("Does Not Contains")
+                        .IsEqualTo("Equal To")
+                        .IsNotEqualTo("Not EqualTo")
+                        .StartsWith("Starts With")
+                        .EndsWith("Ends With")
+                        );
+                    })
+                    )
+                    .Sortable().Selectable()
+                    .Pageable()
+
+                    .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+                    .DataSource(datasource => datasource
+                    .Ajax()
+                    .Read(read => read.Action("_LineItemApproval", "AssetRetirementApproval", new { id = ViewBag.ApprovalHistoryID }))
+
+                    ))
+            </div>
+        </div>
+        <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Approve").Name("Approve").HtmlAttributes(new { style="width: 170px;",  onclick="return multiapprovalDoc('Approval')" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Reject").Name("Reject").HtmlAttributes(new { style="width: 170px;", onclick="return multiapprovalDoc('Reject')" })
+           @*  @Html.Kendo().Button().Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="loadIndexPage('AssetRetirementApproval')" }) *@
+        </div>
+
+    </div>
+
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading('Asset Retirement Approval View');
+       
+    });
+    function downloadDocument(filename) {
+
+       
+        $.ajax({
+            url: "/AssetRetirementApproval/DownloadFile",
+            type: "Get",
+            dataType: "json",
+            async: false,
+            data: { fileName: filename },
+
+
+        });
+
+    }
+
+    function tagsTemplate(item, path) {
+
+        var template = "<ul>";
+        if (item != null) {
+            var feedUpdateSplit = item.split(";");
+            if (item != null) {
+                if (feedUpdateSplit.length > 0) {
+                    for (var i = 0; i < feedUpdateSplit.length; i++) {
+
+                        template += kendo.format("<li><a class='gridHyperLine' style='width:250px;' href='javascript:DownloadapprovalDocument(\"{0}\",{1})'  title='\{0}\#'>{0}</a></li>", feedUpdateSplit[i], path);
+                    }
+                }
+            }
+        }
+        template += "</ul>";
+        return template;
+    }
+    function DownloadapprovalDocument(filename, id) {
+
+        debugger;
+        $.ajax({
+            url: "/AssetRetirementApproval/DownloadApprovalFile",
+            type: "Get",
+            dataType: "json",
+            async: false,
+            data: { fileName: filename, id: id },
+            success: function (data) {
+                if (data.Result == "Success") {
+                    var folder = "";
+                    if (data.type == "AssetTransferApproval") {
+                        folder = "TransferAssetApproval";
+                    }
+                    else if (data.type == "AssetRetirementApproval") {
+                        folder = "TransferRetirementApproval";
+                    }
+                    var url = "/FileStoragePath/" + folder + "/" + data.fileName;
+                    // alert(url);
+                    window.open(url);
+                }
+            }
+        });
+        // var configurationFilePath = "/ApprovalUploadedFiles";
+        //window.open('/' + path + '/' + filename.replace(/\//g, "/"));
+        //window.open(path.replace(/\//g, "/"));
+    }
+    function tagsName(username) {
+        var template = "";//"<ul>";
+        if (username != null) {
+            var feedUpdateSplit = username;//.split(",");
+            if (username != null) {
+                if (feedUpdateSplit.length > 0) {
+                    for (var i = 0; i < feedUpdateSplit.length; i++) {
+
+                        template += kendo.format("<a class='gridHyperLines' style='width:250px;'   title='\{0}\#'>{0}</a>", feedUpdateSplit[i]);
+                    }
+                }
+            }
+        }
+        //  template += "</ul>";
+        return template;
+    }
+</script>
+
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.unobtrusive.min.js"></script>

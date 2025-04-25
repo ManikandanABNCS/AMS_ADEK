@@ -1,0 +1,9 @@
+﻿@model string 
+
+@(
+ Html.Kendo().DropDownList()
+        .Name("EmailSignatureID")
+        .Value(Model)
+        .OptionLabel("Select EmailSignature")
+        .BindTo(ComboBoxHelper.GetAllEmailSignature())
+)

@@ -1,0 +1,121 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model BasePageModel
+@{
+    ViewBag.Title = "Edit";
+    EntryPageHelper entryPage = new EntryPageHelper(Model)
+    {
+        Url = this.Url
+    };
+}
+<script>
+function OnSuccessUpload(e) {
+    debugger;
+    var fileName = e.response.ImageName;
+     var root = e.response.rootpath;
+    var name = e.response.fileName;
+    if (document.getElementById('StampPath') || $('#StampPath').length > 0) {
+        $("#StampPath").val(fileName);
+
+    }
+    if (document.getElementById('rootPath') || $('#rootPath').length > 0) {
+        $("#rootPath").val(root);
+
+    }
+        if (document.getElementById('UploadedDocumentPath') || $('#UploadedDocumentPath').length > 0) {
+        $("#UploadedDocumentPath").val(fileName);
+
+    }
+   
+      if (document.getElementById('StampPath') || $('#StampPath').length > 0) {
+     var ImgPath = $('#StampImage').attr('src');
+        ImgPath = ImgPath.substring(0, ImgPath.lastIndexOf('/') + 1);
+        if (name != "" && name != null && name != undefined) {
+            $('#StampImage').attr('src', ImgPath + name);
+            document.getElementById('StampImage').style.display = 'block';
+        }
+        else {
+            document.getElementById('StampImage').style.display = 'none';
+        }
+      }
+       
+}
+
+function OnImageSuccessUpload(e) {
+    debugger;
+    var fileName = e.response.ImageName;
+     var root = e.response.rootpath;
+    var name = e.response.fileName;
+    
+     if (document.getElementById('UploadedImagePath') || $('#UploadedImagePath').length > 0) {
+        $("#UploadedImagePath").val(fileName);
+
+    }
+     
+       if (document.getElementById('ImageID') || $('#ImageID').length > 0) {
+     var ImgPath = $('#ImageID').attr('src');
+        ImgPath = ImgPath.substring(0, ImgPath.lastIndexOf('/') + 1);
+        if (name != "" && name != null && name != undefined) {
+            $('#ImageID').attr('src', ImgPath + name);
+            document.getElementById('ImageID').style.display = 'block';
+        }
+        else {
+            document.getElementById('ImageID').style.display = 'none';
+        }
+      }
+}
+function Clearimage() {
+         if (document.getElementById('StampPath') || $('#StampPath').length > 0) {
+             $("#StampPath").val("");
+             document.getElementById('StampImage').src = "#";
+             $('label[id*="imageRemove"]').text('');
+         }
+         if (document.getElementById('ImageID') || $('#ImageID').length > 0) {
+             $("#ImageID").val("");
+             document.getElementById('ImageID').src = "#";
+             $('label[id*="imageRemove"]').text('');
+         }
+     }
+</Script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions(Model)))
+{
+    @Html.Hidden("PageName", Model.PageName)
+    @Html.Hidden("primaryKeyID", Model.EntityInstance.GetPrimaryKeyValue())
+    if (string.Compare(Model.PageName, "Company") != 0)
+    {
+        @Html.Hidden("CompanyID", "1003")
+    }
+    @Html.Hidden(Model.EntityInstance.GetPrimaryKeyFieldName(), Model.EntityInstance.GetPrimaryKeyValue())
+
+        <div class="list-container">
+            @{
+                entryPage.CreatePageControls(Html, this, true);
+            }
+
+        <div class="col-xl-12 text-right add-action-btns">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick=$"loadDynamicIndexPage('{Model.ControllerName}', '{Model.PageName}')" })
+        </div>
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                Html.RenderPartial("BaseViews/AuditLogSingleView", Model);
+            }
+        </div>
+    </div>
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading('@Language.GetPageTitle(Model.PageTitle) Details');
+       
+    });
+</script>

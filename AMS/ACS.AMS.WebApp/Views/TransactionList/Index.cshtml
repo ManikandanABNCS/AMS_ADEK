@@ -1,0 +1,107 @@
+﻿@model IndexPageModel //List<TransactionView>
+@{
+    ViewBag.Title = "Index";
+
+}
+<script>
+    function DateDiff(createdDateTime) {
+        var start = new Date(createdDateTime),
+            end = new Date(),
+            diff = new Date(end - start),
+            days = diff / 1000 / 60 / 60 / 24;
+
+
+
+        return Math.round(days);
+    }
+    function multiapprovalAllDoc(val) {
+        var ItemIds1 = [];
+        ItemIds = ItemIds1;
+
+        var sel = $("input:checkbox", grid.tbody).closest("tr");
+        $.each(sel, function (idx, row) {
+            var item = grid.dataItem(row);
+
+            $(this).closest('tr').find('[type=checkbox]').prop('checked', true);
+            ItemIds.push(item.ApprovalHistoryID);
+        });
+
+
+        multiapprovalDoc(val)
+    }
+   
+</script>
+
+<div class="list-container">
+   
+            @{
+        DisplayHelper display = new DisplayHelper(this, "TransactionList", "TransactionID");
+
+            var gridCtrl = Html.Kendo().Grid<dynamic>()
+                .Name("DetailsGrid");
+        display.AddGridActionColumns(gridCtrl, Url, "TransactionList", RightNames.TransactionList,addCheckbox:false);
+                display.ConfigureGrid(gridCtrl);
+        display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.TransactionList);
+
+                gridCtrl.Render();
+                //display.AddPopUpWindow(this.Html, "Division");
+
+                }
+
+           @*  @(
+                Html.Kendo().Grid(Model)
+                .Name("NewUniformRequestDetailsGrid")
+                .Columns(columns =>
+                {
+                   
+                    columns.Bound(p => p.TransactionNo);
+                    columns.Bound(p => p.TransactionTypeName);
+                    columns.Bound(p => p.CreatedUSer).Title("Created By");
+                    columns.Bound(p => p.CreatedDateTime).Format("{0: " + CultureHelper.DateTimeFormat + "}").Title("Created On").Filterable(true);
+                    columns.Bound(p => p.Status);
+                    //columns.Bound(p => p.CreatedDateTime).ClientTemplate("#=DateDiff(CreatedDateTime)#").Title("Days Passed").Filterable(true);
+                    columns.Template("<center><a class='k-button-icontext' id='#=TransactionID#' href='javascript:TransactionListView(#=TransactionID#)'><img src='/css/images/view.png' alt='icon' style='Width:15px;height:20px' /></a></center></text>")
+                    .Title(Language.GetString("Details")).Width(50);
+                  
+
+                })
+                .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                {
+                    o.ForString(t => t
+                    .Clear()
+                    .Contains("Contains")
+                    .DoesNotContain("Does Not Contains")
+                    .IsEqualTo("Equal To")
+                    .IsNotEqualTo("Not EqualTo")
+                    .StartsWith("Starts With")
+                    .EndsWith("Ends With")
+                    );
+                })
+                )
+                .Sortable().Selectable().Pageable()
+                .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+                .DataSource(datasource => datasource
+                .Ajax().Model(p => p.Id(x => x.TransactionID)).PageSize(10)
+                .Read(read => read.Action("_Index", "TransactionList"))))
+ *@
+       
+
+    
+</div>
+
+
+
+
+<script>
+    $(function () {
+        setPageHeading("Transaction List");
+    });
+
+   
+    function TransactionListView(id) {
+
+        loadContentPage("/TransactionList/Details?id=" + id);
+    }
+   
+
+</script>

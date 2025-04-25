@@ -1,0 +1,189 @@
+﻿@model ReportTemplateTable
+@{
+    ViewBag.Title = "Create";
+}
+<script>
+    var objectName = null;
+    var objectType = null;
+
+    function dbObjectSelected(e1, e2) {
+        var selectedItem = this.dataItem(e1.item.index());
+        objectName = selectedItem.ObjectName;
+        objectType = selectedItem.ObjectType;
+
+        //if ($("#ReportTemplateName").val() == "") {
+        var templateName = objectName;
+        if (templateName.toLowerCase().startsWith("rprc_"))
+            var templateName = templateName.substring(5);
+        else
+            if (templateName.toLowerCase().startsWith("rprc"))
+                var templateName = templateName.substring(4);
+            else
+                if (templateName.toLowerCase().startsWith("rvw_"))
+                    var templateName = templateName.substring(4);
+                else
+                    if (templateName.toLowerCase().startsWith("rvw"))
+                        var templateName = templateName.substring(3);
+
+        $("#ReportTemplateName").val(templateName);
+        //}
+
+        ReportTemplate_QueryObjectChanged("Create", objectName, objectType, GetCurrentPageID(), loadFieldDetails_Delayed);
+    }
+
+    function loadFieldDetails_Delayed() {
+        prm = { pageNumber: 0, currentPageID: GetCurrentPageID() };
+        loadContentPageToControl("@Url.Action("ReportTemplateFilterFields")?" + $.param(prm), "ReportFilterFieldGrid", false);
+        loadContentPageToControl("@Url.Action("ReportTemplateFields")?" + $.param(prm), "ReportFieldGrid", false);
+    }
+
+    function GetCurrentPageID() {
+        return $("#CurrentPageID").val();
+    }
+</script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+   
+    <div class="list-container">
+        <div class="row k-text-error">
+            @* @Html.ValidationSummary()*@
+            @Html.ValidationMessage("12")
+            <div id="errorCommon">
+                <span style="color:red;font-weight:bold;">note:If QueryObject is procedure then it must return table values </span>
+                </div>
+        </div>
+        <div class="row">
+            @Html.HiddenFor(model => model.CurrentPageID)
+            <div class="col-xl-4">
+                <label for="fullname">@Html.Label("QueryObject")</label>
+                @(Html.Kendo().MultiColumnComboBoxFor(model => model.ObjectID)
+                    .DataTextField("DisplayValue")
+                    .DataValueField("ObjectID")
+                    .Columns(columns =>
+                    {
+                        columns.Add().Field("ObjectName").Title("Object Name").Width("300px");
+                        columns.Add().Field("ObjectType").Title("Type").Width("100px");
+                    })
+                    .AutoBind(false)
+                    .Filter(FilterType.Contains)
+                    .Events(e => e.Select("dbObjectSelected"))
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetReportDBObjectsForMCombobox", "DataService");
+                        });
+                    })
+                    )
+             @Html.HiddenFor(model=>model.QueryString," ")
+                @Html.HiddenFor(model=>model.QueryType," ")
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.QueryString, "", new { @class = "text-danger" })</p>
+                <div id="errProcedureName"></div>
+
+            </div>
+            <div class="col-xl-4">
+                
+                <label for="fullname">@Html.LabelFor(model => model.ReportTemplateCategoryID, true)</label>
+                @(Html.Kendo().DropDownListFor(model => model.ReportTemplateCategoryID).BindTo(ComboBoxHelper.GetAllReportTemplateCategories())
+                    )
+                
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.ReportTemplateCategoryID, "", new { @class = "text-danger" })</p>
+
+
+            </div>
+             <div class="col-xl-4">
+                
+                <label for="fullname">@Html.LabelFor(model => model.ReportTemplateName, true)</label>
+                @(Html.TextBoxFor(model => model.ReportTemplateName, new { Class = "form-control" })
+                    )
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.ReportTemplateName, "", new { @class = "text-danger" })</p>
+                <div id="errReportTemplateName"></div>
+
+            </div>
+            <div class="col-xl-4">
+
+                <label for="fullname">@Html.Label("Description")</label>
+                @(Html.TextAreaFor(model => model.TemplateDescription, 3, 40, new { Class = "form-control" })
+                    )
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.TemplateDescription, "", new { @class = "text-danger" })</p>
+
+
+            </div>
+          <div class="col-xl-4">
+
+              @*  <label for="fullname">@Html.Label("Report Template File")</label>
+                @(Html.Kendo().DropDownListFor(model => model.ReportTemplateFile).BindTo(ComboBoxHelper.GetAllReportTemplateFile(1))
+                    )
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.ReportTemplateFile, "", new { @class = "text-danger" })</p>
+*@
+
+            </div>
+
+           
+            <div class="col-xl-6" id="ReportFieldGrid">
+            </div>
+            <div class="col-xl-6" id="ReportFilterFieldGrid">
+            </div>
+
+            <div class="col-xl-12 text-right add-action-btns">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type = "submit" ,onclick = "return createTemplate();" })
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="loadIndexPage('ReportTemplate')" })
+            </div>
+
+          
+        </div>
+    </div>
+}
+
+
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("ReportTemplate Create");
+
+    });
+    function ReloadFilterFields() {
+        var pn = 0;
+        if (typeof GetFilterFieldsPageNumber === "function")
+            pn = GetFilterFieldsPageNumber();
+
+        prm = { pageNumber: pn, currentPageID: GetCurrentPageID() };
+
+        loadContentPageToControl("@Url.Action("ReportTemplateFilterFields")?" + $.param(prm), "ReportFilterFieldGrid", false);
+    }
+    function ProcedureChange() {
+        ReloadFilterFields();
+
+        prm = { pageNumber: 0, currentPageID: GetCurrentPageID() };
+        loadContentPageToControl("@Url.Action("ReportTemplateFields")?" + $.param(prm), "ReportFieldGrid", false);
+    }
+    function createTemplate() { 
+        var flag = true;
+        if (!$("#ObjectID").data("kendoMultiColumnComboBox").input.val()) {
+            flag = false;
+            if ($("#validateProcedureName").val() != "") {
+                $("#errProcedureName").after('<span style="color:red;font-weight:normal;" id="validateProcedureName">@Language.GetString("Query Object is Required ")</span>');
+            }
+        }
+        else {
+            $("#validateProcedureName").remove();
+        }
+        if (!$("#ReportTemplateName").val()) {
+            flag = false;
+            if ($("#validateReportTemplateName").val() != "") {
+                $("#errReportTemplateName").after('<span style="color:red;font-weight:normal;" id="validateReportTemplateName">@Language.GetString("Report Template Name is Required ")</span>');
+            }
+        }
+        else {
+            $("#validateReportTemplateName").remove();
+        }
+        if (flag) { 
+            return true;
+        }
+        else 
+        {
+            return false;
+        }
+    }
+</script>
+<script src="~/acsscript/reportscripts.js"></script>

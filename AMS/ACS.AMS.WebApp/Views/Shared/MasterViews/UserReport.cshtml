@@ -1,0 +1,29 @@
+﻿@model string 
+<script>
+    function GetAdditionReportParam(r1,r2) {
+        
+        var moduleID = $("#NotificationModuleID").data("kendoDropDownList").value();
+
+        return {
+            notificationModuleID: moduleID
+        };
+
+    }
+</script>
+@(Html.Kendo().DropDownList().Name("ReportID")
+        .HtmlAttributes(new { style = "width:100% !important" })
+        .OptionLabel(Language.GetString("Select")).DataTextField("Text")
+        .DataValueField("Value")
+        .Value(Model)
+        .DataSource(source =>
+        {
+            source.Read(read =>
+            {
+                read.Action("GetReports", "DataService").Data("GetAdditionReportParam");
+            })
+            .ServerFiltering(true);
+        })
+        .Enable(true).AutoBind(false).CascadeFrom("NotificationModuleID")
+
+        )
+

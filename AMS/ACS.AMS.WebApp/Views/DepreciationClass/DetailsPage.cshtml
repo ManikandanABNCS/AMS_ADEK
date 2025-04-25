@@ -1,0 +1,324 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model BasePageModel
+@{
+    int currentPageId = ViewBag.CurrentPageID;
+    ViewBag.Title = "Edit";
+    EntryPageHelper entryPage = new EntryPageHelper(Model)
+    {
+        AddControlsInSingleColumnForLessItems = false
+    };
+
+    DepreciationClassTable transactionTable = Model.EntityInstance as DepreciationClassTable;
+}
+
+<script>
+
+      function checkedValChanged() {
+        debugger;
+        var numerictextboxVal = $("#EndValue").data("kendoNumericTextBox");
+        if ($("#UnEndValue").is(':checked')) {
+              numerictextboxVal.readonly();
+        }
+     else{
+          numerictextboxVal.enable(true);
+     }
+
+    }
+   function addItemClicked() {
+        debugger;
+        var flag = true;
+        var start = $("#StartValue").data("kendoNumericTextBox").value();
+        if (start == null || start <= 0) {
+            flag = false;
+            if ($("#validateStart").val() != "") {
+                $("#errStartVal").after('<span style="color:red;font-weight:normal;" id="validateStart">Start Value is Required</span>');
+            }
+        }
+        else {
+            $("#validateStart").remove();
+        }
+         var End = $("#EndValue").data("kendoNumericTextBox").value();
+         var check=$("#UnEndValue").is(':checked');
+        if ((End == null || End <= 0) && !check) {
+             
+            flag = false;
+            if ($("#validateEnd").val() != "") {
+                $("#errEndVal").after('<span style="color:red;font-weight:normal;" id="validateEnd">End Value is Required</span>');
+            }
+        }
+        else {
+            $("#validateEnd").remove();
+        }
+         var duration = $("#Duration").data("kendoNumericTextBox").value();
+        if (duration == null || duration <= 0) {
+            flag = false;
+            if ($("#validateDuration").val() != "") {
+                $("#errDuration").after('<span style="color:red;font-weight:normal;" id="validateDuration">Duration is Required</span>');
+            }
+        }
+        else {
+            $("#validateDuration").remove();
+        }
+
+        if (flag)
+        {
+            if( $("#UnEndValue").is(':checked'))
+            {
+                 var data = {
+                    id: $("#LineItemIdentityID").val(),
+                    currentPageID: '@ViewBag.CurrentPageID',
+                    StartValue:  $("#StartValue").data("kendoNumericTextBox").value(),
+                    EndValue: '*',
+                    UnEndValue: $("#UnEndValue").is(':checked'),
+                    Duration:  $("#Duration").data("kendoNumericTextBox").value(),
+                    pageName: '@Model.PageName',
+                     screen:'Edit'
+                }
+            }
+            else 
+            {
+                var data = {
+                    id: $("#LineItemIdentityID").val(),
+                    currentPageID: '@ViewBag.CurrentPageID',
+                    StartValue:  $("#StartValue").data("kendoNumericTextBox").value(),
+                     EndValue: $("#EndValue").data("kendoNumericTextBox").value(),
+                    UnEndValue: $("#UnEndValue").is(':checked'),
+                    Duration:  $("#Duration").data("kendoNumericTextBox").value(),
+                    pageName: '@Model.PageName',
+                      screen:'Edit'
+                }
+            }
+            Sever_PostData("/DepreciationClass/AddLineItem", data, addItemDetails_Success, addItemDetails_Failure);
+        }
+        else
+        {
+            return flag;
+        }
+      
+    }
+    function addItemDetails_Success(data) {
+        if (data=="")
+        {
+            //clear the item Form
+            $("#LineItemIdentityID").val("");
+            $("#StartValue").data("kendoNumericTextBox").value("");
+            $("#EndValue").data("kendoNumericTextBox").value("");
+            $("#Duration").data("kendoNumericTextBox").value("");
+            $('#UnEndValue').attr('checked', false);
+            $("#GridLineItemDetailGrid").data('kendoGrid').dataSource.read();
+        }
+        else
+        {
+            showErrorMessage(data);
+        }
+       
+
+    }
+    function addItemDetails_Failure(data) {
+        showErrorMessage(data.responseText);
+        //setInitialFocus("UniformSetID");
+    }
+    function DeleteLineItem(id) {
+        debugger
+        $("#LineItemIdentityID").val("");
+        $("#StartValue").data("kendoNumericTextBox").value("");
+            $("#EndValue").data("kendoNumericTextBox").value("");
+            $("#Duration").data("kendoNumericTextBox").value("");
+        $('#UnEndValue').attr('checked', false);
+        deleteRecord("DepreciationClass", "GridLineItemDetailGrid", id, '/DepreciationClass/_DeleteLineItem', "currentPageID=" + '@ViewBag.CurrentPageID');
+    }
+    function EditLineItem(id) {
+        $.ajax({
+            contentType: 'application/json',
+            type: 'GET',
+            async: false,
+            url: '/DepreciationClass/LoadEditData',
+            data: {
+                currentPageID: '@ViewBag.CurrentPageID',
+                id: id
+            },
+            success: function (data) {
+                debugger;
+                if (data.Success == true) {
+                    $("#LineItemIdentityID").val(data.result[0].id);
+                    $("#StartValue").data("kendoNumericTextBox").value(data.result[0].StartValue);
+                    $("#Duration").data("kendoNumericTextBox").value(data.result[0].Duration);
+                    if (data.result[0].UnEndValue) {
+                        $('#UnEndValue').attr('checked', true);
+                        var numerictextboxVal = $("#EndValue").data("kendoNumericTextBox");
+                           numerictextboxVal.readonly();
+                    }
+                    else {
+                        $('#UnEndValue').attr('checked', false);
+                        $("#EndValue").data("kendoNumericTextBox").value(data.result[0].EndValue);
+                    }
+
+                    
+                }
+            },
+            error: function () {
+            }
+
+        });
+       
+    }
+    function DeleteMultipleGridLineItemClassDetailRecord(pageName, gridName, recordID, url, additionalData) {
+        $("#LineItemIdentityID").val("");
+       $("#StartValue").data("kendoNumericTextBox").value("");
+            $("#EndValue").data("kendoNumericTextBox").value("");
+            $("#Duration").data("kendoNumericTextBox").value("");
+        $('#UnEndValue').attr('checked', false);
+        DeleteMultipleGridLineItemDetailRecord(pageName, gridName, recordID, url, additionalData);
+    }
+   
+</script>
+<style>
+    #UniformSetID-list .photo {
+        box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+        margin: 0 10px 0 0;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-size: 100%;
+        background-repeat: no-repeat;
+        display: inline-block;
+    }
+</style>
+
+    @using (Html.AjaxBeginForm("DepreciationClassEdit", "DepreciationClass", DisplayHelper.GetAjaxOptions()))
+    {
+    @Html.Hidden("PageName", Model.PageName)
+    @Html.Hidden("CurrentPageID", currentPageId)
+    @Html.Hidden("StatusID", transactionTable.StatusID)
+     @Html.Hidden("DepreciationClassName", transactionTable.DepreciationClassName)
+       @Html.Hidden("DepreciationMethodID", transactionTable.DepreciationMethodID)
+    @Html.Hidden("primaryKeyID", Model.EntityInstance.GetPrimaryKeyValue())
+    @Html.Hidden(Model.EntityInstance.GetPrimaryKeyFieldName(), Model.EntityInstance.GetPrimaryKeyValue())
+    
+
+        <div class="list-container">
+        <div class="row k-text-error">
+            @* @Html.ValidationSummary()*@
+            @Html.ValidationMessage("12")
+        </div>
+        <div class="col-xl-8">
+
+            <label for="fullname">@Html.FieldLabel("Class Name", true)</label> :
+            @(Html.TextBox("ClassName", transactionTable.ClassName, new { Class = "form-control" })
+                )
+
+            <div id="errClassName"></div>
+             @Html.Hidden("LineItemIdentityID")
+        </div>
+
+        <div class="row" style="padding-top:10px">
+            <div class="col-xl-12">
+                @{
+                    string deleteAdditionalData = null;
+                    deleteAdditionalData = (deleteAdditionalData + "&" ?? string.Empty) + "pageName=" + "DepreciationClass" + "&currentPageID=" + currentPageId;
+                    var defaultToolBar = this.Html.Kendo().ToolBar()
+                    .Name("ToolBar")
+                    .HtmlAttributes(new { style = "width: 100%;" })
+                    .Items(items =>
+                    {
+                        items.Add().Type(Kendo.Mvc.UI.CommandType.Spacer);
+
+                        if (SessionUser.HasRights(RightNames.AssetTransaction, UserRightValue.Delete))//addNewButtonRequired)
+                        {
+                            items.Add().Type(Kendo.Mvc.UI.CommandType.Button).Text(Language.GetButtonText("Delete")).Id(Guid.NewGuid().ToString())
+                        .Template("<a class='' style='min-width: 25px;' title='" + Language.GetToolTipText("DeleteItemButton") + "' href='javascript:DeleteMultipleGridLineItemClassDetailRecord"
+                        + "(\"DepreciationClass\", \"" + "GridLineItemDetailGrid" + "\", \"" + "" + "\", \"" +
+                        Url.Action("DeleteAllLineItem")
+                        + "\", \"" + deleteAdditionalData + "\")'>"
+                        + "<img src='/css/images/delete-icon.png' alt ='icon' style='Width:15px;height:20px'/></a>")
+                        .HtmlAttributes(new
+                        {
+                            @controllerName = "DepreciationClass",
+                            @actionName = "DeleteAllLineItem"
+                        });//.HtmlAttributes(new { @class = "k - button - solid - primary" });
+
+
+                        }
+                    });
+                }
+
+
+                @(Html.Kendo().Grid<LineItemModel>()
+                    .Name("GridLineItemDetailGrid")
+                    .Columns(columns =>
+                    {
+                        columns.Bound(p => p.id).Width(100).Visible(false);
+                        columns.Bound(p => p.id).Width(20).Filterable(false)
+                        .ClientTemplate("<input type='checkbox' id=='#=id#' value='#=id#' onclick='enableGridLineItemRow(this)' class='GridLineItemGridClass' />")
+                        .ClientHeaderTemplate("<input id='selectAllLineItemID' name='selectAllLineItemID' type='checkbox' onclick='selectAllGridLineItemClicked(this)'  />")
+                        .HeaderHtmlAttributes(new { @style = "font-weight:bold; text-align: lieft" })
+                        .Sortable(false).Filterable(false);
+
+                    columns.Bound(p => p.StartValue).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("StartValue"));
+                    columns.Bound(p => p.EndValue).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("EndValue"));
+                    columns.Bound(p => p.Duration).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Duration(in Month)"));
+
+                       
+                    })
+                    .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                    {
+                        o.ForString(t => t.Clear().Contains("Contains").DoesNotContain("Does Not Contains").IsEqualTo("Equal To")
+                        .IsNotEqualTo("Not EqualTo").StartsWith("Starts With").EndsWith("Ends With"));
+                    })
+                    )
+                    .ToolBar(toolbar =>
+                    {
+                        toolbar.ClientTemplate(defaultToolBar.ToClientTemplate().ToString());
+                    })
+                    .Sortable().Selectable()
+                    .Pageable()
+                    .DataSource(datasource => datasource.Ajax()
+                    .Model(model =>
+                    {
+                        model.Id(p => p.id);
+                        model.Field(p => p.id).Editable(false);
+                    })
+                    .Read(read => read.Action("_LineItemindex", "DepreciationClass", new { currentPageID =  ViewBag.CurrentPageID })
+
+                    )
+                    ))
+            </div>
+        </div>
+
+        <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+          
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick = $"LoadIndexPage('DepreciationClass','{Model.PageName}')" })
+        </div>
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                Html.RenderPartial("BaseViews/AuditLogSingleView", Model);
+            }
+        </div>
+    </div>
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading('Details @Language.GetPageTitle(Model.PageTitle)');
+        setInitialFocus('@entryPage.FirstFieldName');
+     
+    });
+  
+
+   
+
+</script>
+
+<script src="/js/jquery.validate.min.js"></script>
+<script src="/js/jquery.validate.unobtrusive.min.js"></script>

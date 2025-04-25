@@ -1,0 +1,33 @@
+﻿@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+
+}
+
+
+        <div class="list-container">
+              @{
+        DisplayHelper display = new DisplayHelper(this, "AssetMaintenanceClosure", "TransactionID");
+
+        var gridCtrl = Html.Kendo().Grid<dynamic>()
+                .Name("DetailsGrid");
+
+        display.AddGridActionColumns(gridCtrl, Url, "AssetMaintenanceClosure", RightNames.AssetMaintenanceClosure);
+            display.ConfigureGrid(gridCtrl);
+        display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.AssetMaintenanceClosure);
+
+            gridCtrl.Render();
+            //display.AddPopUpWindow(this.Html, "Division");
+
+        }
+         
+        </div>
+   
+
+
+
+<script>
+$(function () {
+        setPageHeading("Asset Maintenance Closure");
+});
+</script>

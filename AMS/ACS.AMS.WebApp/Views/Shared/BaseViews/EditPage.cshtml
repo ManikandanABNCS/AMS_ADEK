@@ -1,0 +1,221 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model BasePageModel
+@{
+    ViewBag.Title = "Edit";
+    EntryPageHelper entryPage = new EntryPageHelper(Model)
+    {
+        Url = this.Url
+    };
+}
+<script>
+   function OnSuccessUpload(e) {
+    debugger;
+    var fileName = e.response.ImageName;
+     var root = e.response.rootpath;
+    var name = e.response.fileName;
+    if (document.getElementById('StampPath') || $('#StampPath').length > 0) {
+        $("#StampPath").val(fileName);
+
+    }
+    if (document.getElementById('rootPath') || $('#rootPath').length > 0) {
+        $("#rootPath").val(root);
+
+    }
+        if (document.getElementById('UploadedDocumentPath') || $('#UploadedDocumentPath').length > 0) {
+        $("#UploadedDocumentPath").val(fileName);
+
+    }
+   
+      if (document.getElementById('StampPath') || $('#StampPath').length > 0) {
+     var ImgPath = $('#StampImage').attr('src');
+        ImgPath = ImgPath.substring(0, ImgPath.lastIndexOf('/') + 1);
+        if (name != "" && name != null && name != undefined) {
+            $('#StampImage').attr('src', ImgPath + name);
+            document.getElementById('StampImage').style.display = 'block';
+        }
+        else {
+            document.getElementById('StampImage').style.display = 'none';
+        }
+      }
+       
+}
+
+function OnImageSuccessUpload(e) {
+   
+    var fileName = e.response.ImageName;
+     var root = e.response.rootpath;
+    var name = e.response.fileName;
+    
+     if (document.getElementById('UploadedImagePath') || $('#UploadedImagePath').length > 0) {
+        $("#UploadedImagePath").val(fileName);
+
+    }
+      if (document.getElementById('CatalogueImage') || $('#CatalogueImage').length > 0) {
+        $("#CatalogueImage").val(fileName);
+
+    }
+     
+       if (document.getElementById('ImageID') || $('#ImageID').length > 0) {
+     var ImgPath = $('#ImageID').attr('src');
+        ImgPath = ImgPath.substring(0, ImgPath.lastIndexOf('/') + 1);
+        if (name != "" && name != null && name != undefined) {
+            $('#ImageID').attr('src', ImgPath + name);
+            document.getElementById('ImageID').style.display = 'block';
+        }
+        else {
+            document.getElementById('ImageID').style.display = 'none';
+        }
+      }
+}
+function Clearimage() {
+    debugger;
+         if (document.getElementById('StampPath') || $('#StampPath').length > 0) {
+             $("#StampPath").val("");
+             document.getElementById('StampImage').src = "#";
+             $('label[id*="imageRemove"]').text('');
+         }
+             if (document.getElementById('ImageID') || $('#ImageID').length > 0) {
+                $.ajax({
+                    contentType: 'application/json',
+                    type: 'GET',
+                    async: false,
+                    url: '/MasterPage/RemoveFile',
+                    data: {
+                       fileNames:document.getElementById('ImageID').src
+                    },
+                    success: function (data) {
+                        debugger;
+                        $("#ImageID").val("");
+                        document.getElementById('ImageID').src = "#";
+                        $('label[id*="imageRemove"]').text('');
+                        if (document.getElementById('CatalogueImage') || $('#CatalogueImage').length > 0) {
+                            $("#CatalogueImage").val('');
+                        }
+                        if (document.getElementById('UploadedImagePath') || $('#UploadedImagePath').length > 0) {
+                            $("#UploadedImagePath").val('');
+
+                        }
+                    },
+                    error: function () {
+                    }
+
+                });
+              
+            }
+     }
+       function addMastePageClicked(pageName) {
+
+          url = "/MasterPage/Create?pageName=" + pageName + '&isPopupCreation=' + true;;
+          popupItemOpenWindow(url, "Create" + pageName);
+    }
+    function popupItemOpenWindow(url, titleCon) {
+
+        var wnd = $("#QuickMaster").data("kendoWindow");
+        if (wnd == null)
+            wnd = parent.window.$("#window").data("kendoWindow");
+        wnd.refresh({
+            url: url
+        });
+
+        wnd.center();
+        wnd.open();
+        wnd.title(titleCon);
+    }
+    </Script>
+
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions(Model)))
+{
+    @Html.Hidden("PageName", Model.PageName)
+    @Html.Hidden("primaryKeyID", Model.EntityInstance.GetPrimaryKeyValue())
+    @Html.Hidden("CurrentPageID", Model.EntityInstance.CurrentPageID)
+    @Html.Hidden(Model.EntityInstance.GetPrimaryKeyFieldName(), Model.EntityInstance.GetPrimaryKeyValue())
+    if(string.Compare(Model.PageName,"Company")!=0)
+    {
+      @Html.Hidden("CompanyID", "1003")
+    }
+        <div class="list-container">
+        <div class="row k-text-error">
+        @*     @Html.ValidationSummary() *@
+             @Html.ValidationMessage("12") 
+        </div>
+
+            @{
+                entryPage.CreatePageControls(Html, this,false,false);
+            }
+
+        <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type="submit" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick=$"loadDynamicIndexPage('{Model.ControllerName}', '{Model.PageName}')" })
+        </div>
+        
+        <div class="form-group col-md-12">
+                    <label for="fullname">@Html.Label("Audit Log")</label>
+                             <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse" 
+                             aria-expanded="false" aria-controls="AuditLogCollapse"><span  title='Audit Log'></span>
+                             </a>
+         </div>
+
+       <div class="collapse" id="AuditLogCollapse">
+            @{
+                Html.RenderPartial("BaseViews/AuditLogSingleView", Model);
+            }
+        </div> 
+
+    </div>
+    @(Html.Kendo().Window()
+               .Name("QuickMaster")
+               .Width(1300)
+               .Visible(false)
+               .Actions(actions => actions.Close())
+               .Height(800)
+               .Draggable()
+               .Resizable()
+               .Iframe(true)
+               .Modal(true)
+       .Scrollable(false)
+       )
+
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading('Edit @Language.GetPageTitle(Model.PageTitle)');
+        setInitialFocus('@entryPage.FirstFieldName');
+    });
+     
+    function addItemClicked() {
+        //validate the items
+        var data = {
+            itemID: $("#ItemID").val(),
+            qty: $("#Qty").val(),
+            UOMID: $("#UOMID").val(),
+            unitPrice: $("#UnitPrice").val(),
+            currentPageID: $("#CurrentPageID").val()
+        }
+
+        Sever_PostData("/Transaction/AddLineItem", data, addItemDetails_Success, addItemDetails_Failure);
+    }
+
+    function addItemDetails_Success(data) {
+        //clear the item Form
+        // $("#UniformItemID").data("kendoMultiColumnComboBox").value("");
+        // $("#uniformQty").data("kendoNumericTextBox").value("1");
+
+        $("#ItemID").data("kendoMultiColumnComboBox").value("");
+        $("#Qty").data("kendoNumericTextBox").value("0");
+        $("#UnitPrice").data("kendoNumericTextBox").value("0");
+
+        $("#transactionLineItem").data('kendoGrid').dataSource.read();
+        setInitialFocus("ItemID");
+    }
+
+    function addItemDetails_Failure(data) {
+        alert(data.responseText);
+        setInitialFocus("ItemID");
+    }
+    
+</script>

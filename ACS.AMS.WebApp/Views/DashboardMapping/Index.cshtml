@@ -1,0 +1,38 @@
+﻿@model IndexPageModel
+
+@{
+    ViewBag.Title = "Index";
+}
+
+
+<div class="list-container">
+    @{
+        DisplayHelper display = new DisplayHelper(this, "DashboardMapping", "DashboardMappingID");
+
+        var gridCtrl = Html.Kendo().Grid<dynamic>()
+        .Name("DetailsGrid");
+
+        display.AddGridActionColumns(gridCtrl, Url, "DashboardMapping", RightNames.DashboardMapping);
+        display.ConfigureGrid(gridCtrl);
+        display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.DashboardMapping);
+
+        gridCtrl.Render();
+        //display.AddPopUpWindow(this.Html, "Location");
+
+    }
+    <div class="clearfix"></div>
+</div>
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+       
+        setPageHeading("Dashboard Mapping List");
+
+    });
+    function getAdditionalExportParameters(controllerName) {
+        return null;
+    }
+</script>
+
+
+

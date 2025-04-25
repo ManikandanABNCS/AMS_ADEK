@@ -1,0 +1,29 @@
+﻿@model BasePageModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp
+@using System.Reflection
+@{
+    EntryPageHelper entryPage = new EntryPageHelper(Model)
+            {
+                Url = this.Url
+            };
+}
+
+@{
+    entryPage.CreatePageControlsForAuditLog(Html, this, true);
+}
+
+<script>
+    function SingleAuditLogReport(id, entity) {
+        var params = {
+            userID: null,
+            primaryKeyID: id,
+
+            entityName: entity,
+            languageID:1,
+            reportName:"AuditLogSingleReport"
+        };
+        var url = '/ShowReport/ShowSingleAuditLogReport?' + jQuery.param(params);
+        window.open(url);
+    }
+</script>

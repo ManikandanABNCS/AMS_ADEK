@@ -1,0 +1,430 @@
+﻿@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+    string first = "Search ";
+    string Last = "....";
+    string placeholder = string.Empty;
+    if (string.Compare(Model.PageName, "Category") == 0)
+    {
+         placeholder = "Search Category ....";
+    }
+    else
+    {
+         placeholder = "Search Location ....";
+    }
+}
+<script>
+function createButtonClicked() {
+    debugger;
+    var widths = $(".cat_div1").width() + $(".cat_div2").width() + $(".cat_div3").width();
+    loadContentPageToControl("/MasterPage/Create?pageName=" + $("#PageName").val()+"&id=" + $("#SelectedParentID").val(), "treeViewChildPage", false);
+}
+function ExportButtonClicked() {
+    debugger;
+  
+}
+function showEditDetails() {
+    debugger;
+    var widths = $(".cat_div1").width() + $(".cat_div2").width() + $(".cat_div3").width();
+    widths = widths + "px";
+    //$(".main_cont_medium").css("width",widths);
+    if ($("#SelectedParentID").val() == "" || $("#SelectedParentID").val() == 0) {
+        alert("Please select any one "+ $("#PageName").val());
+    }
+    else {
+         // var treeview = $("#treeview").data("kendoTreeView");  
+         //  treeview.enable(false);
+        loadContentPageToControl("/MasterPage/Edit?pageName=" + $("#PageName").val()+"&id=" + $("#SelectedParentID").val(), "treeViewChildPage", false);      
+    }
+}
+
+function showViewDetails() {
+     // var treeview = $("#treeview").data("kendoTreeView");  
+     //  treeview.enable(true);
+    var widths = $(".cat_div1").width() + $(".cat_div2").width() + $(".cat_div3").width();
+   
+    if ($("#SelectedParentID").val() == ""|| $("#SelectedParentID").val() == 0) {
+        alert("Please select any one "+ $("#PageName").val());
+    }
+    else {
+      
+        loadContentPageToControl("/MasterPage/Details?pageName=" + $("#PageName").val()+"&id=" + $("#SelectedParentID").val(), "treeViewChildPage", false);      
+    }
+}
+
+function ConfirmCategoryDelete() {
+      // var treeview = $("#treeview").data("kendoTreeView");  
+      // treeview.enable(true);
+    if ($("#SelectedParentID").val() == "") {
+        alert("Please select any one "+ $("#PageName").val());
+        return false;
+    }
+  var result = confirm("Are you sure want to Delete this item ?");
+    if (result) {
+        showDeleteDetails();
+    }
+    else { 
+        return false;
+    }
+}
+
+function showDeleteDetails() {
+    if ($("#SelectedParentID").val() == "") {
+        alert("Please select any one "+ $("#PageName").val());
+    }
+    else {
+        $.ajax({
+            url: '/MasterPage/Delete?pagename='+$("#PageName").val(),
+            type: "get",
+            async: false,
+            data: { id: $("#SelectedParentID").val() },
+            success: function (response) {
+               var treeview = $("#treeview").data("kendoTreeView");
+                 var selectedNode = treeview.select();
+                treeview.remove(selectedNode);
+                  var url='/MasterPage/Index?pagename='+$("#PageName").val();
+                  loadDefaultPage(url);
+                 
+            },
+        failure: function (response) {
+            showErrorMessage(response.responseText);
+        },
+        error: function (response) {
+            showErrorMessage(response.responseText);
+        }
+
+        });
+    }
+}
+
+    function onCategorySelect(e) {
+        debugger;
+        var controlName = $("#PageName").val();
+        if (controlName == "Product") {
+            controlName = "Category";
+        }
+        else {
+            controlName = "Parent" + controlName;
+        }
+        controlName = controlName + "ID";
+
+        var datI = $("#treeview").getKendoTreeView().dataItem(e.node);
+        if ($("#treeview").getKendoTreeView().dataItem(e.node).id > 0) {
+            $("#SelectedParentName").val(datI.text);
+            $("#SelectedParentID").val($("#treeview").getKendoTreeView().dataItem(e.node).id);
+            localStorage["toExpand"] = $("#treeview").getKendoTreeView().dataItem(e.node).id;
+        }
+        if (parent.document.getElementById("ParentName") != null) {
+            parent.document.getElementById("PartLoc").innerHTML = datI.text;
+            parent.document.getElementById("ParentName").value = $("#treeview").getKendoTreeView().dataItem(e.node).id
+        }
+        if (document.getElementById("NameValue") != null) {
+            if (datI.id > 0) {
+                $("#" + controlName).val(datI.id);
+                document.getElementById("NameValue").value = datI.text;
+            }
+
+        }
+        //Load the Page Here
+        if ($("#SelectedParentID").val() > 0) {
+            loadContentPageToControl("/MasterPage/Details?pageName=" + $("#PageName").val() + "&id=" + $("#SelectedParentID").val(), "treeViewChildPage");
+        }
+    }
+    
+    function enterpressalert() {
+        $("#loadmask").show();
+
+        var treeview = $("#treeview").data("kendoTreeView");      
+                var query = $("#search-term").val().toLowerCase();
+        if (query == "") {
+            treeview.dataSource.read();
+            var id = localStorage["toExpand"];
+            if (id != 0 && id !== undefined) {
+                var getitem = treeview.dataSource.get(id);
+                var item = $("#treeview").find("li[data-uid='" + getitem.uid + "']").find(".k-in");
+                if (item.length > 0) {
+                    $(item).parentsUntil('.k-treeview').filter('.k-item').each(
+                        function (index, element) {
+                            treeview.expand($(this));
+                        }
+                    );
+                    var selectitem = treeview.findByUid(getitem.uid);
+                    treeview.select(selectitem);
+                    $("#SelectedParentID").val(id);
+                    showViewDetails();
+                }
+                else {
+                    treeview.expand(".k-item");
+                    $("#SelectedParentID").val("");
+                    document.getElementById("treeViewChildPage").innerHTML = "";
+                }
+            }
+            else {
+                treeview.expand(".k-item");
+                $("#SelectedParentID").val("");
+                document.getElementById("treeViewChildPage").innerHTML = "";
+            }
+
+            $("#loadmask").hide();
+        }
+        else {
+            var treeview = $("#treeview").data("kendoTreeView");
+            treeview.dataSource.read();
+            var dataSource = $("#treeview").data("kendoTreeView").dataSource;
+            //var data = dataSource instanceof kendo.data.HierarchicalDataSource && dataSource.data();
+
+            var node = dataSource.at(0);
+            node.load(); // load the child nodes
+
+            filter(dataSource, query);
+            var id = localStorage["toExpand"];
+
+            if (id != 0 && id !== undefined) {
+                var getitem = treeview.dataSource.get(id);
+                var item = $("#treeview").find("li[data-uid='" + getitem.uid + "']").find(".k-in");
+                // expand all loaded items
+                if (item.length > 0) {
+                    $(item).parentsUntil('.k-treeview').filter('.k-item').each(
+                        function (index, element) {
+                            treeview.expand($(this));
+                        }
+                    );
+
+                    var selectitem = treeview.findByUid(getitem.uid);
+                    treeview.select(selectitem);
+                    $("#SelectedParentID").val(id);
+
+                    showViewDetails();
+                }
+                else {
+                    treeview.expand(".k-item");
+                    $("#SelectedParentID").val("");
+
+                    document.getElementById("treeViewChildPage").innerHTML = "";
+                }
+            }
+            else {
+                treeview.expand(".k-item");
+                $("#SelectedParentID").val("");
+                document.getElementById("treeViewChildPage").innerHTML = "";
+            }
+
+            $("#loadmask").hide();
+        } 
+       // }
+    }
+
+    // sets "hidden" field on items matching query
+    function filter(dataSource, query) {
+        var hasVisibleChildren = false;
+        var data = dataSource instanceof kendo.data.HierarchicalDataSource && dataSource.data();
+
+        //alert(data.length);
+       
+        for (var i = 0; i < data.length; i++) {
+            var item = data[i];
+            var text = item.text.toLowerCase();
+            var itemVisible =
+                query === true // parent already matches
+                || query === "" // query is empty
+                || text.indexOf(query) >= 0; // item text matches query
+
+            var anyVisibleChildren = filter(item.children, itemVisible || query); // pass true if parent matches
+
+            hasVisibleChildren = hasVisibleChildren || anyVisibleChildren || itemVisible;
+
+            item.hidden = !itemVisible && !anyVisibleChildren;
+        }
+        
+        if (data) {
+           // 
+            // re-apply filter on children
+            dataSource.filter({ field: "hidden", operator: "neq", value: true });
+        }
+
+        return hasVisibleChildren;
+    }
+
+    function FilterDetails(e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if (code == 13) { //Enter keycode
+            debugger;
+
+            e.preventDefault();
+            //return false;
+            $("#SEarchButton").click();
+        }
+    }
+
+    
+</Script>
+@* <form action="@Url.Action("ExportTreeViewServer", "MasterPage")" method="POST" id="form"> *@
+    @*  @using (Html.AjaxBeginForm("ExportTreeViewServer", "MasterPage", DisplayHelper.GetAjaxOptions())) *@
+@*      { *@
+<div class="list-container">
+    <div style="border-bottom: solid 1px #CCC;padding-bottom: 5px;">
+        @Html.Hidden("SelectedParentName","")
+        @Html.Hidden("SelectedParentID","")
+         @Html.Hidden("PageName",Model.PageName)
+
+        <table class="entry1" style="width: 100%;" id="SearchPage">
+            <tr>
+        
+                <td style="width:220px;text-align:left;">
+                    <div style="position:relative;width:220px;">
+                        <script id="searchItemTemplate" type="text/x-kendo-template">
+                            <span class="searchCategory"><i class="fa fa-search"></i></span>
+                        </script>
+
+                        <span class="k-searchbox k-input k-input-md k-rounded-md k-input-solid k-grid-search" style="width: 300px;">
+                            <span class="k-icon k-i-search k-input-icon"></span>
+                            <input autocomplete="off" placeholder='@placeholder' title="Search Item..." aria-label="Search Item..." 
+                                    id="search-term" name="search-term" class="k-input-inner" onkeypress="FilterDetails(event)">
+                        </span>
+               
+                                    
+                    </div>
+                </td>
+                
+                <td style="text-align: right;">
+                    @{
+                        
+                      <input type="button" class="CommonButton DeleteButton download" data-format="xlsx" data-title="ExcelExport" value="Export to XLSX" />
+             
+                        if (SessionUser.HasRights(Model.PageName, UserRightValue.Create))
+                        {
+                                                                <input id="Create" type="button" value="@Language.GetButtonText("Create")" title="@Language.GetToolTipText("Create")" 
+                                                                        onclick="createButtonClicked()" class="CommonButton CreateButton" style="width: 100px" />                        
+                        }
+
+                        if (SessionUser.HasRights(Model.PageName, UserRightValue.Edit))
+                        {
+                                                                <input id="Edit" type="button" value="@Language.GetButtonText("Edit")" title="@Language.GetToolTipText("Edit")" onclick="showEditDetails()" class="CommonButton EditButton" style="width: 100px" />
+                        }
+
+                        if (SessionUser.HasRights(Model.PageName, UserRightValue.Details))
+                        {
+                                                                <input id="View" type="button" value="@Language.GetButtonText("View")"
+                                                                        title="@Language.GetToolTipText("View")" onclick="showViewDetails()" class="CommonButton ViewButton" style="width: 100px" />
+                        }
+
+                        if ((SessionUser.HasRights(Model.PageName, UserRightValue.Delete)))
+                        {
+                                                                <input id="delete" type="button" value="@Language.GetButtonText("Delete")"
+                                                                        title="@Language.GetToolTipText("Delete")" onclick="ConfirmCategoryDelete()" class="CommonButton DeleteButton" style="width: 100px" />
+                        }
+
+                      
+
+                                                            <input id="SEarchButton" type="button" value="@Language.GetButtonText("Search")" style="display:none;"
+                                                                title="@Language.GetToolTipText("Search")" class="tab_save" onclick="enterpressalert()"/>
+                    }
+                </td>
+            </tr>
+
+          
+        </table>
+
+    </div>
+
+    <div class="row">
+        <div class="col-xl-4 cat_div1" style="height: 500px;">
+            <div style="width: 100%; height: 100%; " class="treeviewParent">
+                @{
+                    var grid = Html.Kendo().TreeView().Name("treeview").LoadOnDemand(false).Events(e => e.Select("onCategorySelect")).DataTextField("text")
+
+                    .Items(menu =>
+                    {
+                        DisplayHelper dh = new DisplayHelper(null, "", "");
+                        if (string.Compare(Model.PageName, "Category") == 0)
+                        {
+                            dh.AddTreeViewItems(menu, "");
+                        }
+                        else
+                        {
+                            dh.AddTreeViewLocationItems(menu, "");
+                        }
+                    });
+
+                    grid.Render();
+                }
+             </div>
+        </div>
+
+        <div class="col-xl-8 userWorkingArea" id="treeViewChildPage">
+          
+        </div>
+
+        </div>
+
+        <div class="clearfix"></div>
+</div>
+@* } *@
+@* </form> *@
+<script>
+    $(function () {
+        setPageHeading('@Language.GetPageTitle(Model.PageTitle) List');
+        $(".treeviewParent").niceScroll();
+            
+        $(".download").click(function (e) {
+            debugger;
+            //$("#loadingmaskApproval").css("display", "block");
+           
+            var options = {
+                format: $(this).data("format"),
+                title: $(this).data("title"),
+                pageName:$("#PageName").val(),
+                filterData:$("#search-term").val(),
+            };
+            
+            var param = $.param(options);
+            window.open("/MasterPage/ExportTreeViewServer?" + param);
+            //Sever_PostData("/MasterPage/ExportTreeViewServer", options, ItemRequest_SubmitItemDetails_Success, IssueDetails_SubmitItemDetails_Failure);
+            // $('#form input[type="hidden"]').remove();
+            // addOptionsToForm(options, $('#form'), []);
+        });
+       });
+
+    function ItemRequest_SubmitItemDetails_Success(data) {
+    }
+    
+    function IssueDetails_SubmitItemDetails_Failure(data) {        
+    }
+
+    function addOptionsToForm(options, form, parents) {
+        for (var option in options) {
+            if (!options[option]) {
+                continue;
+            }
+
+            if (typeof options[option] === 'object') {
+                parents.push(option)
+                addOptionsToForm(options[option], form, parents);
+                parents.pop();
+                $("#loadingmaskApproval").css("display", "none");
+            } else {
+                form.append('<input type="hidden" name="' + inputName(option, parents) + '" value="' + options[option] + '" />');
+                $("#loadingmaskApproval").css("display", "none");
+            }
+        }
+    }
+     function inputName(option, parents) {
+        var result = "";
+
+        if (!parents.length) {
+            return option;
+        }
+
+        for (var i = 0; i < parents.length; i++) {
+            if (i === 0) {
+                result += parents[i];
+                continue;
+            }
+            result += "[" + parents[i] + "]";
+        }
+
+        result += "[" + option + "]";
+
+        return result;
+    }
+</script>

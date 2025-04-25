@@ -1,0 +1,163 @@
+﻿@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+}
+
+<form action="@Url.Action("ExportServer", "MasterPage")" method="POST" id="form">
+@*     @using (Html.AjaxBeginForm("ExportServer", "MasterPage", DisplayHelper.GetAjaxOptions(updateTargetId: "form")))
+{ *@
+    <div class="list-container">
+        <div id="loadingmaskApproval" style="display: none;">
+           <img src="~/css/images/waitingimage.gif" />
+
+        </div>
+    <div class="row k-text-error">
+        @*   @Html.ValidationSummary() *@
+        @Html.ValidationMessage("12")
+    </div>
+        @{
+            if (Model.PageName == "Asset")
+            {
+                <div style="align-self:end;">
+                    <input type="submit" class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md download" data-format="xlsx" data-title="ExcelExport" value="Export to XLSX" />
+                </div>
+            }
+        }
+        @{
+            IndexPageHelper<IndexPageModel> indexPage = new IndexPageHelper<IndexPageModel>(Model)
+                {
+                    Url = this.Url
+                };
+
+            indexPage.CreateGridControl(this.Html);
+        }
+
+      
+    </div>
+@* } *@
+</form>
+
+<script>
+    function addOptionsToForm(options, form, parents) {
+        for (var option in options) {
+            if (!options[option]) {
+                continue;
+            }
+
+            if (typeof options[option] === 'object') {
+                parents.push(option)
+                addOptionsToForm(options[option], form, parents);
+                parents.pop();
+                $("#loadingmaskApproval").css("display", "none");
+            } else {
+                form.append('<input type="hidden" name="' + inputName(option, parents) + '" value="' + options[option] + '" />');
+                $("#loadingmaskApproval").css("display", "none");
+            }
+        }
+    }
+
+    function inputName(option, parents) {
+        var result = "";
+
+        if (!parents.length) {
+            return option;
+        }
+
+        for (var i = 0; i < parents.length; i++) {
+            if (i === 0) {
+                result += parents[i];
+                continue;
+            }
+            result += "[" + parents[i] + "]";
+        }
+
+        result += "[" + option + "]";
+
+        return result;
+    }
+
+    function columnsFilterHandler(col) {
+        return col.field;
+    }
+
+    function columnsMapHandler(col) {
+        return {
+            title: col.title,
+            width: "100px",//col.width,
+            field: col.field,
+            format: col.format,
+            hidden: col.hidden
+        }
+    }
+
+    var escapeQuoteRegExp = /'/ig;
+
+    function encodeFilterValue(value, encode) {
+        if (typeof value === "string") {
+            if (value.indexOf('Date(') > -1) {
+                value = new Date(parseInt(value.replace(/^\/Date\((.*?)\)\/$/, '$1'), 10));
+            } else {
+                value = value.replace(escapeQuoteRegExp, "''");
+
+                if (encode) {
+                    value = encodeURIComponent(value);
+                }
+
+                return "'" + value + "'";
+            }
+        }
+
+        if (value && value.getTime) {
+            return "datetime'" + kendo.format("{0:yyyy-MM-ddTHH-mm-ss}", value) + "'";
+        }
+        return value;
+    }
+
+    function serializeFilter(filter, encode) {
+        if (filter == null)
+            return undefined;
+
+        if (filter.filters) {
+            return $.map(filter.filters, function (f) {
+                var hasChildren = f.filters && f.filters.length > 1,
+                    result = serializeFilter(f, encode);
+
+                if (result && hasChildren) {
+                    result = "(" + result + ")";
+                }
+
+                return result;
+            }).join("~" + filter.logic + "~");
+        }
+
+        if (filter.field) {
+            return filter.field + "~" + filter.operator + "~" + encodeFilterValue(filter.value, encode);
+        } else {
+            return undefined;
+        }
+    }
+
+    $(function () {
+        setPageHeading('@Language.GetPageTitle(Model.PageTitle) List');
+
+        $(".download").click(function () {
+            debugger;
+            $("#loadingmaskApproval").css("display", "block");
+            var grid = $("#DetailsGrid").data("kendoGrid");
+            var fil = grid.dataSource.filter();
+
+            var options = {
+                format: $(this).data("format"),
+                title: $(this).data("title"),
+                columnSettings: grid.columns.filter(columnsFilterHandler).map(columnsMapHandler),
+                selectedIds: grid.selectedKeyNames(),
+                filter: serializeFilter(grid.dataSource.filter())
+            };
+
+            $('#form input[type="hidden"]').remove();
+            addOptionsToForm(options, $('#form'), []);
+        });
+
+    });
+
+</script>

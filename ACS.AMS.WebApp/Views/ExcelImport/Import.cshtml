@@ -1,0 +1,390 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@model IndexPageModel
+@{
+    ViewBag.Title = "Create";
+    var data = AMSContext.CreateNewContext();
+    //var approvalRole = ComboBoxHelper.GetAvailableApprovalRole(data);
+}
+<script>
+    function filterAppID() {
+        return {
+            appID: $("#ImportMaster").data("kendoDropDownList").value(),
+            text: $("#Template").val()
+        };
+    }
+  
+    function onComplete(e) {
+
+        var masterID = $('#ImportMaster').val();
+        var template = $('#Template').val();
+        if (masterID == "" || template == "") {
+            $(".k-upload-files.k-reset").remove();
+            e.preventDefault();
+        }
+        $("#loadingmaskApproval").css("display", "none");
+    }
+    function onupload(e) {
+        $("#loadingmaskApproval").css("display", "block");
+        var masterID = $('#ImportMaster').val();
+        var template = $('#Template').val();
+        if (masterID != "" && template != "") {
+            e.data = { appPageID: masterID, templateID: template };
+        }
+        else {
+            if (!masterID) {
+                if ($("#validateapp").val() != "") {
+                    $("#errAppPages").after('<span style="color:red;font-weight:normal;" id="validateapp">@Language.GetString("PleaseSelectImportMaster")</span>');
+                }
+            }
+            if (!template) {
+                if ($("#validateTemp").val() != "") {
+                    $("#appTemplate").after('<span style="color:red;font-weight:normal;" id="validateTemp">@Language.GetString("PleaseSelectTemplateName")</span>');
+                }
+            }
+
+        }
+    }
+    function OnSuccess(e) {
+        var Error = e.response.error;
+        var FilePath = e.response.FilePath;
+        if (Error) {
+            KendoErrorMsgForImportWithCount(Error);
+            $(".k-upload-files.k-reset").remove();
+            e.preventDefault();
+            return;
+        }
+        if ($('#ImportMaster').val() && $('#Template').val() && FilePath) {
+            $('#ImportFormatID').val($('#Template').val());
+            $('#UploadedFilePath').val(FilePath);
+
+            loadContentPageToControl("/ExcelImport/DisplayGrid?appID=" + $('#ImportMaster').val() + "&excelID=" + $('#Template').val() + "&currentPageID=" + $('#CurrentPageID').val(), "PageDisplayImports", false);
+        }
+        if (!FilePath) {
+            $("#PageDisplayImports").html("");
+        }
+        $("#loadingmaskApproval").css("display", "none");
+    }
+
+    function onvalidation() {
+        var flag = true;
+        var masterID = $('#ImportMaster').val();
+        var template = $('#Template').val();
+        var filepath = $("#UploadedFilePath").val();
+        var uploadDocpath = $("#DocUploadPath").val();
+        if (masterID != "" && template != "" && filepath != "") {
+        }
+
+        else {
+            if (!masterID) {
+                flag = false;
+                if ($("#validateapp").val() != "") {
+                    $("#errAppPages").after('<span style="color:red;font-weight:normal;" id="validateapp">@Language.GetString("PleaseSelectImportMaster")</span>');
+                }
+            }
+            else {
+                $("#validateapp").remove();
+            }
+            if (!filepath) {
+                flag = false;
+                if ($("#validatepath").val() != "") {
+                    $("#errorFilePath").after('<span style="color:red;font-weight:normal;" id="validatepath">@Language.GetString("PleaseSelectFile")</span>');
+                }
+            }
+            else {
+                $("#validatepath").remove();
+            }
+            if (!template) {
+                flag = false;
+                if ($("#validateTemp").val() != "") {
+                    $("#appTemplate").after('<span style="color:red;font-weight:normal;" id="validateTemp">@Language.GetString("PleaseSelectTemplateName")</span>');
+                }
+            }
+            else {
+                $("#validateTemp").remove();
+            }
+
+        }
+        if (!flag)
+            return false;
+        else
+            return true;
+    }
+    function ErrorUploadExcel(e) {
+        $(".k-upload-files.k-reset").remove();
+        $("#loadingmaskApproval").css("display", "none");
+        alert(e.XMLHttpRequest.response);
+    }
+    function ChangeMasterFilter() {
+        if ($("#Template").data("kendoDropDownList") != null) {
+            $("#Template").val('');
+            $("#Template").data("kendoDropDownList").dataSource.read();
+        }
+        // if ($("#ImportMaster").val() == @((int)EntityValues.AssetTable)){
+        //     $("#UplodeDocDivID").show();
+        // }
+        // else 
+        // {
+        //     $("#UplodeDocDivID").hide();
+        // }
+        //UplodeDocDivID
+    }
+    function ChangeTemplateName(e) {
+        var id = $("#Template").val();
+        $.ajax({
+            url: '/DataService/CheckTemplate',
+            type: "Get",
+            async: false,
+            data: { template: $("#Template").val() },
+            success: function (data) {
+                if (data.Result == "Success") {
+                    var appID = data.appID;
+                    var typeID = data.typeID;
+                    if (appID == @((int)EntityValues.AssetTable) && typeID == 1) {
+                        $("#UplodeDocDivID").show();
+                    }
+                    else {
+                        $("#UplodeDocDivID").hide();
+                    }
+                }
+            }
+        });
+        //             url: '/DataService/CheckRights',
+        //                 type: "Get",
+        //                     async: false,
+        //                         data: { entityName: appID, type: typeID },
+        //             success: function (data) {
+        //                 if (data.Result == "Success") {
+        //                     if (data.rights == 1) {
+        //                     }
+        //                     else { 
+        //                         alert("you have ")
+        //                     }
+        //         }
+        //     }
+        // });
+
+    }
+
+    function OnDocSuccessUpload(e) {
+        debugger;
+        var fileName = e.response.DocumentPath;
+        var name = e.response.fileName;
+        if (document.getElementById('DocUploadPath') || $('#DocUploadPath').length > 0) {
+            $("#DocUploadPath").val(fileName);
+        }
+    }
+   </script>
+
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+{
+    <div class="list-container">
+        <div class="row k-text-error">
+            @Html.ValidationMessage("12")
+        </div>
+        
+        <div class="row">
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Choose Master",true)</label> :
+                @(Html.Kendo().DropDownList()
+                    .Name("ImportMaster")
+                    .HtmlAttributes(new { style = "width:200px!important " })
+                    .BindTo(ComboBoxHelper.GetImportMaster(AMSContext.CreateNewContext(), ""))
+                    .OptionLabel("Select")
+                    .Events(e=>e.Change("ChangeMasterFilter"))
+                    )
+                @Html.Hidden("CurrentPageID", Model.EntityInstance.CurrentPageID)
+                @Html.Hidden("ImportFormatID")
+                @Html.Hidden("UploadedFilePath")
+                <div id="errAppPages"></div>
+                </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("TemplateName",true)</label> :
+                @(Html.Kendo().DropDownList()
+                    .Name("Template")
+                    .HtmlAttributes(new { style = "width:300px!important " })
+                    .OptionLabel(Language.GetString("Select"))
+                    .DataTextField("Text")
+                    .DataValueField("Value")
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetTemplateDetails", "DataService").Data("filterAppID");
+                        })
+                        .ServerFiltering(true);
+                    })
+                    .Enable(true)
+                    .AutoBind(false)
+                     .Events(e => e.Change("ChangeTemplateName"))
+            // .CascadeFrom("ImportMaster")
+                    )
+                <div id="appTemplate"></div>
+            </div>
+
+            <div class="col-xl-4" id="toLocationDiv" >
+                <label for="fullname">@Html.FieldLabel("Upload",true)</label> :
+                @(
+                    Html.Kendo().Upload()
+                        .Name("attachments")
+                        .HtmlAttributes(new { style = "width:200px!important " })
+                        .Async(a => a
+                        .Save("MasterUpload", "ExcelImport", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                        .Remove("MasterRemove", "ExcelImport", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                        .AutoUpload(true)
+                        ).Events(events => { 
+                            events.Complete("onComplete"); 
+                            events.Upload("onupload"); 
+                            events.Success("OnSuccess");
+                            events.Error("ErrorUploadExcel");
+                        }).Multiple(false)
+                    .Validation(validation => validation
+                    .AllowedExtensions(".xlsx")
+                    )
+                    )
+
+                <div id="errorFilePath"></div>
+            </div>
+            <div class="col-xl-4" id="UplodeDocDivID" style="display:none;">
+                <label for="fullname">@Html.FieldLabel("Upload Doc", false)</label>
+                @(
+                    Html.Kendo().Upload()
+                    .Name("UploadDoc")
+                    .Async(a => a
+                    .Save("DocumentUpload", "ExcelImport", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                    .Remove("DocumentRemove", "ExcelImport", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                    .AutoUpload(true)
+                    ).Multiple(true)
+
+                    .Events(events => events
+                    //.Select("onSelect")
+
+                    .Success("OnDocSuccessUpload")
+                    )
+
+                    .Validation(validation => validation
+                    .AllowedExtensions(".txt", ".doc", ".docx", ".pdf", ".xls", ".xlsx")
+                    //  .MaxFileSize(maxFileSize)
+                    )
+                    )
+              
+            </div>
+            @Html.Hidden("DocUploadPath")
+            <div class="col-xl-12 text-right add-action-btns">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type="submit", onclick="return onvalidation();" })
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick = "DefaultDashboardPage();" })
+            </div>
+
+            <div class="col-xl-12">
+                <table style="width: 100%;">
+
+                    <tr>
+                        <td>
+                            <div id="PageDisplayImports">
+                                @* style="max-width:830px;height:200px;overflow-x: scroll;" *@
+                            </div>
+
+                        </td>
+                    </tr>
+
+                </table>
+            
+            </div>
+            
+            </div>
+        </div>
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("Upload Excel");
+        
+    });
+    function addItemsToHiddenFields() {
+       
+        var flag = true;
+        $("#FormatExtension").val(".xls");
+        $("#FormatPath").val($("#TamplateName").val());
+        var lst = document.getElementById("lstSelectedFields");
+
+        if (lst.options.length <= 0) {
+            $('#noneSelected').html('Select Any One Field');
+        }
+        else {
+            $('#noneSelected').html('');
+        }
+        if (lst.options.length <= 0) {
+           
+            flag = false;
+            $('#noneSelected').html('Please Select any master');
+
+        } else {
+
+            var hidText = document.getElementById("hdSelectedItems");
+            var hid = document.getElementById("hdSelectedItemsIDS");
+
+            if (lst.options.length > 0) {
+                hidText.value = "";
+                hid.value = "";
+                for (i = 0; i < lst.options.length; i++) {
+                    hidText.value += lst.options[i].text + ",";
+                    hid.value += lst.options[i].value + ",";
+                }
+            }
+
+            $.ajax({
+
+                url: "/DataService/GetMandatoryCount",
+                dataType: "json",
+                cache: false,
+                type: 'GET',
+                async: false,
+                data: { entityName: $('#EntityID').val(), type: $("#ImportTemplateTypeID").val() },
+                success: function (result) {
+                    if (result.Success) {
+                        var selected = result.mandatoryCnt;
+                        var dynamicSelected = result.dynamicMandatoryCnt;
+
+                        $.ajax({
+                            url: "/DataService/GetSelectMandatoryCount",
+                            dataType: "json",
+                            cache: false,
+                            type: 'GET',
+                            async: false,
+                            data: { IDs: hid.value, type: $("#ImportTemplateTypeID").val(), entityName: $('#EntityID').val() },
+                            success: function (result) {
+
+                                if (result.Success) {
+                                    var cnt = result.cnt;
+                                    if ((selected + dynamicSelected) == parseInt(cnt)) {
+                                        $('#noneSelected').html('');
+                                        flag = true;
+                                    }
+                                    else {
+                                        $('#noneSelected').html('Please Select All Mandatory Fields');
+
+                                       
+                                        flag = false;
+
+                                    }
+                                }
+                            }
+                        });
+
+                    }
+                }
+            });
+
+        }
+        if (flag) {
+            return true;
+        }
+        else {
+            return false;
+        }
+
+    }
+</script>
+<script src="~/acsscript/common.js"></script>

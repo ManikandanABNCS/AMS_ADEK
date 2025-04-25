@@ -1,0 +1,40 @@
+﻿@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+    int transactionID = ViewBag.PeriodID;
+  
+}
+
+
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+
+<div class="list-container">
+    <div class="row" >
+                    @Html.Hidden("CurrentPageID", Model.EntityInstance.CurrentPageID)
+                    @Html.Hidden("TransactionID", transactionID)
+                       
+                     @{
+                        DisplayHelper display = new DisplayHelper(this, "Depreciation", "DepreciationID");
+
+                        var gridCtrl = Html.Kendo().Grid<dynamic>()
+                        .Name("DetailsGrid");
+                        display.AddGridActionColumns(gridCtrl, Url, "Depreciation", RightNames.Depreciation, addEditColumn: false, addDetailsColumn: false,addDeleteColumn:false,addCheckbox:false,deleteActionName:"_deleteItem",deleteAdditionalData:"CurrentPageID="+Model.EntityInstance.CurrentPageID);
+                display.ConfigureGrid(gridCtrl, readDataHandler: "defaultGridReadWithParamMethod", readActionName: "_lineItems");
+                        gridCtrl.Render();
+                      }
+              
+    </div>
+     <div class="col-xl-12 text-right add-action-btns">
+
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick = "loadIndexPage('DepreciationApproval')" })
+                        </div>
+</div>
+}
+
+<script>
+    $(function () {
+        setPageHeading("Depreciation Details ");
+    });
+</script>
+<script src="~/ACSScript/Common.js"></script>

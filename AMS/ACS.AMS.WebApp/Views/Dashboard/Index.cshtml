@@ -1,0 +1,59 @@
+﻿<script type="text/javascript">
+    function preventBack() { window.history.forward(); }
+    setTimeout("preventBack()", 0);
+    window.onunload = function () { null };
+
+</script>
+<asp:Content ID="Content1" ContentPlaceHolderID="TitleContent" runat="server">
+
+</asp:Content>
+
+<asp:Content ID="Content3" ContentPlaceHolderID="HeadContent" runat="server">
+    <style>
+        #loadingmask {
+            position: absolute;
+            z-index: 9000;
+            background-color: rgba(255,255,255,0.85);
+            display: none;
+            top: 0;
+            margin-left: 0px;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            left: 0;
+        }
+    </style>
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
+
+    <div>
+        @if (ViewBag.PageURL == null)
+        {
+           @*  var dashboard = new DashboardPageModel();
+            dashboard.CurrentPageID = SessionUser.Current.GetNextPageID();
+            //new DashboardPageModel { CurrentPageID = SessionUser.Current.GetNextPageID() }
+
+            Html.RenderPartial("Dashboard", "Dashboard", dashboard); *@
+
+            <script>
+                loadContentPage('@Url.Action("Dashboard", "DashBoard")');
+            </script>
+        }
+        else
+        {
+            <script>
+                loadContentPage('@ViewBag.PageURL');
+            </script>
+        }
+    </div>
+
+    <div id="popupWindowControl">
+    </div>
+
+    <div id="loadingmask" style="display:none;">
+        <img src="~/css/images/waitingimage.gif" />
+    </div>
+
+  </asp:Content>
+

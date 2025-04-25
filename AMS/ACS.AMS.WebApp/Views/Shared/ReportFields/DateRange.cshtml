@@ -1,0 +1,27 @@
+﻿@model ACS.AMS.WebApp.Models.BaseControlViewModel
+
+@{
+    var m = Model;
+
+    if (m == null)
+    {
+        m = new ACS.AMS.WebApp.Models.MultiColumnViewModel("Date", "");
+    }
+
+    var fromCtrl = Html.Kendo().DatePicker().Format(ACS.AMS.DAL.CultureHelper.ConfigureDateFormat).Name(m.ControlName);
+
+    if (m.Value != null && !string.IsNullOrEmpty(m.Value.ToString()))
+    {
+        var dt = Convert.ToDateTime(m.Value);
+        fromCtrl.Value(dt);
+    }
+
+
+    if (ViewBag.HtmlAttributes != null)
+    {
+        fromCtrl.HtmlAttributes(ViewBag.HtmlAttributes);
+    }
+
+
+fromCtrl.Render();
+}

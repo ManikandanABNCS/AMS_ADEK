@@ -1,0 +1,45 @@
+﻿@using ACS.AMS.DAL.DBModel
+@model User_RoleTable
+@{
+    ViewBag.Title = "Create";
+}
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+        <div class="list-container">
+            <div class="row">
+                <div class="col-xl-4">
+                    <label for="fullname">@Html.Label("Role Name")</label>
+                     @(Html.Kendo().TextBoxFor(model => model.RoleName).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;" }))
+                    <p class="errmsg">@Html.ValidationMessageFor(model => model.RoleName, "", new { @class = "text-danger" })</p>
+                </div>
+                @Html.HiddenFor(c=>c.Description)
+                @*<div class="col-xl-4">
+                    <label for="fullname">@Html.Label("Description")</label>
+                   @(Html.Kendo().TextBoxFor(model => model.Description).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;" }))
+                    <p class="errmsg">@Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })</p>
+                </div>*@
+                <div class="col-xl-4">
+                    <label for="fullname">@Html.Label("Is Active")</label>
+                    @Html.Kendo().SwitchFor(model => model.IsActive).Messages(m => m.Checked("Yes").Unchecked("No"))
+                    <p class="errmsg">@Html.ValidationMessageFor(model => model.IsActive, "", new { @class = "text-danger" })</p>
+                </div>
+                <div class="col-xl-4">
+                    <label for="fullname">@Html.Label("Is Deleted")</label>
+                    @Html.Kendo().SwitchFor(model => model.IsDeleted).Messages(m => m.Checked("Yes").Unchecked("No"))
+                    @Html.HiddenFor(model => model.DisplayRole)
+                    <p class="errmsg">@Html.ValidationMessageFor(model => model.IsDeleted, "", new { @class = "text-danger" })</p>
+                </div>
+                <div class="col-12 text-right add-action-btns">
+                    <button type="submit" value="Save" title="Save" class="saveButton">Save</button>
+                    <button type="button" value="Cancel" title="Cancel" class="cancelButton" onclick="loadIndexPage('Role')">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+}
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("Role Create");
+        $("#DisplayRole").val(true);
+    });
+</script>

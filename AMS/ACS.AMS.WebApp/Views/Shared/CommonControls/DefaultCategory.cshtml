@@ -1,0 +1,12 @@
+﻿@using ACS.AMS.WebApp.Models
+@model dynamic
+
+@{
+    var ctrl = DisplayHelper.CreateMultiColumnComboBox(this.Html, Model);
+    ctrl.Render();
+
+    if (Model.Value != null)
+    {
+        ctrl.AutoBind(true);
+    }
+}

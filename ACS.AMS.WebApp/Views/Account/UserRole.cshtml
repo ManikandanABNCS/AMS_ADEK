@@ -1,0 +1,171 @@
+﻿@using ACS.AMS.DAL.DBModel
+@model User_UserRoleTable
+@{
+    ViewBag.Title = "Create";
+}
+
+<script>
+    function UserChanged() {
+        var dID = $("#UserID").val();
+        if ((dID == "") || (dID == "<--Select-->")) {
+            document.getElementById("selectionArea").style.display = "none";
+        }
+        else {
+            document.getElementById("selectionArea").style.display = "block";
+
+            SelectUserRights(dID);
+        }
+    }
+    function SelectUserRights(userID) {
+        loadContentPageToControl("@Url.Action("UserRolesSelectionEntry")?userID=" + userID, "issueDetails", false);
+    }
+    function delRole() {
+        var ctrl = document.getElementById("lstSelectedRoles");
+        for (i = 0; i < ctrl.length; i++) {
+            if (ctrl[i].selected) {
+                document.getElementById("lstAvailableRoles").appendChild(document.getElementById("lstSelectedRoles").options.item(i));
+                i--;
+            }
+        }
+    }
+
+    function addRole() {
+        var ctrl = document.getElementById("lstAvailableRoles");
+        for (i = 0; i < ctrl.length; i++) {
+            if (ctrl[i].selected) {
+                document.getElementById("lstSelectedRoles").appendChild(document.getElementById("lstAvailableRoles").options.item(i));
+                i--;
+            }
+        }
+    }
+
+    function delAll() {
+        var len = document.getElementById("lstSelectedRoles").length - 1;
+        for (i = len; i >= 0; i--) {
+            document.getElementById("lstAvailableRoles").appendChild(document.getElementById("lstSelectedRoles").item(i));
+        }
+    }
+    function addAll() {
+        var len = document.getElementById("lstAvailableRoles").length - 1;
+        for (i = len; i >= 0; i--) {
+            document.getElementById("lstSelectedRoles").appendChild(document.getElementById("lstAvailableRoles").item(i));
+        }
+    }
+
+    function addItemsToHiddenField() {
+        var lst = document.getElementById("lstSelectedRoles");
+        var hid = document.getElementById("hdSelectedItems");
+
+        if (lst.options.length > 0) {
+            for (i = 0; i < lst.options.length; i++) {
+                hid.value += lst.options[i].value + ",";
+            }
+        }
+
+        var lst = document.getElementById("lstAvailableRoles");
+        var hid = document.getElementById("hdNonSelectedItems");
+
+        if (lst.options.length > 0) {
+            for (i = 0; i < lst.options.length; i++) {
+                hid.value += lst.options[i].value + ",";
+            }
+        }
+    }
+</script>
+
+
+    @using (Html.AjaxBeginForm("UserRole", "Account", DisplayHelper.GetAjaxOptions()))
+    {
+
+                                <div class="list-container">
+                                    <div class="row">
+            <div class="col-xl-12">
+                <p class="text-danger">@Html.ValidationSummary()</p>
+            </div>
+                                                <div class="col-xl-4">
+                                                    <label for="fullname">@Html.Label("User Name")</label> :
+                                                    @(Html.Kendo().MultiColumnComboBox()
+                                                    .Name("UserID")
+                                                    .Placeholder("Select User Name")
+                                                    .DataTextField("PersonName")
+                                                    .DataValueField("UserID")
+                                                    .Columns(columns =>
+                                                    {
+                                                        columns.Add().Field("PersonCode").Title("Person Code").Width("100px");
+                                                        columns.Add().Field("PersonName").Title("PersonName").Width("200px");
+                                                        columns.Add().Field("EMailID").Title("EMail ID").Width("100px");
+                                                        columns.Add().Field("UserName").Title("UserName").Width("100px");
+                                                    })
+                                                    .HtmlAttributes(new { style = "width:300px!important;" })
+                                                    .Filter(FilterType.Contains)
+                                                    .FilterFields(new string[] { "PersonCode", "PersonName", "EMailID", "UserName" })
+                                                    .Events(a => { a.Change("UserChanged"); })
+                                                    .DataSource(source =>
+                                                    {
+                                                        source.Read(read =>
+                                                        {
+                                                            read.Action("GetAllLoginUserList", "DataService");
+                                                        }).ServerFiltering(true);
+                                                    })
+                                                    )
+                                                    <p class="errmsg">@Html.ValidationMessageFor(model => model.UserID, "", new { @class = "text-danger" })</p>
+                                                </div>
+                                                <div class="col-xl-12">
+
+                                                    <table class="tablefilter" style="width: 400px;margin:0px auto;" id="selectionArea">
+                                                        <tr>
+                                                            <td class="editor-label">
+
+                                                                @Html.Label("lblAvailableRoles", "Available Roles")
+                                                            </td>
+                                                            <td>
+                                                            </td>
+                                                            <td class="editor-label">
+
+                                                                @Html.Label("lblSelectedRoles", "Selected Roles")
+
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="width: 180px;">
+
+                                                                @{var rolelist = "";}
+
+                                                                @Html.ListBox("lstAvailableRoles", new SelectList(rolelist), new { style = "height:200px;width:100%" })
+
+                                                            </td>
+                                                            <td>
+                                                                <input type="button" value=">>" title="SelectRole" class="t-button t-button-icon" onclick="addRole()" />
+                                                                <input type="button" value="<<" title="RemoveRole" class="t-button t-button-icon" onclick="delRole()" />
+
+                                                            </td>
+                                                            <td style="width: 180px;">
+                                                                @{var rolelist1 = ""; }
+                                                                @Html.ListBox("lstSelectedRoles", new SelectList(rolelist1), new { style = "height:200px;width:100%" })
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td id="issueDetails">
+                                                            </td>
+                                                        </tr>
+                                                        @Html.Hidden("hdSelectedItems")
+                                                        @Html.Hidden("hdNonSelectedItems")
+
+                                                    </table>
+                                                </div>
+
+                                                <div class="col-12 text-right add-action-btns">
+                <button type="submit" value="Save" title="Save" class="saveButton" onclick="addItemsToHiddenField()">Save</button>
+                                                    <button type="button" value="Cancel" title="Cancel" class="cancelButton" onclick="loadDefaultPage('@Url.Action("Dashboard", "Dashboard")')">Cancel</button>
+                                                </div>
+                                     </div>
+                                </div>
+}
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("User Role");
+    });
+</script>
+
+
+

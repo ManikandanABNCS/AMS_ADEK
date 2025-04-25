@@ -1,0 +1,543 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@model EditRegisterModel
+@{
+    ViewBag.Title = "Details";
+    var data = AMSContext.CreateNewContext();
+    int currentPageID;
+
+    if (Model.CurrentPageID > 0)
+    {
+        currentPageID = Model.CurrentPageID;
+    }
+    else
+    {
+        currentPageID = SessionUser.Current.GetNextPageID();
+    }
+}
+
+<script>
+    function clickone() {
+        var tabStrip = $("#tabstrip").data("kendoTabStrip");
+        var indexValue = tabStrip.select().index();
+        tabStrip.select(indexValue + 1);
+    }
+    function UserTypeChange(e) {
+        debugger;
+        var type = $("#Person_UserTypeID").val();
+        var Value = null;
+        var tabStrip = $("#TabStrip").data("kendoTabStrip");
+        if (type == "1") {
+         
+            $("#tdlabelUser").show();
+            $("#DepartmentArea").hide();
+           
+
+            $("#nextDiv").show();
+            $("#saveDiv").hide();
+            var Index = tabStrip.contentElements.length;
+            for (i = 1; i < Index; i++) {
+                $(tabStrip.items()[i]).show();
+            }
+           
+            //  $("#UserName").val("");
+        }
+        else if (type == "2") {
+           
+            $("#tdlabelUser").hide();
+            $("#DepartmentArea").show();
+            // document.getElementById("passwordArea").style.display = "none";
+            // document.getElementById("tdlabelUser").style.display = "none";
+
+            // document.getElementById("DepartmentArea").style.display = "table-row";
+
+            var Index = tabStrip.contentElements.length;
+            for (i = 1; i < Index; i++) {
+                $(tabStrip.items()[i]).hide();
+            }
+            $("#nextDiv").hide();
+            $("#saveDiv").show();
+          
+            $("#UserName").val($("#Person_PersonCode").val());
+        }
+        else {
+           
+            $("#tdlabelUser").show();
+            $("#DepartmentArea").show();
+            // document.getElementById("passwordArea").style.display = "table-row";
+            // document.getElementById("DepartmentArea").style.display = "table-row";
+            // document.getElementById("tdlabelUser").style.display = "";
+
+
+            var Index = tabStrip.contentElements.length;
+            for (i = 1; i < Index; i++) {
+                $(tabStrip.items()[i]).show();
+            }
+            $("#nextDiv").show();
+            $("#saveDiv").hide();
+           
+            //$("#UserName").val("");
+        }
+    }
+</script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+    @Html.HiddenFor(c => c.Person.PersonID)
+    @Html.Hidden("CurrentPageID", currentPageID)
+        <div class="list-container">
+              @(Html.Kendo().TabStrip()
+                    .Name("TabStrip").SelectedIndex(0).HtmlAttributes(new { style = "width:100%;" })
+                    .Items(tabstrip =>
+                    {
+                    tabstrip.Add().Text("User").HtmlAttributes(new { })
+
+                   .Content(
+                            @<text>
+                                <div class="row">
+            <div class="col-xl-3" id="tdlabelUser" style="display:table-row">
+                                        <label for="fullname">@Html.LabelFor(model => model.UserName, true)</label>
+                @(Html.Kendo().TextBoxFor(model => model.UserName).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.PersonCode, "", new { @class = "text-danger" })</p>
+                <div id="errorCode"></div>
+                                    </div>
+                                    <div class="col-xl-3">
+                                        <label for="fullname">@Html.Label("PersonCode")</label>
+                @(Html.Kendo().TextBoxFor(model => model.Person.PersonCode).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.PersonCode, "", new { @class = "text-danger" })</p>
+                <div id="errorCode"></div>
+            </div>
+                                    <div class="col-xl-3">
+                                        <label for="fullname">@Html.Label("FirstName")</label>
+                @(Html.Kendo().TextBoxFor(model => model.Person.PersonFirstName).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.PersonCode, "", new { @class = "text-danger" })</p>
+                <div id="errorCode"></div>
+                                    </div>
+                                    <div class="col-xl-3">
+                                        <label for="fullname">@Html.Label("LastName")</label>
+                @(Html.Kendo().TextBoxFor(model => model.Person.PersonLastName).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+                                      
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.PersonCode, "", new { @class = "text-danger" })</p>
+                <div id="errorCode"></div>
+                                    </div>
+                        @if (Model.Person.DOJ != null){
+                        <div class="col-xl-3">
+                            <label for="fullname">@Html.Label("DOJ")</label>
+                @(Html.Kendo().TextBoxFor(model => model.Person.DOJ).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+                                    @* @String.Format("{0:" + CultureHelper.ConfigureDateFormat + "}", Model.Person.DOJ) *@
+                                          </div>
+                                      }
+                                      else
+                                      {
+                                <div class="col-xl-3">
+                                    <label for="fullname">@Html.Label("DOJ")</label>
+                @(Html.Kendo().TextBoxFor(model => model.Person.DOJ).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+                                </div>
+                                      }
+
+                                      <div class="col-xl-3">
+                <label for="fullname">@Html.LabelFor(model => model.Person.MobileNo, false)</label>
+                @(Html.Kendo().TextBoxFor(model => model.Person.MobileNo).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.PersonCode, "", new { @class = "text-danger" })</p>
+                <div id="errorCode"></div>
+
+                                    </div>
+                        <div class="col-xl-3">
+                <label for="fullname">@Html.LabelFor(model => model.Person.WhatsAppMobileNo, false)</label>
+                           
+                @(Html.Kendo().TextBoxFor(model => model.Person.WhatsAppMobileNo).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.PersonCode, "", new { @class = "text-danger" })</p>
+                <div id="errorCode"></div>
+            </div>
+                                    <div class="col-xl-3">
+                                        <label for="fullname">@Html.LabelFor(model => model.Person.EMailID, true)</label>
+                                       
+                @(Html.Kendo().TextBoxFor(model => model.Person.EMailID).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.PersonCode, "", new { @class = "text-danger" })</p>
+                <div id="errorCode"></div>
+                                    </div>
+                                  
+                                    <div class="col-xl-3">
+                                        <label for="fullname"> @Html.Label("User Type")</label>
+                                        @(Html.Kendo().DropDownListFor(model => model.Person.UserTypeID).HtmlAttributes(new {  style = "width: 100%;" })
+                                                    .BindTo(ComboBoxHelper.GetUserType(data)).OptionLabel("Select"))
+                <p class="errmsg">@Html.ValidationMessageFor(model => model.Person.PersonCode, "", new { @class = "text-danger" })</p>
+                <div id="errorCode"></div>
+                                    </div>
+            <div class="col-xl-3" id="DepartmentArea" style="display:none">
+                <label for="fullname">@Html.LabelFor(model => model.Person.Department.DepartmentName, false)</label>
+                               @if(Model.Person.DepartmentID.HasValue)
+                                          {
+                @(Html.Kendo().TextBox().Name("DepartmentID").Value(@Model.Person.Department.DepartmentName).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+                                   
+                                          }
+                                          else 
+                                          {
+                @(Html.Kendo().TextBox().Name("DepartmentID").HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+                                          }
+
+                            </div>
+                            <div class="col-xl-3">
+                <label for="fullname">@Html.LabelFor(model => model.Person.Designation.DesignationName, false)</label>
+                                @if (Model.Person.DesignationID.HasValue)
+                                {
+                @(Html.Kendo().TextBox().Name("DesignationID").Value(@Model.Person.Designation.DesignationName).HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+
+                                }
+                                else 
+                                {
+                @(Html.Kendo().TextBox().Name("DesignationID").HtmlAttributes( new { Class = "k-textbox", maxlength = 50, style = "width: 100%;",@readonly = "readonly" }))
+                                }
+                            </div>
+                            <div class="col-xl-3">
+                                <label for="fullname">@Html.FieldLabel("Upload Signature", true)</label>
+                                @if (!string.IsNullOrEmpty(Model.Person.SignaturePath))
+                                {
+                                    string[] arryDocID1 = Model.Person.SignaturePath.Split("FileStoragePath");
+                                    var url = "/FileStoragePath" + arryDocID1[1];
+                                    <img id="UploadSingature" src="@url" alt="No Image" width="150" height="100" style="margin-top: 5px; display: block">
+                                }
+                                </div>
+                           @*  <div class="col-xl-3">
+                                <label for="fullname">@Html.FieldLabel("Upload Stamp", true)</label>
+                                @if (!string.IsNullOrEmpty(Model.Person.StampPath))
+                                {
+                                     string[] arryDocID = Model.Person.StampPath.Split("FileStoragePath");
+                                    var urlStamp = "/FileStoragePath" + arryDocID[1];
+                                    <img id="UploadStamp" src="@urlStamp" alt="No Image" width="150" height="100" style="margin-top: 5px; display: block">
+                                    
+                                }
+                            </div> *@
+            <div class="col-12 text-right add-action-btns" id="saveDiv" style="display:none">
+              
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancel1Button").HtmlAttributes(new { onclick="loadIndexPage('Person')" })
+            </div>
+            <div class="col-12 text-right add-action-btns" id="nextDiv">
+                @*   <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button> *@
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton1").HtmlAttributes(new { @class = "saveButton", onclick="return clickoneNext(event);" })
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton2").HtmlAttributes(new {@class = "cancelButton", onclick="loadIndexPage('Person')" })
+            </div>
+                                </div>
+                            </text>);
+                    tabstrip.Add().Text("Role Approval Mapping").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+                   
+
+                        <div class="row" style="padding-top:10px">
+                            <div class="col-xl-12">
+                                @(Html.Kendo().Grid<ApprovalRoleModel>()
+                                    .Name("ApprovalRoleDetailGrid")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Bound(p => p.ID).Width(100).Visible(false);
+                                        columns.Bound(p => p.LocationID).Width(100).Visible(false);
+                                        columns.Bound(p => p.ApprovalRoleID).Width(100).Visible(false);
+                columns.Bound(p => p.CategoryTypeID).Width(100).Visible(false);
+                columns.Bound(p => p.LocationName).Width(70).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Location"));
+                columns.Bound(p => p.ApprovalRoleName).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ApprovalRole"));
+                columns.Bound(p => p.CategoryType).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("CategoryType"));
+                                        
+                                    })
+                                    .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                                    {
+                                        o.ForString(t => t.Clear().Contains("Contains").DoesNotContain("Does Not Contains").IsEqualTo("Equal To")
+                                        .IsNotEqualTo("Not EqualTo").StartsWith("Starts With").EndsWith("Ends With"));
+                                    })
+                                    )
+                                    .Sortable().Selectable()
+                                    .Pageable()
+                                    .DataSource(datasource => datasource.Ajax()
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.ID);
+
+                                    })
+                                    .Read(read => read.Action("Approvalindex", "Person", new { currentPageID = currentPageID })
+
+                                    )
+                                    ))
+                            </div>
+            <div class="col-12 text-right add-action-btns" style="padding-top: 20px;">
+               @*  <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button> *@
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton2").HtmlAttributes(new {  @class = "saveButton",onclick="return clickoneNext(event);" })
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton2").HtmlAttributes(new {@class = "cancelButton",  onclick="loadIndexPage('Person')" })
+            </div>
+                        </div>
+                    </text>);
+                     tabstrip.Add().Text("Company Mapping").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+                    <table style="width: 100% !important; margin: 0px auto;">
+                        <tr>
+                            <td class="editor-label" style="text-align: center"></td>
+                            <td></td>
+                            <td class="editor-label" style="text-align: center"></td>
+                        <tr>
+                            <td>
+                                <div style="width: 420px; margin: 0px auto;">
+                                    <label class="listBoxHead">@Language.GetString("AvailableCompanies")</label>
+                                        @{
+                                                var avaliableList = ComboBoxHelper.GetAvailableCompanies(data, "Edit", null, Model.Person.PersonID);
+                                            }
+
+                                            @Html.ListBox("lstLocationFields", new SelectList(avaliableList,"Value","Text"), new { @Class="listBoxClass" })
+                                            @Html.Hidden("hdLocationSelectedItemsIDS")
+
+                                    </div>
+                                </td>
+                                <td style="text-align: center;">
+                                    @* <button type="button" title="@Language.GetToolTipText("SelectField")" class="btn btn-arrow" onclick="addFieldsTemplate('lstLocationFields','lstSelectedLocationFields')"><i class="fa fa-angle-double-right"></i></button>
+                                    <br />
+                                    <button type="button" title="@Language.GetToolTipText("RemoveField")" class="btn btn-arrow" onclick="delFieldTemplate('lstLocationFields','lstSelectedLocationFields')"><i class="fa fa-angle-double-left"></i></button> *@
+                                </td>
+
+                                <td>
+                                    <div style="width: 420px; margin: 0px auto;">
+                                        <label class="listBoxHead pull-left">@Language.GetString("SelectedCompanies")</label>
+                                        <div class="pull-right">
+
+                                           @*  <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedLocationFields','up')"><i class="fa fa-angle-double-up"></i></button>
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedLocationFields','down')"><i class="fa fa-angle-double-down"></i></button> *@
+                                        </div>
+                                        <div class="clearfix"></div>
+
+                                            @{
+                                                var SelectedList = ComboBoxHelper.GetSelectedcompanies(data, "Edit", null, Model.Person.PersonID);
+                                            }
+                                            @Html.ListBox("lstSelectedLocationFields",new SelectList(SelectedList,"Value","Text"), new { @Class="listBoxClass"  })
+
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id="Td3" colspan="2">
+                    <span id="noneSelectedCompany" style="color: red;"></span>
+                                </td>
+                            </tr>
+                        </table>
+        <div class="col-12 text-right add-action-btns">
+           @*  <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button> *@
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton3").HtmlAttributes(new {@class = "saveButton",  onclick="return clickoneNext(event);" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton3").HtmlAttributes(new { @class = "cancelButton", onclick="loadIndexPage('Person')" })
+        </div>
+                    </text>);
+
+                    tabstrip.Add().Text("Location Mapping").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+                    <table style="width: 100% !important; margin: 0px auto;">
+                        <tr>
+                            <td class="editor-label" style="text-align: center"></td>
+                            <td></td>
+                            <td class="editor-label" style="text-align: center"></td>
+                        <tr>
+                            <td>
+                                <div style="width: 420px; margin: 0px auto;">
+                                    <label class="listBoxHead">@Language.GetString("AvailableLocation")</label>
+                                        @{
+                                                var avaliableList = ComboBoxHelper.GetAvailableLocation(data, "Edit", null, Model.Person.PersonID);
+                                            }
+
+                                            @Html.ListBox("lstLocationFields", new SelectList(avaliableList,"Value","Text"), new { @Class="listBoxClass" })
+                                            @Html.Hidden("hdLocationSelectedItemsIDS")
+
+                                    </div>
+                                </td>
+                                <td style="text-align: center;">
+                                    @* <button type="button" title="@Language.GetToolTipText("SelectField")" class="btn btn-arrow" onclick="addFieldsTemplate('lstLocationFields','lstSelectedLocationFields')"><i class="fa fa-angle-double-right"></i></button>
+                                    <br />
+                                    <button type="button" title="@Language.GetToolTipText("RemoveField")" class="btn btn-arrow" onclick="delFieldTemplate('lstLocationFields','lstSelectedLocationFields')"><i class="fa fa-angle-double-left"></i></button> *@
+                                </td>
+
+                                <td>
+                                    <div style="width: 420px; margin: 0px auto;">
+                                        <label class="listBoxHead pull-left">@Language.GetString("SelectedLocations")</label>
+                                        <div class="pull-right">
+
+                                           @*  <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedLocationFields','up')"><i class="fa fa-angle-double-up"></i></button>
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedLocationFields','down')"><i class="fa fa-angle-double-down"></i></button> *@
+                                        </div>
+                                        <div class="clearfix"></div>
+
+                                            @{
+                                                var SelectedList = ComboBoxHelper.GetSelectedLocation(data, "Edit", null, Model.Person.PersonID);
+                                            }
+                                            @Html.ListBox("lstSelectedLocationFields",new SelectList(SelectedList,"Value","Text"), new { @Class="listBoxClass"  })
+
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id="Td3" colspan="2">
+                                    <span id="noneSelectedLocation" style="color: red;"></span>
+                                </td>
+                            </tr>
+                        </table>
+        <div class="col-12 text-right add-action-btns">
+           @*  <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button> *@
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton4").HtmlAttributes(new {@class = "saveButton",  onclick="return clickoneNext(event);" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton4").HtmlAttributes(new {@class = "cancelButton",  onclick="loadIndexPage('Person')" })
+        </div>
+                    </text>);
+
+                    tabstrip.Add().Text("Category Mapping").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+                    <table style="width: 100% !important; margin: 0px auto;">
+                        <tr>
+                            <td class="editor-label" style="text-align: center"></td>
+                            <td></td>
+                            <td class="editor-label" style="text-align: center"></td>
+                        <tr>
+                            <td>
+                                <div style="width: 420px; margin: 0px auto;">
+                                    <label class="listBoxHead">@Language.GetString("AvailableCategory")</label>
+                                        @{
+                                                var avaliableList = ComboBoxHelper.GetAvailableCategory(data, "Edit", null, Model.Person.PersonID);
+                                            }
+
+                                            @Html.ListBox("lstCategoryFields", new SelectList(avaliableList, "Value","Text"), new { @Class="listBoxClass" })
+                                            @Html.Hidden("hdCategorySelectedItemsIDS")
+
+                                    </div>
+                                </td>
+                              @*   <td style="text-align: center;">
+                                    <button type="button" title="@Language.GetToolTipText("SelectField")" class="btn btn-arrow" onclick="addFieldsTemplate('lstCategoryFields','lstSelectedCategoryFields')"><i class="fa fa-angle-double-right"></i></button>
+                                    <br />
+                                    <button type="button" title="@Language.GetToolTipText("RemoveField")" class="btn btn-arrow" onclick="delFieldTemplate('lstCategoryFields','lstSelectedCategoryFields')"><i class="fa fa-angle-double-left"></i></button>
+                                </td> *@
+
+                                <td>
+                                    <div style="width: 420px; margin: 0px auto;">
+                                        <label class="listBoxHead pull-left">@Language.GetString("SelectedCategory")</label>
+                                        @* <div class="pull-right">
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedCategoryFields','up')"><i class="fa fa-angle-double-up"></i></button>
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedCategoryFields','down')"><i class="fa fa-angle-double-down"></i></button>
+                                        </div> *@
+                                        <div class="clearfix"></div>
+
+                                            @{
+                                                var SelectedList = ComboBoxHelper.GetSelectedCategory(data, "View", null, Model.Person.PersonID);
+                                            }
+                                            @Html.ListBox("lstSelectedCategoryFields",new SelectList(SelectedList, "Value","Text"), new { @Class="listBoxClass"  })
+
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id="Td3" colspan="2">
+                                    <span id="noneSelectedCategory" style="color: red;"></span>
+                                </td>
+                            </tr>
+                        </table>
+        <div class="col-12 text-right add-action-btns">
+           @*  <button type="button" value="Next" title="Next" class="saveButton" onclick="clickoneNext(event)">Next</button> *@
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton5").HtmlAttributes(new { @class = "saveButton", onclick="return clickoneNext(event);" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton6").HtmlAttributes(new { @class = "cancelButton", onclick="loadIndexPage('Person')" })
+        </div>
+                    </text>);
+                    tabstrip.Add().Text("Department Mapping").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+                    <table style="width: 100% !important; margin: 0px auto;">
+                        <tr>
+                            <td class="editor-label" style="text-align: center"></td>
+                            <td></td>
+                            <td class="editor-label" style="text-align: center"></td>
+                        <tr>
+                            <td>
+                                <div style="width: 420px; margin: 0px auto;">
+                                    <label class="listBoxHead">@Language.GetString("AvailableDepartment")</label>
+                                        @{
+                                                var avaliableList = ComboBoxHelper.GetAvailableDepartment(data, "View", null, Model.Person.PersonID);
+                                            }
+
+                                            @Html.ListBox("lstDepartmentFields", new SelectList(avaliableList,  "Value","Text"), new { @Class="listBoxClass" })
+                                            @Html.Hidden("hdDepartmentSelectedItemsIDS")
+
+                                    </div>
+                                </td>
+                                @* <td style="text-align: center;">
+                                    <button type="button" title="@Language.GetToolTipText("SelectField")" class="btn btn-arrow" onclick="addFieldsTemplate('lstDepartmentFields','lstSelectedDepartmentFields')"><i class="fa fa-angle-double-right"></i></button>
+                                    <br />
+                                    <button type="button" title="@Language.GetToolTipText("RemoveField")" class="btn btn-arrow" onclick="delFieldTemplate('lstDepartmentFields','lstSelectedDepartmentFields')"><i class="fa fa-angle-double-left"></i></button>
+                                </td> *@
+
+                                <td>
+                                    <div style="width: 420px; margin: 0px auto;">
+                                        <label class="listBoxHead pull-left">@Language.GetString("SelectedDepartment")</label>
+                                        <div class="pull-right">
+
+                                            @* <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedDepartmentFields','up')"><i class="fa fa-angle-double-up"></i></button>
+
+                                            <button type="button" title="Select Field" class="btn btn-btarrow" onclick="Listbox_Move('lstSelectedDepartmentFields','down')"><i class="fa fa-angle-double-down"></i></button> *@
+                                        </div>
+                                        <div class="clearfix"></div>
+
+                                            @{
+                                                var SelectedList = ComboBoxHelper.GetSelectedDepartment(data, "View", null, Model.Person.PersonID);
+                                            }
+                                            @Html.ListBox("lstSelectedDepartmentFields",new SelectList(SelectedList, "Value","Text"), new { @Class="listBoxClass"  })
+
+
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id="Td3" colspan="2">
+                                    <span id="noneSelectedDepartment" style="color: red;"></span>
+                                </td>
+                            </tr>
+                        </table>
+        <div class="col-12 text-right add-action-btns">
+           
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton7").HtmlAttributes(new {@class = "cancelButton",  onclick="loadIndexPage('Person')" })
+        </div>
+                    </text>);
+                                         }
+                                     )
+                                      )
+       @*  <div class="col-xl-12 text-right add-action-btns">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="loadIndexPage('Person')" })
+        </div> *@
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                EntryPageModel newModel = new EntryPageModel()
+                {
+
+                    EntityInstance = Model.Person as BaseEntityObject,
+                    ControllerName = this.GetType().Name.Substring(0, this.GetType().Name.Length - "Controller".Length),
+                };
+                Html.RenderPartial("BaseViews/AuditLogSingleView", newModel);
+            }
+        </div>
+    </div>
+}
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("User Detail");
+        $("#TabStrip").data("kendoTabStrip").select(0);
+        UserTypeChange();
+    });
+</script>

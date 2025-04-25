@@ -1,0 +1,99 @@
+﻿@model string 
+<script>
+    function ProductData() {
+        return {
+            text: $("#ProductID").data("kendoMultiColumnComboBox").input.val(),
+            categoryID: $("#CategoryID").val(),
+
+        }
+    }
+    function OnSelectProduct() {
+
+        var fag = true;
+        if (!$("#CategoryID").val()) {
+           
+            
+                document.getElementById("CategoryIDValidator").innerText = "CategoryName is Required.";
+                $("#ProductID").data("kendoMultiColumnComboBox").value("");
+                $("#ProductID").data("kendoMultiColumnComboBox").text("");
+            
+        }           
+        else {
+            document.getElementById("CategoryIDValidator").innerText = "";
+                //$("#validateCategory").remove();
+        }
+
+    }
+    function OnchangeProductEvents() {
+        var multicolumnComboBox = $("#ProductID").data("kendoMultiColumnComboBox");
+
+        var selectedText = multicolumnComboBox.text();
+        $("#AssetDescription").val(selectedText);
+    }
+</script>
+<style>
+
+    #ProductID-list .dropdown-header {
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    #ProductID-list .photo {
+        box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+        margin: 0 10px 0 0;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-size: 100%;
+        background-repeat: no-repeat;
+        display: inline-block;
+    }
+
+    #ProductID-list h3 {
+        margin: 0 0 1px 0;
+        padding: 0;
+        font-size: 1.2em;
+        font-weight: normal;
+    }
+
+    #ProductID-list p {
+        margin: 0;
+        padding: 0;
+        font-size: .8em;
+    }
+</style>
+@(
+                                    Html.Kendo().MultiColumnComboBox()
+                                    .Name("ProductID")
+                                    .DataTextField("ProductName")
+                                    .DataValueField("ProductID")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Add()
+                                        .Field("CatalogueImage")
+                                        .Title("Catalogue")
+                                        .Template("<span class=\"k-state-default photo\" style=\"background-image: url(#:data.CatalogueImage#);\" ></span>")
+                                        .HeaderTemplate("<span class=\"dropdown-header\">Image</span>")
+                                        .Width("100px");
+
+                                        columns.Add().Field("ProductCode").Title("Product Code").Width("100px");
+                                        columns.Add().Field("ProductName").Title("ProductName").Width("200px");
+                                        columns.Add().Field("CategoryName").Title("CategoryName").Width("100px");
+                                        columns.Add().Field("VirtualBarcode").Title("VirtualBarcode").Width("100px");
+                                    })
+                                    .Value(Model)
+                                    .HtmlAttributes(new { style = "width: 100%;" })
+                                    .DataSource(source =>
+                                    {
+                                        source.Read(read =>
+                                        {
+                                            read.Action("ProductDetailsAgainstCategory", "DataService").Data("ProductData");
+                                        });
+                                    })
+                                    .Events(a => { a.Select("OnSelectProduct");a.Change("OnchangeProductEvents"); })
+                                    .Filter(FilterType.Contains)
+                                    .FilterFields(new string[] { "ProductCode", "productName", "CategoryName", "VirtualBarcode" })
+
+                                    .Height(300)
+                                    )
+                                  

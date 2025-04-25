@@ -1,0 +1,42 @@
+﻿@model IndexPageModel
+
+@{
+    ViewBag.Title = "Index";
+}
+
+
+<div class="list-container">
+    @{
+        DisplayHelper display = new DisplayHelper(this, "DashboardTemplate", "DashboardTemplateID");
+
+        var gridCtrl = Html.Kendo().Grid<dynamic>()
+        .Name("DetailsGrid");
+
+        display.AddGridActionColumns(gridCtrl, Url, "DashboardTemplate", RightNames.DashboardTemplate);
+        display.ConfigureGrid(gridCtrl);
+        display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.DashboardTemplate);
+
+        gridCtrl.Render();
+        //display.AddPopUpWindow(this.Html, "Location");
+
+    }
+    <div class="clearfix"></div>
+</div>
+
+<script>
+    $(function () {
+        setPageHeading("DashboardTemplate List");
+
+
+    });
+</script>
+
+
+
+
+<script>
+  
+    function getAdditionalExportParameters(controllerName) {
+        return null;
+    }
+</script>

@@ -1,0 +1,94 @@
+﻿
+@model dynamic
+@using ACS.AMS.DAL
+<script>
+        function ListBoxParam() {
+            return {
+                currentPageID: '@ViewBag.CurrentPageID',
+            };
+        }
+
+        function templateUIControlChanged(e) {
+            var fieldName = this.element[0].getAttribute("FieldName");
+            updateTemplateField(fieldName);
+        }
+
+    function updateTemplateField(fieldName) {
+           
+            var data = {
+                fieldName: fieldName,
+                currentPageID: '@ViewBag.CurrentPageID',
+
+               // defaultWidth: $("#defaultWidth_" + fieldName).val(),
+                defaultFormat: $("#defaultFormat_" + fieldName).val(),
+               
+            };
+
+            Sever_UpdateData("@Url.Action("UpdateTemplateField")", data);
+        }
+
+</script>
+<td>
+    <p style="font-style:oblique"> @Html.Label("Column Details") </p>
+</td>
+<td>
+    <table class="table table-striped table-bordered" style="width: 100%">
+        <tr style="text-align: center;">
+            <th style="width: 10%">@Language.GetString("FieldName") </th>
+           @*  <th style="width: 10%">@Language.GetString("DefaultWidth") </th> <!-- Drop down from FieldTypeTable --> 
+            <th style="width: 15%">@Language.GetString("DefaultFormat") </th>*@
+            
+        </tr>
+        @{
+            int pageLinesCount = 10;
+            int pageNumber = ViewBag.PageNumber;
+
+            int startingLineCout = pageNumber * pageLinesCount;
+            var model = ViewBag.FilterDataModel as ACS.AMS.WebApp.Models.ReportTemplate.FilterFieldDashBoardDataModel;
+
+            var filterLineItems = model.Fields.Skip(startingLineCout).Take(pageLinesCount);
+
+            int totalAvailableFilterRecods = model.Fields.Count();
+            int sno = startingLineCout + 1;
+            }
+        @{
+            foreach (var v in filterLineItems)
+            {
+
+
+            <tr style="border: 1px solid black;">
+                <td style="border:1px solid black;">@v.FieldName </td>
+                 
+                
+               
+            </tr>
+                sno++;
+            }
+            }
+            <tr>
+               @{ 
+                   //Pagination related methods
+                   bool firstRequired = pageNumber > 0;
+                   bool prevRequired = pageNumber > 0;
+                   bool nextRequired = pageNumber < (totalAvailableFilterRecods / pageLinesCount);
+                   bool lastRequired = pageNumber < (totalAvailableFilterRecods / pageLinesCount);
+               }
+                <td colspan="13" style="text-align: right;">
+                    @if (firstRequired) {  <a href="javascript:DashboardTemplate_loadLineItemsPage(0, true)">First</a> } else {   }  &nbsp; &nbsp;
+                    @if (prevRequired)  {  <a href="javascript:DashboardTemplate_loadLineItemsPage(@pageNumber - 1 , true)">Previous</a> } else {   }  &nbsp; &nbsp;
+                @if (nextRequired)
+                {
+                      <a href="javascript:DashboardTemplate_loadLineItemsPage(@pageNumber + 1 , true)">Next</a>
+                }
+                else { }  &nbsp; &nbsp;
+                @if (lastRequired)
+                {
+                      <a href="javascript:DashboardTemplate_loadLineItemsPage(@totalAvailableFilterRecods/@pageLinesCount , true)">Last</a>
+                }
+                else { }
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    Records @(startingLineCout + 1)  to @(startingLineCout + filterLineItems.Count())  of @totalAvailableFilterRecods
+                </td>
+            </tr>
+        </table>
+    </td>

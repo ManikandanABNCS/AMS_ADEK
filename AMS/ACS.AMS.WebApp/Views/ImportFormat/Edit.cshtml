@@ -1,0 +1,227 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@model ImportFormatNewTable
+@{
+    ViewBag.Title = "Create";
+    var data = AMSContext.CreateNewContext();
+    var TableField = ImportTemplateNewTable.GetAvailableFieldsForEdit(data, Model.ImportFormatID, Model.EntityID, (int)Model.ImportTemplateTypeID);
+    var selectedsField = ImportTemplateNewTable.GetSelectedDatas(data, Model.ImportFormatID);
+
+}
+<script>
+   
+    </script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+   
+    <div class="list-container">
+        <div style="display: none">
+            @Html.HiddenFor(model=>model.FormatExtension) 
+            @Html.HiddenFor(model=>model.FormatPath)
+            @Html.TextBox("hdSelectedItems")
+            @Html.TextBox("hdSelectedItemsIDS")
+            @Html.TextBox("FormatTextValue")
+        </div>
+        <div class="row k-text-error">
+
+            @Html.ValidationMessage("12")
+            @Html.HiddenFor(model=>model.ImportFormatID)
+            @Html.HiddenFor(model=>model.EntityID)
+            @Html.HiddenFor(model=>model.ImportTemplateTypeID)
+            @Html.HiddenFor(model=>model.TamplateName)
+            @Html.HiddenFor(model=>model.StatusID)
+        </div>
+        <div class="row">
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Import Template Type",true)</label> :
+                @Model.ImportTemplateType.ImportTemplateType
+              
+                    <div id="errApproveModuleID"></div>
+                </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Choose Master",true)</label> :
+                @Model.Entity.EntityName
+               @*  @(Html.Kendo().DropDownListFor(model => model.FromLocationTypeID)
+                    //.Name("FromLocationTypeID")
+                    .HtmlAttributes(new { style = "width:200px!important ", disabled = "disabled" })
+                    .BindTo(ComboBoxHelper.GetAllLocationType(AMSContext.CreateNewContext(), ""))
+                    .OptionLabel("Select From Location Type")
+
+                    ) *@
+                <div id="errFromLocationType"></div>
+            </div>
+       
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Template Name",true)</label> :
+                @(Html.Kendo().TextBoxFor(model => model.TamplateName).HtmlAttributes(new { Class = "k-textbox", maxlength = 50, style = "width::200px !important;" }))
+               @*      @Model.TamplateName *@
+             
+                <div id="errTemplateName"></div>
+            </div>
+                
+            <div class="col-xl-12">
+
+                <table class="tablefilter" style="width: 544px;margin:0px auto;" id="selectionArea">
+                    <tr>
+                        <td class="editor-label">
+                            @Html.Label("AvailableFields", "Available Fields")
+                        </td>
+                        <td>
+                        </td>
+                        <td class="editor-label">
+                            @Html.Label("lblSelectedFields", "Selected Fields")
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 230px;">
+
+                            @{
+                                var rolelist = TableField;
+                            }
+
+                            @Html.ListBox("lstAvailableFields", new SelectList(rolelist,"Value","Text"), new { style = "height:250px;width:100%" })
+
+                        </td>
+                        <td>
+                            <button style="width: 28px; width: 30px; margin-bottom: 5px;" type="button" title="Select Field" class="t-button t-button-icon btn-Move" onclick="Listbox_Move('lstSelectedFields','up')"><i class="fa fa-angle-double-up"></i></button>
+                            <br />
+
+                            <input type="button" value=">>" title="SelectRole" class="t-button t-button-icon" onclick="addImport()" />
+                            <input type="button" value="<<" title="RemoveRole" class="t-button t-button-icon" onclick="delImport()" />
+                            <br />
+                            <button style="width: 28px; width: 30px" type="button" title="Select Field" class="t-button t-button-icon btn-Move" onclick="Listbox_Move('lstSelectedFields','down')"><i class="fa fa-angle-double-down"></i></button>
+
+                        </td>
+                        <td style="width: 230px;">
+                            @{
+                                var rolelist1 = selectedsField;
+                            }
+                            @Html.ListBox("lstSelectedFields", new SelectList(selectedsField,"Value","Text"), new { style = "height:250px;width:100%" })
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id="issueDetails">
+                            <span id="noneSelected" style="color: red;"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"><div id="SelectedApprovals"></div></td>
+                    </tr>
+                    @Html.Hidden("hdSelectedItems")
+                    @Html.Hidden("hdNonSelectedItems")
+
+                </table>
+            </div>
+            <div class="col-xl-12 text-right add-action-btns">
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Save").Name("loginButton").HtmlAttributes(new { type="submit", onclick="return addItemsToHiddenFields();" })
+                @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="loadIndexPage('ImportFormat')" })
+            </div>
+           
+            </div>
+        </div>
+}
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("Import Template Edit");
+     //   storevalueinHidden();
+        
+    });
+    function addItemsToHiddenFields() {
+
+        var flag = true;
+        $("#FormatExtension").val(".xls");
+        if (!$("#TamplateName").val()) {
+            flag = false;
+            if ($("#validateTemplate").val() != "") {
+                $("#errTemplateName").after('<span style="color:red;font-weight:normal;" id="validateTemplate">@Language.GetString("Template Name is Required")</span>');
+            }
+        }
+        else {
+            $("#validateTemplate").remove();
+        }
+        $("#FormatPath").val($("#TamplateName").val());
+        var lst = document.getElementById("lstSelectedFields");
+
+        if (lst.options.length <= 0) {
+            $('#noneSelected').html('Select Any One Field');
+        }
+        else {
+            $('#noneSelected').html('');
+        }
+        if (flag) {
+            if (lst.options.length <= 0) {
+
+                flag = false;
+                $('#noneSelected').html('Please Select any master');
+
+            } else {
+
+                var hidText = document.getElementById("hdSelectedItems");
+                var hid = document.getElementById("hdSelectedItemsIDS");
+
+                if (lst.options.length > 0) {
+                    hidText.value = "";
+                    hid.value = "";
+                    for (i = 0; i < lst.options.length; i++) {
+                        hidText.value += lst.options[i].text + ",";
+                        hid.value += lst.options[i].value + ",";
+                    }
+                }
+
+                $.ajax({
+
+                    url: "/DataService/GetMandatoryCount",
+                    dataType: "json",
+                    cache: false,
+                    type: 'GET',
+                    async: false,
+                    data: { entityName: $('#EntityID').val(), type: $("#ImportTemplateTypeID").val() },
+                    success: function (result) {
+                        if (result.Success) {
+                            var selected = result.mandatoryCnt;
+                            var dynamicSelected = result.dynamicMandatoryCnt;
+
+                            $.ajax({
+                                url: "/DataService/GetSelectMandatoryCount",
+                                dataType: "json",
+                                cache: false,
+                                type: 'GET',
+                                async: false,
+                                data: { IDs: hid.value, type: $("#ImportTemplateTypeID").val(), entityName: $('#EntityID').val() },
+                                success: function (result) {
+
+                                    if (result.Success) {
+                                        var cnt = result.cnt;
+                                        if ((selected + dynamicSelected) == parseInt(cnt)) {
+                                            $('#noneSelected').html('');
+                                            flag = true;
+                                        }
+                                        else {
+                                            $('#noneSelected').html('Please Select All Mandatory Fields');
+
+
+                                            flag = false;
+
+                                        }
+                                    }
+                                }
+                            });
+
+                        }
+                    }
+                });
+
+            }
+        }
+        if (flag) {
+            return true;
+        }
+        else {
+            return false;
+        }
+
+    }
+</script>
+<script src="~/acsscript/common.js"></script>

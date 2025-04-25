@@ -1,0 +1,31 @@
+﻿<script src="~/ACSScript/Common.js"></script>
+<script>
+    @{
+        if (ViewData.ContainsKey("CancelGridPopUp"))
+        {
+            string url = ViewData["Url"] + "";
+
+            <text>
+                CancelGridPopUp('@url');
+          </text>
+        }
+        if (ViewData.ContainsKey("Exception"))
+         {
+             if (ViewData.ContainsKey("details"))
+             {
+                  if (ViewData.ContainsKey("Message"))
+                     {
+                        string message = ViewData["Message"] + "";
+                         <text>
+                            showSuccessMessage('@message');
+                         </text>
+                     }
+                <text>
+                loadDefaultPage('@ViewData["URL"]');
+                </text>
+             }
+         }
+
+    }
+
+</script>

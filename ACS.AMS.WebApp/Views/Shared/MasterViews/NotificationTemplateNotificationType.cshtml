@@ -1,0 +1,39 @@
+﻿@model string 
+@{
+    int ID = Model != null ? Convert.ToInt32(Model) : 0;
+}
+<ul class="fieldlist tkt-crt-prty">
+    @Html.Hidden("NotificationTypeID",Model)
+    @{
+        AMSContext _db = AMSContext.CreateNewContext();
+        var NotificationType = NotificationTypeTable.GetAllItems(_db);
+        var NotificationTemplateType = NotificationTemplateNotificationTypeTable.GetAllNotificationTemplateTypebyNotificationTemplateID(_db, ID).ToList();
+    }
+    @if (NotificationType.Count() > 0)
+    {
+        foreach (NotificationTypeTable it in NotificationType)
+        {
+            var available = false;
+            if (NotificationTemplateType.Count() != 0)
+                available=NotificationTemplateType.Any(c => c.NotificationTypeID == it.NotificationTypeID);
+
+            if (available)
+            {
+                <input type="checkbox" name="NotificationType" checked="checked" id="NotificationType_@it.NotificationTypeID" value="@it.NotificationTypeID">
+
+                <label for="NotificationType_@it.NotificationTypeID">@it.NotificationType </label>
+
+            }
+            else
+            {
+                <input type="checkbox" name="NotificationType" id="NotificationType_@it.NotificationTypeID" value="@it.NotificationTypeID">
+
+                <label for="NotificationType_@it.NotificationTypeID">@it.NotificationType </label>
+            }
+
+
+        }
+    }
+
+</ul>
+

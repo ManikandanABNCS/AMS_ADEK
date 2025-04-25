@@ -1,0 +1,160 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+
+@model BasePageModel
+@{
+    ViewBag.Title = "Edit";
+    EntryPageHelper entryPage = new EntryPageHelper(Model)
+            {
+                AddControlsInSingleColumnForLessItems = false
+            };
+
+    TransactionTable transactionTable = Model.EntityInstance as TransactionTable;
+}
+
+    @using (Html.AjaxBeginForm("Details", "AMCSchedule", DisplayHelper.GetAjaxOptions()))
+    {
+    @Html.Hidden("PageName", Model.PageName)
+    @Html.Hidden("primaryKeyID", Model.EntityInstance.GetPrimaryKeyValue())
+    @Html.Hidden(Model.EntityInstance.GetPrimaryKeyFieldName(), Model.EntityInstance.GetPrimaryKeyValue())
+
+    <div class="list-container">
+           @(Html.Kendo().TabStrip()
+                .Name("TabStrip").SelectedIndex(0).HtmlAttributes(new { style = "width:100%;" })
+                .Items(tabstrip =>
+                {
+                    tabstrip.Add().Text("AMC").HtmlAttributes(new { })
+
+                .Content(
+                @<text>
+        <div class="row k-text-error">
+            @Html.ValidationMessage("12")
+        </div>
+
+     
+        @{
+            entryPage.CreatePageControls(Html, this, true);
+        }
+        <div class="row" style="padding-top:12px">
+            <div class="col-xl-12">
+                @(Html.Kendo().Grid<TransactionLineItemModel>()
+                .Name("DetailsGrid")
+                    .Columns(columns =>
+                    {
+                    columns.Bound(p => p.AssetCode).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("AssetCode"));
+                    columns.Bound(p => p.Barcode).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Barcode"));
+                        columns.Bound(p => p.CategoryHierarchy).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("CategoryHierarchy"));
+                        columns.Bound(p => p.AssetDescription).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("AssetDescription"));
+                        columns.Bound(p => p.LocationHierarchy).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("LocationHierarchy"));
+                        columns.Bound(p => p.LocationType).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("LocationType"));
+
+                    })
+                    .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                    {
+                        o.ForString(t => t
+                        .Clear()
+                        .Contains("Contains")
+                        .DoesNotContain("Does Not Contains")
+                        .IsEqualTo("Equal To")
+                        .IsNotEqualTo("Not EqualTo")
+                        .StartsWith("Starts With")
+                        .EndsWith("Ends With")
+                        );
+                    })
+                    )
+                    .Sortable().Selectable()
+                    .Pageable()
+
+                    .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+                    .DataSource(datasource => datasource
+                    .Ajax()
+                    .Read(read => read.Action("_LineItemindex", "AMCSchedule", new { currentPageID = ViewBag.CurrentPageID }))
+                    ))
+            </div>
+        </div>
+        <div class="col-12 text-right add-action-btns" id="nextDiv" style="padding-top:15px">
+
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton1").HtmlAttributes(new { @class = "saveButton", onclick="return clickoneNext(event);" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton2").HtmlAttributes(new {@class = "cancelButton", onclick = $"LoadIndexPage('AMCSchedule','{Model.PageName}')" })
+        </div>
+
+        </text>);
+                tabstrip.Add().Text("Activity").HtmlAttributes(new { })
+                .Content(
+        @<text>
+        <div class="row" style="padding-top:10px">
+            <div class="col-xl-12">
+              
+
+                @(Html.Kendo().Grid<TransactionScheduleModel>()
+                .Name("ActivityDetailGrid")
+                .Columns(columns =>
+                {
+                columns.Bound(p => p.ID).Width(100).Visible(false);
+                columns.Bound(p => p.ID).Width(20).Filterable(false)
+                .ClientTemplate("<input type='checkbox' id=='#=ID#' value='#=ID#' onclick='enableGridLineItemRow(this)' class='GridLineItemGridClass' />")
+                .ClientHeaderTemplate("<input id='selectAllLineItemID' name='selectAllLineItemID' type='checkbox' onclick='selectAllGridLineItemClicked(this)'  />")
+                .HeaderHtmlAttributes(new { @style = "font-weight:bold; text-align: lieft" })
+                .Sortable(false).Filterable(false);
+                columns.Bound(p => p.TransactionScheduleID).Width(100).Visible(false);
+                columns.Bound(p => p.Activity).Width(200).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Activity"));
+                columns.Bound(p => p.ActivityStartDate).Width(200).Format("{0:" + CultureHelper.ConfigureDateFormat + "}").HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ActivityStartDate"));
+                columns.Bound(p => p.ActivityEndDate).Width(100).Format("{0:" + CultureHelper.ConfigureDateFormat + "}").HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("ActivityEndDate"));
+                })
+                .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                {
+                o.ForString(t => t.Clear().Contains("Contains").DoesNotContain("Does Not Contains").IsEqualTo("Equal To")
+                .IsNotEqualTo("Not EqualTo").StartsWith("Starts With").EndsWith("Ends With"));
+                })
+                )
+               
+                .Sortable().Selectable()
+                .Pageable()
+                .DataSource(datasource => datasource.Ajax()
+                .Model(model =>
+                {
+                model.Id(p => p.ID);
+                model.Field(p => p.ID).Editable(false);
+                })
+                .Read(read => read.Action("_ActivityLineItemindex", "AMCSchedule", new { currentPageID = ViewBag.CurrentPageID })
+
+                )
+                ))
+            </div>
+        </div>
+        <div class="col-12 text-right add-action-btns" id="nextDiv" style="padding-top:15px">
+
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Next").Name("saveButton2").HtmlAttributes(new { @class = "saveButton", onclick="return clickoneNext(event);" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton3").HtmlAttributes(new { @class = "cancelButton",onclick = $"LoadIndexPage('AMCSchedule','{Model.PageName}')" })
+        </div>
+    </text>);
+                }))
+        <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick = $"LoadIndexPage('AMCSchedule','{Model.PageName}')" })
+        </div>
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                Html.RenderPartial("BaseViews/AuditLogSingleView", Model);
+            }
+        </div>
+    </div>
+
+}
+
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading('Details @Language.GetPageTitle(Model.PageTitle)');
+        setInitialFocus('@entryPage.FirstFieldName');
+        $("#TabStrip").data("kendoTabStrip").select(0);
+    });
+
+</script>

@@ -1,0 +1,84 @@
+﻿@model string
+
+@* <form asp-action="ShowStaticReport" target="_blank"> *@
+@using (Html.AjaxBeginForm("ShowStaticReport", "ShowReport", DisplayHelper.GetAjaxOptions(), new { target = "_blank" }))
+    {
+    @Html.Hidden("ReportName", Model)
+    @Html.Hidden("RPARAM_CompanyID", "1003")
+    @Html.Hidden("RPARAM_LanguageID", "1")
+    @Html.Hidden("RPARAM_UserID", SessionUser.Current.UserID)
+
+
+
+<div class="list-container">
+    <div class="row k-text-error">
+        @* @Html.ValidationSummary()*@
+        @Html.ValidationMessage("12")
+    </div>
+        @if ("LaundryBillReport" == Model)
+        {
+            <div class="col-xl-3">
+                <label for="fullname"> @Html.FieldLabel("WorkOrder",true)</label>
+                @(
+                    Html.Kendo().MultiColumnComboBox()
+                            .Name("RPARAM_WorkOrderID")
+                                .DataTextField("DisplayValue")
+                                .DataValueField("WorkOrderID")
+                                .HtmlAttributes(new { style = "width:100%; text-transform: uppercase;", Class = "k-textbox" })
+                                .Columns(columns =>
+                                {
+                                    columns.Add().Field("WorkOrderNo").Title("WorkOrderNo").Width("250px");
+                                    columns.Add().Field("LaundryVendor").Title("LaundryVendor").Width("250px");
+                                })
+                                .Enable(true)
+                                .AutoBind(true)
+                                .Filter(FilterType.Contains)
+                                .HighlightFirst(true)
+                                .Suggest(true)
+                                .DataSource(source =>
+                                {
+                                    source.Read(read =>
+                                    {
+                                        read.Action("GetWorkOrderMultiComboBox", "DataService");
+                                    })
+                                    .ServerFiltering(true);
+                                })
+                    )
+                <div id="errDepartment"></div>
+        </div>
+        }
+        <div class="row">
+            <div class="col-xl-3">
+                <label for="fullname"> @Html.FieldLabel("FromDate", true)</label>
+                @(Html.Kendo().DatePicker().Name("RPARAM_FromDate"))
+                <div id="errFromDate"></div>
+            </div>
+            <div class="col-xl-3">
+                <label for="fullname"> @Html.FieldLabel("ToDate", true)</label>
+                @(Html.Kendo().DatePicker().Name("RPARAM_ToDate"))
+                <div id="errToDate"></div>
+            </div>
+            <div class="col-xl-3">
+                <label for="fullname"> @Html.FieldLabel("EntityName", true)</label>
+                @(Html.Kendo().DropDownList()
+                    .Name("RPARAM_ActionName")
+                    .OptionLabel("Select")
+                    .BindTo(ComboBoxHelper.GetDynamciReportEntity())
+                    //.HtmlAttributes(new { style = "width:200px" })
+                    )
+                <div id="errEntityName"></div>
+            </div>
+        </div>
+    <div class="col-xl-12 text-right add-action-btns">
+        @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Show Report").Name("showReportButton").HtmlAttributes(new { type="submit", style="width: 150px;" })
+        @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Reset").Name("resetButton").HtmlAttributes(new { type="reset" })
+    </div>
+
+</div>
+}
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("@Language.GetPageTitle(Model)");
+    });
+
+</script>

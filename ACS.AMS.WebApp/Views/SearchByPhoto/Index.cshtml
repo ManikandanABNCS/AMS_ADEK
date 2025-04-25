@@ -1,0 +1,93 @@
+﻿@using ACS.AMS.DAL.DBModel;
+@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+   
+}
+<script>
+    // Send the dates for the newly creted/updated tasks as UTC strings
+  
+    function OnSearch(e) {
+        var tr = $(e.currentTarget).closest("tr");
+        var dataItem = $("#treelist").data("kendoTreeList").dataItem(tr);
+        if (dataItem) {
+            loadContentPageToControl("/MasterPage/CatalogueListView/" + dataItem.CategoryID, "workingArea");
+        }
+    }
+   
+  
+</script>
+<script id="photo-template" type="text/x-kendo-template">
+    <div class='employee-photo'
+         style='background-image: url(@Url.Content("~/#: CatalogueImage #"));'></div>
+   
+</script>
+<style>
+    .employee-photo {
+        display: inline-block;
+        width: 150px;
+        height: 100px;
+        background-size: cover;
+        background-position: center;
+       
+      
+      
+    }
+
+</style>
+<form  method="POST" id="form">
+    
+<div class="list-container">
+
+
+    <div class="row">
+                @(
+                Html.Kendo().TreeList<CategoryListView>()
+                    .Name("treelist")
+                    .Columns(columns =>
+                    {
+
+                    columns.Add().Field(a => a.CategoryCode).Title(Language.GetString("CategoryCode")).Sortable(true).Width(100);
+                    columns.Add().Field(a => a.CategoryName).Title(Language.GetString("CategoryName")).Sortable(true).Width(150).HtmlAttributes(new { @class = "text-ellipsis" });
+                    columns.Add().Field(a => a.ParentCategory).Title(Language.GetString("ParentCategory")).Sortable(true).Width(200).HtmlAttributes(new { @class = "text-ellipsis" });
+                   
+                    columns.Add().Field(a => a.Status).Title(Language.GetString("Status")).Sortable(true).Width(100);
+                        columns.Add().Width(100).Title("Actions").Command(c =>
+                        {
+                        c.Custom().Name("Product Catalogue").Text("Product Catalogue").Click("OnSearch");
+                      
+                        });           })
+                    
+                   
+                        .Filterable()
+                        .Sortable()
+                        .DataSource(dataSource => dataSource
+                                    .Read(read => read.Action("_TreeIndex", "SearchByPhoto"))
+                        .ServerOperation(false)
+                        .Model(m =>
+                        {
+                            m.Id(f => f.CategoryID);
+                            m.ParentId(f => f.ParentCategoryID);
+                            m.Expanded(true);
+                        
+                        })
+                        )
+                      //  .Events(e => { e.Change("OnEdit"); })
+                        .Height(540)
+                        .Pageable(p => p.PageSize(10)
+                        .PageSizes(true)
+                    )
+                )
+        </div>
+
+        <div class="clearfix"></div>
+</div>
+</form>
+<script>
+    $(function () {
+        setPageHeading("@Language.GetPageTitle("Search By Photo") ");
+       });
+
+   
+   
+</script>

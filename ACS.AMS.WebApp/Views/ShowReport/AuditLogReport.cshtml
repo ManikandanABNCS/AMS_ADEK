@@ -1,0 +1,105 @@
+﻿@model string
+
+@* <form asp-action="ShowStaticReport" target="_blank"> *@
+@* @using (Html.AjaxBeginForm("ShowAuditReport", "ShowReport", DisplayHelper.GetAjaxOptions(), new { target = "_blank" })) *@
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+    @Html.Hidden("ReportName", "AuditLogReport")
+    @Html.Hidden("RPARAM_CompanyID", "1003")
+    @Html.Hidden("RPARAM_LanguageID", "1")
+    @Html.Hidden("RPARAM_UserID", SessionUser.Current.UserID)
+
+
+
+
+<div class="list-container">
+    <div class="row k-text-error">
+        @* @Html.ValidationSummary()*@
+        @Html.ValidationMessage("12")
+    </div>
+       <div class="row">
+            <div class="col-xl-3">
+                <label for="fullname"> @Html.FieldLabel("FromDate",true)</label>
+                @(Html.Kendo().DatePicker().Name("RPARAM_FromDate"))
+                <div id="errFromDate"></div>
+        </div>
+        <div class="col-xl-3">
+            <label for="fullname"> @Html.FieldLabel("ToDate", true)</label>
+                @(Html.Kendo().DatePicker().Name("RPARAM_ToDate"))
+            <div id="errToDate"></div>
+        </div>
+        <div class="col-xl-3">
+                <label for="fullname"> @Html.FieldLabel("EntityName", true)</label>
+            @(Html.Kendo().DropDownList()
+                    .Name("RPARAM_ActionName")
+                .OptionLabel("Select")
+                .BindTo(ComboBoxHelper.GetDynamciReportEntity())
+                //.HtmlAttributes(new { style = "width:200px" })
+                )
+            <div id="errEntityName"></div>
+        </div>
+        </div>
+    <div class="col-xl-12 text-right add-action-btns">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Show Report").Name("showReportButton").HtmlAttributes(new { type = "button", style = "width: 150px;", onclick = "return ShowValidateReport();" })
+        @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Reset").Name("resetButton").HtmlAttributes(new { type="reset" })
+    </div>
+
+</div>
+}
+<script language="javascript" type="text/javascript">
+    $(function () {
+        setPageHeading("Audit Log Report");
+    });
+    function ShowValidateReport() {
+        var flag = true;
+        var from = $("#RPARAM_FromDate").val();
+        if (!from) {
+            flag = false;
+            if ($("#validateFrom").val() != "") {
+                $("#errFromDate").after('<span style="color:red;font-weight:normal;" id="validateFrom">Please Select From Date</span>');
+            }
+        }
+        else {
+            $("#validateFrom").remove();
+        }
+        var to = $("#RPARAM_ToDate").val();
+        if (!to) {
+            flag = false;
+            if ($("#validateTo").val() != "") {
+                $("#errToDate").after('<span style="color:red;font-weight:normal;" id="validateTo">Please Select To Date</span>');
+            }
+        }
+        else {
+            $("#validateTo").remove();
+        }
+        var action = $("#RPARAM_ActionName").val();
+        if (!action) {
+            flag = false;
+            if ($("#validateaction").val() != "") {
+                $("#errEntityName").after('<span style="color:red;font-weight:normal;" id="validateaction">Please Select Action Name</span>');
+            }
+        }
+        else {
+            $("#validateaction").remove();
+        }
+        if (flag) {
+            var params = {
+                fromDate: $("#RPARAM_FromDate").val(),
+                toDate: $("#RPARAM_ToDate").val(),
+                actionName: $("#RPARAM_ActionName").val(),
+                companyID: $("#RPARAM_CompanyID").val(),
+                userID: $("#RPARAM_UserID").val(),
+                LanguageID: $("#RPARAM_LanguageID").val(),
+                reportName: $("#ReportName").val()
+
+            };
+            var url = '/ShowReport/ShowAuditReport?' + jQuery.param(params);
+            window.open(url);
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+</script>

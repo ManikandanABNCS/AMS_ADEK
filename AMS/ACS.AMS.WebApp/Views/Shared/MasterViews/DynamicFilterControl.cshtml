@@ -1,0 +1,14 @@
+﻿@model ACS.AMS.WebApp.Models.ScreenControlViewModel
+
+@{
+    var ctrl = DisplayHelper.CreateMultiColumnComboBox(Html, Model);
+    ctrl.Render();
+
+    if (Model.Value != null)
+    {
+        ctrl.AutoBind(true);
+    }
+
+}
+
+

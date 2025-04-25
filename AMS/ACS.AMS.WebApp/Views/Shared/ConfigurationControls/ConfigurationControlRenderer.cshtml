@@ -1,0 +1,194 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+
+@using Kendo.Mvc.UI
+@using Microsoft.AspNetCore.Hosting;
+@using Microsoft.AspNetCore.Http;
+@using Microsoft.AspNetCore.Mvc;
+@using System.IO;
+
+@model ConfigurationTable
+
+@{
+    var lbl = Model.ConfiguarationName;
+    var name = "Config_" + Model.ConfigurationID;
+
+    decimal max = 100000, min = -100000;
+    if (Model.MinValue.HasValue)
+    {
+        min = Model.MinValue.Value;
+    }
+    if (Model.MaxValue.HasValue)
+    {
+        max = Model.MaxValue.Value;
+    }
+    if (min > max)
+    {
+        min = max;
+    }
+
+    switch (Model.DataType.ToUpper())
+    {
+        case "Label":
+            {
+                Html.Label(name);
+
+                break;
+            }
+        case "PICTURE":
+            {
+                Html.Kendo().Upload()
+         .Name("attachments")
+                             .Async(async => async
+                                        .Save("SaveConfigurationImages", "Configuration")
+                                        .Remove("Remove", "Configuration")
+                                    ).Multiple(false).Render();
+                // HttpContext.
+                // Response.write("<img id='companyImage' src='" + Model.ConfiguarationValue + "' alt='No Image' width='100%' height='auto' />");
+
+                break;
+            }
+        case "CURRENCY":
+            {
+                Html.Kendo().CurrencyTextBox().Name(name)
+
+                    .HtmlAttributes(new { @style = "width:100%", @maxlength = 8 })
+
+                    .Min(min).Max(max).Render();
+                break;
+            }
+        case "BOOLEAN":
+            {
+                if (Model.ConfiguarationValue=="true")
+                {
+                    Html.Kendo().CheckBox().Name(name).HtmlAttributes(new { @checked="checked" }).Render();
+                }
+                else{
+                    Html.Kendo().CheckBox().Name(name).HtmlAttributes(new {  }).Render();
+                }
+
+                break;
+            }
+        case "DROPDOWN":
+            {
+                string[] itms = Model.DropDownValue.Split(' ');
+                for (int i = 0; i < itms.Length; i++)
+                    itms[i] = itms[i].Trim();
+
+
+                    Html.Kendo().DropDownList()
+                        .Name(name)
+                        .BindTo(new SelectList(itms))
+                        .Value(Model.ConfiguarationValue)
+                        .HtmlAttributes(new { @class = "form-control", maxlength = max, @style = "width:100%", })
+                        .Render();
+                
+                break;
+            }
+
+        case "NUMERIC":
+        case "NUMBER":
+            {
+                Html.Kendo().IntegerTextBox().Name(name)
+                    .HtmlAttributes(new { @class = "form-control", @style = "width:100%", @maxlength = 4 })
+                    .Value(Int32.Parse(Model.ConfiguarationValue))
+                    .Min((Int32)min).Max((Int32)max).Render();
+                break;
+            }
+
+        case "FLOAT":
+        case "DECIMAL":
+            {
+                Html.Kendo().NumericTextBox().Name(name)
+                    .HtmlAttributes(new { @class = "form-control", @style = "width:100%", @maxlength = 4 })
+                    .Value(double.Parse(Model.ConfiguarationValue))
+                    .Step(0.5)
+                    .Min((double)min).Max((double)max).Render();
+                break;
+            }
+
+        case "PERCENTAGE":
+            {
+                //Allow only in between 1 to 100
+                min = Math.Min(100, min); min = Math.Max(0, min);
+                max = Math.Min(100, max); max = Math.Max(0, max);
+
+                Html.Kendo().PercentTextBox().Name(name)
+                    .HtmlAttributes(new { @style = "width:100%", @maxlength = 4 })
+                    .Value(Double.Parse(Model.ConfiguarationValue))
+                    .Min((double)min).Max((double)max).Render();
+                break;
+            }
+
+        case "STRING":
+            @Html.Kendo().TextBox().Name(name).Value(Model.ConfiguarationValue).HtmlAttributes( new { @class = "k-textbox", maxlength = max, @style = "width:100%", })
+            //Response.Write(Html.TextBox(name, Model.ConfiguarationValue, new { @class = "form-control", maxlength = max, @style = "width:100%", }).ToHtmlString());
+            break;
+
+        case "MULTILINESTRING":
+        case "MULTILINE":
+            {
+               @Html.Kendo().TextArea().Name(name).Value(Model.ConfiguarationValue).HtmlAttributes( new { @class = "k-textbox",rows=3 ,@style = "width:100%", })
+                break;
+            }
+        case "PASSWORD":
+            {
+               @Html.Kendo().TextBox().Name(name).Value( Model.ConfiguarationValue).HtmlAttributes( new { @class = "k-textbox", @style = "width:100%",type = "password" })
+                //Response.Write("</td></tr><tr><td class='editor-label'>" + Html.Label("Confirm " + lbl).ToHtmlString() + " </td><td class='editor-field'>");
+                //if (ViewData.ContainsKey("Confirmpassword"))
+                //{
+                //    Response.Write(Html.Password(name + "_Confirm", ViewData.ContainsKey("Confirmpassword"), new { @class = "form-control", @style = "width:100%", }).ToHtmlString());
+                //}
+                //else
+                //{
+                //    Response.Write(Html.Password(name + "_Confirm", Model.ConfiguarationValue, new { @class = "form-control", @style = "width:100%", }).ToHtmlString());
+                //}
+                break;
+            }
+        case "MULTISELECT":
+            {
+                int chk;
+                int[] numbers = new int[] { };
+                bool res = int.TryParse(Model.DefaultValue, out chk);
+                if (!res)
+                {
+                    Model.DefaultValue = "0";
+                }
+                if (!string.IsNullOrEmpty(Model.ConfiguarationValue))
+                {
+                    string[] itms = Model.ConfiguarationValue.Split(',');
+                    numbers = new int[itms.Length];
+                    for (int i = 0; i < itms.Length; i++)
+                    {
+                        numbers[i] = (int.Parse(itms[i].Trim()));
+                    }
+
+                }
+                Html.Kendo().MultiSelect()
+                     .Name(name)
+                     .BindTo(ComboBoxHelper.GetAllConfigurationValue(Int32.Parse(Model.DefaultValue)))
+                     .Value(numbers)
+                      .HtmlAttributes(new { @style = "width:400px !important" })
+                      .Render();
+                break;
+            }
+        case "DATE":
+            {
+                Html.Kendo().DatePicker()
+                    .Name(name)
+                    .HtmlAttributes(new { style = "width:100%" })
+                    .Value(Model.ConfiguarationValue).Render();
+                break;
+            }
+
+            //case "EMAILID":
+            //    Response.Write(Html.TextBox(name, Model.ConfiguarationValue).ToHtmlString());
+            //    break;
+
+            //case "EMAILIDS":
+            //    Response.Write(Html.TextArea(name, Model.ConfiguarationValue, 2, 35, null).ToHtmlString());
+            //    break;
+
+    }
+}
+

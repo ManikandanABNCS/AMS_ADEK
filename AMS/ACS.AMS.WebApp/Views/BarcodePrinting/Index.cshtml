@@ -1,0 +1,93 @@
+﻿@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+
+}
+@using (Html.AjaxBeginForm("Index","BarcodePrinting",DisplayHelper.GetAjaxOptions()))
+    {
+      
+<div class="list-container">
+    <div class="row">
+        <div class="col-xl-3">
+                <label for="fullname">@Html.FieldLabel("Label Format", true)</label> :
+                 @(Html.Kendo().DropDownList().Name("FormatID").HtmlAttributes(new { Class = "k-textbox", style = "width: 100%;" })
+                                    .BindTo(ComboBoxHelper.GetLabelFormat(AMSContext.CreateNewContext())).OptionLabel("Select"))
+                <div id="errFormatID"></div>
+
+                
+            </div>
+             <div class="col-xl-3 text-right add-action-btns">
+                        @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("PrintBarcode").Name("AddButton").HtmlAttributes(new { onclick="return onPrintform();" })
+                        </div>
+    </div>
+
+   <div class="row">
+           @{
+              @Html.Hidden("CurrentPageID", Model.EntityInstance.CurrentPageID)
+               @Html.Hidden("ItemID")
+            DisplayHelper display = new DisplayHelper(this, "BarcodePrinting", "AssetID");
+
+            var gridCtrl = Html.Kendo().Grid<dynamic>()
+            .Name("DetailsGrid");
+
+            display.AddGridActionColumns(gridCtrl, Url, "BarcodePrinting", RightNames.Asset, addDeleteColumn: false, addEditColumn: false, addDetailsColumn: false);
+                display.ConfigureGrid(gridCtrl, readDataHandler: "defaultGridReadWithAdditionPrarm");
+            display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.Asset, addNewButtonRequired: false, exportToCSVButtonRequired: false, exportToPDFButtonRequired: false,exportToExcelButtonRequired:false,addDeleteButtonRequired:false);
+
+            gridCtrl.Render();
+            }
+            <div id="errGrid"></div>
+       
+    </div>
+</div>
+
+}
+
+
+<script>
+    $(function () {
+        setPageHeading("Barcode Printing");
+    });
+    function onPrintform()
+    {
+         var flag = true;
+           var result = $("#FormatID").val();
+            if (!$("#FormatID").val()) {
+            if ($("#validateFormat").val() != "") {
+                $("#errFormatID").after('<span style="color:red;font-weight:normal;" id="validateFormat">@Language.GetString("Barcode Format is Required")</span>');
+            }
+            flag = false;
+        }
+        else {
+            $("#validateFormat").remove();
+        }
+
+        if (ItemIds.length == 0) {
+            flag = false;
+            if ($("#validateSelectedRole").val() != "") {
+                $("#errGrid").after('<span style="color:red;font-weight:normal;" id="validateSelectedRole">@Language.GetString("Please Select any one Assets")</span>');
+            }
+        }
+        else {  
+            $("#ItemID").val(ItemIds);
+        }
+
+        if(flag)
+        {
+             $.ajax({
+                url: "/BarcodePrinting/Index",
+                type: "POST",
+                dataType: "json",
+                async: false,
+                data: { formatID: result, ids: ItemIds},
+                success: function (data) {
+                    
+                        loadDefaultPage("/BarcodePrinting/Index");
+                        CallPrint(data.rawData);
+                   
+                }
+    });
+        }
+        return false;
+    }
+</script>

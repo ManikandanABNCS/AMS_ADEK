@@ -1,0 +1,282 @@
+﻿@using ACS.AMS.DAL.DBModel
+@using ACS.AMS.DAL
+@using ACS.AMS.WebApp.Models
+@using ACS.AMS.DAL.DBContext
+@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+    int historyID = ViewBag.historyID;
+    //int historyID = ViewBag.historyID;
+    //string historyno = ViewBag.no;
+    var his = ApprovalHistoryTable.GetItem(AMSContext.CreateNewContext(), historyID);
+    var res = TransactionTable.GetItem(AMSContext.CreateNewContext(), his.TransactionID);
+
+ }
+ <script>
+    function OnSuccessUpload(e) {
+
+
+    }
+    function OnComplete(e) {
+
+    }
+    function OnDisposalSuccessUpload(e) {
+        debugger;
+        var Error = e.response.error;
+        var FilePath = e.response.FilePath;
+        if (Error) {
+            alert(Error);
+            $(".k-upload-files.k-reset").remove();
+            $("#loadingmaskApproval").css("display", "none");
+            e.preventDefault();
+            return;
+        }
+       
+        $("#DetailGrid").data("kendoGrid").dataSource.read();
+        $("#loadingmaskApproval").css("display", "none");
+        
+    }
+    function OnDisposalComplete(e) {
+
+    }
+    
+     function onSelect(e) {         
+        // if (!$("#TransactionNo").data("kendoDropDownList").value()) {
+         if (!$("#TransactionNo").val()) {
+
+             if ($("#validatetranID").val() != "") {
+                 $("#errTransID").after('<span style="color:red;font-weight:normal;" id="validatetranID">@Language.GetString("Please Select the Transaction No")</span>');
+                e.preventDefault();
+             }
+         }
+         else {
+             $("#validatetranID").remove();
+         }
+     }
+     function GridReadDate() { 
+         return {
+            transactionID: $("#TransactionNo").val() //$("#TransactionNo").data("kendoDropDownList").value()
+         }
+     }
+     function FinalApproval(val) {
+         var flag = true;
+        $("#loadingmaskApproval").css("display", "block");
+        if (val == 'Reject') {
+            if ($('#Remarks').val() == '') {
+                if ($("#validateRemarkd").val() != "") {
+                    $("#errremark").after('<span style="color:red;font-weight:normal;" id="validateRemarkd">@Language.GetString("Enter Remarks")</span>');
+                }
+                flag = false;
+            }
+            else {
+                $("#validateRemarkd").remove();
+            }
+        }
+         var grid = $("#DetailGrid").data("kendoGrid");
+         var data = grid.dataSource.data();
+         var totalNumber = data.length;
+         if (totalNumber <= 0) {
+             if ($("#validateGrid").val() != "") {
+                 $("#errGrid").after('<span style="color:red;font-weight:normal;" id="validateGrid">@Language.GetString("Select anyone Asset Details")</span>');
+             }
+             flag = false;
+         }
+         else {
+             $("#validateGrid").remove();
+         }
+         if (flag) {
+             $.ajax({
+                 url: "/AssetTransferFinalApproval/SingleApproval",
+                 type: "POST",
+                 dataType: "json",
+                 async: false,
+                 data: {
+                     type: val,
+                     currentPageID: @Model.EntityInstance.CurrentPageID,
+                     id: $("#TransactionNo").val(),
+                     historyID: $("#ApprovalHistoryID").val(),
+                    remarks: document.getElementById("Remarks").value,
+                 },
+                 success: function (data) {
+                     if (data.Result == "Success") {
+                         showSuccessMessage(data.message);
+                        $("#loadingmaskApproval").css("display", "none");
+                         loadIndexPage('AssetTransferApproval');
+                     }
+                     else {
+                         ShowErrorMesage(data.message);
+                        $("#loadingmaskApproval").css("display", "none");
+                        loadIndexPage('AssetTransferApproval');
+                     }
+                 }
+             });
+         }
+         else {
+             return false;
+            $("#loadingmaskApproval").css("display", "none");
+         }
+     }
+     function ErrorUploadExcel(e)
+     {
+        
+        $(".k-upload-files.k-reset").remove();
+        $("#loadingmaskApproval").css("display", "none");
+        alert(e.XMLHttpRequest.response);
+     }
+    function OnDisposalUpload(e)
+    {
+        $("#loadingmaskApproval").css("display", "block");
+    }
+     </script>
+
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+    <div class="list-container">
+        <div class="row k-text-error">
+            
+            @Html.ValidationMessage("12")
+        </div>
+
+        <div class="row">
+            <div class="col-xl-4">
+                
+                <label for="fullname">@Html.FieldLabel("TransactionNo", true)</label>
+                @(Html.TextBox("TransactionsNo", res.TransactionNo, new { Class = "form-control", disabled = "disabled" }))
+                @(Html.Hidden("TransactionNo",res.TransactionID))
+                @(Html.Hidden("ApprovalHistoryID", historyID))
+               @*  @(Html.Kendo().DropDownList()
+                    .Name("TransactionNo")
+                    .HtmlAttributes(new { style = "width:200px!important " })
+
+                    .BindTo(ComboBoxHelper.GetFinalTransferLevelDetils(AMSContext.CreateNewContext(), SessionUser.Current.UserID, ""))
+                    .OptionLabel("Select Transaction No")
+
+                    ) *@
+                    <div id="errTransID"></div>
+            </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Attachment", false)</label>
+                @(
+                    Html.Kendo().Upload()
+                    .Name("UploadDoc")
+                    .Async(a => a
+                    .Save("DocumentUpload", "AssetTransferFinalApproval", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                    .Remove("DocumentRemove", "AssetTransferFinalApproval", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                    .AutoUpload(true)
+                    ).Multiple(true)
+
+                 .Events(events => events
+                    //.Select("onSelect")
+
+                    .Success("OnSuccessUpload").Complete("OnComplete")
+                    )
+
+                    .Validation(validation => validation
+                    .AllowedExtensions(".txt", ".doc", ".docx", ".pdf", ".xls", ".xlsx")
+                    //  .MaxFileSize(maxFileSize)
+                    )
+                    )
+            </div>
+            <div class="col-xl-4">
+                <label for="fullname">@Html.FieldLabel("Upload Transfer Values", true)</label>
+                @(
+                    Html.Kendo().Upload()
+                    .Name("fileNames")
+                    .Async(a => a
+                    .Save("DisposalDocUpload", "AssetTransferFinalApproval", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                    .Remove("DisposalDocRemove", "AssetTransferFinalApproval", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                    .AutoUpload(true)
+                    ).Multiple(true)
+
+                    .Events(events => events
+                    .Select("onSelect")
+
+                    .Success("OnDisposalSuccessUpload").Complete("OnDisposalComplete").Upload("OnDisposalUpload")
+                   .Error("ErrorUploadExcel")
+                    .Upload(
+
+                        @<text>
+                    function(e) {
+                       // e.data = { transactionID: $("#TransactionNo").data("kendoDropDownList").value() };
+                        e.data = { transactionID: $("#TransactionNo").val() };
+                        }
+                    </text>
+                    )
+                    )
+                    
+
+                    .Validation(validation => validation
+                    .AllowedExtensions(".xls", ".xlsx")
+                    //  .MaxFileSize(maxFileSize)
+                    )
+                    )
+                @Html.ActionLink("Download Transfer Value Format", "DownloadFile", new { fileName = "UploadFinalTransferAsset.xls" })
+            </div>
+        </div>
+
+
+        <div class="row" style="padding-top:10px">
+            <div class="col-xl-12">
+                @(Html.Kendo().Grid<AssetTable>()
+                    .Name("DetailGrid")
+                    .Columns(columns =>
+                    {
+
+                    columns.Bound(p => p.Barcode).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("Barcode"));
+
+                    columns.Bound(p => p.AssetDescription).Width(100).HeaderHtmlAttributes(new { @style = "font-weight:bold" }).Title(@Language.GetString("AssetDescription"));
+                       
+                       
+
+                    })
+
+                    .Filterable(filtering => filtering.Enabled(true).Operators(o =>
+                    {
+                        o.ForString(t => t
+                        .Clear()
+                        .Contains("Contains")
+                        .DoesNotContain("Does Not Contains")
+                        .IsEqualTo("Equal To")
+                        .IsNotEqualTo("Not EqualTo")
+                        .StartsWith("Starts With")
+                        .EndsWith("Ends With")
+                        );
+                    })
+                    )
+                    .Sortable().Selectable()
+                    .Pageable()
+
+                    .Editable(editable => editable.Mode(GridEditMode.PopUp).DisplayDeleteConfirmation(false))
+                    .DataSource(datasource => datasource
+                    .Ajax()
+                    .Read(read => read.Action("_LineItemindex", "AssetTransferFinalApproval", new { id = Model.EntityInstance.CurrentPageID }).Data("GridReadDate"))
+
+                    ))
+                    <div id="errGrid"></div>
+            </div>
+
+        </div>
+        <div class="row" style="padding-top:10px">
+            <div class="col-xl-6">
+                <label class="fieldlabel"> Remarks :</label>
+                @Html.TextArea("Remarks", "", 5, 50, new { @class = "k-textbox form-control", style = "width: 594px !important;height:90px; resize:none;", maxlength = 180 })
+            </div>
+            <div id="errremark"></div>
+        </div>
+
+
+        <div class="col-xl-12 text-right add-action-btns" style="padding-top: 10px;">
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Primary).Content("Approve").Name("Approve").HtmlAttributes(new { style="width: 170px;",  onclick="return FinalApproval('Approval')" })
+            @Html.Kendo().Button().ThemeColor(ThemeColor.Secondary).Content("Reject").Name("Reject").HtmlAttributes(new { style="width: 170px;", onclick="return FinalApproval('Reject')" })
+            @Html.Kendo().Button().Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick="loadIndexPage('AssetTransferApproval')" })
+        </div>
+
+    </div>
+}
+<script>
+    $(function () {
+        setPageHeading("Asset Transfer- Update Approval");
+    });
+  
+</script>
+<script src="~/ACSScript/Common.js"></script>

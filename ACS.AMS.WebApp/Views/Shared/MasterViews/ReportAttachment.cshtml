@@ -1,0 +1,8 @@
+﻿@model string 
+
+@(
+        Html.Kendo().DropDownList()
+        .Name("AttachmentFormatID").Value(Model)
+        .OptionLabel("Select AttachmentFormat")
+        .BindTo(ComboBoxHelper.GetAllAttachmentFormat())
+        )

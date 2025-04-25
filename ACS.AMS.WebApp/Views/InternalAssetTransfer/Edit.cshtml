@@ -1,0 +1,451 @@
+﻿@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+    int transactionID = ViewBag.TransactionID;
+    var header = TransactionTable.GetItem(AMSContext.CreateNewContext(), transactionID);
+    var lineitem = TransactionLineItemTable.TransactionLineItems(AMSContext.CreateNewContext(), transactionID).FirstOrDefault();
+    var inidoc = DocumentTable.GetDocumentDetails(AMSContext.CreateNewContext(), transactionID, "AssetTransfer");
+}
+<script>
+    function popupitemSelection() {
+        url = "/PopupItem/Index?currentPageID=" + $("#CurrentPageID").val() + '&sceenName=InternalAssetTransfer';
+        popupItemOpenWindow(url, "Asset Details");
+    }
+    function popupItemOpenWindow(url, titleCon) {
+
+        var wnd = $("#PopupAsset").data("kendoWindow");
+        if (wnd == null)
+            wnd = parent.window.$("#window").data("kendoWindow");
+        wnd.refresh({
+            url: url
+        });
+
+        wnd.center();
+        wnd.open();
+        wnd.title(titleCon);
+    }
+    function onSelect(e) {
+        if (e.files.length > 5) {
+            alert("Please select max 5 files.");
+            e.preventDefault();
+        }
+    }
+    function OnSuccessUpload(e) {
+        
+
+    }
+    function OnComplete(e) {
+     
+    }
+    function OnExcelSuccessUpload(e) { 
+        var Error = e.response.error;
+        var FilePath = e.response.FilePath;
+        if (Error) {
+            alert(Error);
+            $(".k-upload-files.k-reset").remove();
+            e.preventDefault();
+            return;
+        }
+        $("#DetailsGrid").data("kendoGrid").dataSource.read();
+    }
+    function OnExcelComplete(e) {
+
+    }
+    function ErrorUploadExcel(e) {
+        $(".k-upload-files.k-reset").remove();
+        alert(e.XMLHttpRequest.response);
+    }
+    </script>
+@using (Html.AjaxBeginForm(DisplayHelper.GetAjaxOptions()))
+    {
+
+<div class="list-container">
+   
+           <div class="row">
+                <div class="col-xl-4">
+                    <label for="fullname">@Html.FieldLabel("Import Excel", false)</label>
+                    @(
+                        Html.Kendo().Upload()
+                        .Name("fileNames")
+                        .Async(a => a
+                        .Save("ImportUpload", "InternalAssetTransfer", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                        .Remove("ImportRemove", "InternalAssetTransfer", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                        .AutoUpload(true)
+                        ).Multiple(false)
+                        .Events(events => events
+                        .Success("OnExcelSuccessUpload").Complete("OnExcelComplete")
+                        .Error("ErrorUploadExcel")
+                        )
+                        .HtmlAttributes(new { style = "width:300px!important;" })
+                        .Validation(validation => validation
+                        .AllowedExtensions(".xls", ".xlsx")
+
+                        )
+                        )
+                    @Html.ActionLink("Download Format", "DownloadFile", new { fileName = "UploadTransferAsset.xls" })
+                </div>
+                <div class="col-xl-4">
+                    @{
+                        @Html.Kendo().Button().Content("SearchAsset").Name("searchButton").HtmlAttributes(new { onclick = "return popupitemSelection()" })
+                    }
+                </div>
+            <div class="col-xl-12">
+                <div class="gridClass">
+                    @Html.Hidden("CurrentPageID", Model.EntityInstance.CurrentPageID)
+                    @Html.Hidden("AssetIDS")
+                    @Html.Hidden("TransactionID", Model.PageTitle)
+                    @{
+                        DisplayHelper display = new DisplayHelper(this, "InternalAssetTransfer", "AssetID");
+
+                        var gridCtrl = Html.Kendo().Grid<dynamic>()
+                        .Name("DetailsGrid");
+                        display.AddGridActionColumns(gridCtrl, Url, "InternalAssetTransfer", RightNames.Asset, addEditColumn: false, addDetailsColumn: false, addDeleteColumn: true, addCheckbox: false, deleteActionName: "_deleteItem", deleteAdditionalData: "CurrentPageID=" + Model.EntityInstance.CurrentPageID);
+                        display.ConfigureGrid(gridCtrl, readDataHandler: "defaultGridReadWithParamMethod", readActionName: "_lineItems");
+                        display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.Asset, addNewButtonRequired: false, exportToCSVButtonRequired: false, exportToExcelButtonRequired: false, exportToPDFButtonRequired: false, addDeleteButtonRequired: false);
+
+                        gridCtrl.Render();
+                    }
+                    <div id="errGrid"></div>
+                </div>
+            </div>
+
+            <div style="border: solid 1px #C0CAD1; margin: 5px 0px;display: none;" id="transferAssetPart">
+                <h5 style="background: #C0CAD1; padding: 10px; margin: 0px;">Transfer To</h5>
+                <div class="transferAsset" style="width:90%">
+                    <div class="row">
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("ReferencesNo", true)</label>
+                            @(Html.TextBox("ReferencesNo", @header.TransactionNo, new { Class = "form-control", disabled = "disabled" }))
+                        </div>
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("Remarks", false)</label>
+                            @(
+                                Html.Kendo().TextBox().Name("Remarks")
+                                .HtmlAttributes(new { Class = "k-textbox", style = "width: 100%;", @maxlength = "500" })
+                                )
+                        </div>
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("Upload Doc", false)</label>
+                            @(
+                                Html.Kendo().Upload()
+                                .Name("UploadDoc")
+                                .Async(a => a
+                                .Save("DocumentUpload", "InternalAssetTransfer", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                                .Remove("DocumentRemove", "InternalAssetTransfer", new { currentPageID = Model.EntityInstance.CurrentPageID })
+                                .AutoUpload(true)
+                                ).Multiple(true)
+
+                                .Events(events => events
+                                //.Select("onSelect")
+
+                                .Success("OnSuccessUpload").Complete("OnComplete")
+                                )
+
+                                .Validation(validation => validation
+                                .AllowedExtensions(".txt", ".doc", ".docx", ".pdf", ".xls", ".xlsx")
+                                //  .MaxFileSize(maxFileSize)
+                                )
+                                )
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("ToLocation", true)</label>
+                            @(Html.TextBox("ToLocation", @lineitem.ToLocation.LocationName, new { Class = "form-control", disabled = "disabled" }))
+                            @Html.Hidden("LocationID", lineitem.ToLocationID)
+
+                        </div>
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("Transfer Type", true)</label>
+                            @(
+                                Html.Kendo().DropDownList().Name("TransferTypeID")
+                                .HtmlAttributes(new { style = "width:200px!important " })
+                                .BindTo(ComboBoxHelper.GetTransferType(""))
+                                .OptionLabel("Select Transfer Type")
+                                )
+
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("Department", true)</label>
+
+                            @(
+                                Html.Kendo().MultiColumnComboBox()
+                                .Name("DepartmentID")
+                                .Placeholder("Select Department")
+                                .DataTextField("DepartmentName")
+                                .DataValueField("DepartmentID")
+                                .Columns(columns =>
+                                {
+                                    columns.Add().Field("DepartmentCode").Title("Department Code").Width("100px");
+                                    columns.Add().Field("DepartmentName").Title("Department Name").Width("200px");
+
+                                })
+                                .HtmlAttributes(new { style = "width:300px!important;" })
+                                .Filter(FilterType.Contains)
+                                .FilterFields(new string[] { "DepartmentCode", "DepartmentName" })
+
+
+                                .DataSource(source =>
+                                {
+                                    source.Read(read =>
+                                    {
+                                        read.Action("GetAllDepartmentList", "DataService");
+                                    });
+                                })
+                                )
+                        </div>
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("Section", true)</label>
+
+                            @(
+                                Html.Kendo().MultiColumnComboBox()
+                                .Name("SectionID")
+                                .Placeholder("Select Section")
+                                .DataTextField("SectionName")
+                                .DataValueField("SectionID")
+                                .Columns(columns =>
+                                {
+                                    columns.Add().Field("SectionCode").Title("Section Code").Width("100px");
+                                    columns.Add().Field("SectionName").Title("Section Name").Width("200px");
+
+                                })
+                                .HtmlAttributes(new { style = "width:300px!important;" })
+                                .Filter(FilterType.Contains)
+                                .FilterFields(new string[] { "SectionCode", "SectionName" })
+
+
+                                .DataSource(source =>
+                                {
+                                    source.Read(read =>
+                                    {
+                                        read.Action("GetAllSectionList", "DataService");
+                                    });
+                                })
+                                )
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("Custodian", true)</label>
+                            @(Html.Kendo().MultiColumnComboBox()
+                                .Name("CustodianID")
+                                .Placeholder("Select Custodian Name")
+                                .DataTextField("PersonName")
+                                .DataValueField("UserID")
+                                .Columns(columns =>
+                                {
+                                    columns.Add().Field("PersonCode").Title("Person Code").Width("100px");
+                                    columns.Add().Field("PersonName").Title("PersonName").Width("200px");
+                                    columns.Add().Field("EMailID").Title("EMail ID").Width("100px");
+                                })
+                                .HtmlAttributes(new { style = "width:300px!important;" })
+                                .Filter(FilterType.Contains)
+                                .FilterFields(new string[] { "PersonCode", "PersonName", "EMailID" })
+
+                                .DataSource(source =>
+                                {
+                                    source.Read(read =>
+                                    {
+                                        read.Action("GetAllLoginUserList", "DataService");
+                                    }).ServerFiltering(true);
+                                })
+                                )
+                            @Html.CheckBox("NoCustodian", false, new { onchange = "checkedChanged()", ID = "NoCustodian" })
+                        </div>
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("TransferDate", true)</label>
+                            @(Html.Kendo().DateTimePicker().Name("TransferDate"))
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-4">
+                            <label for="fullname">@Html.FieldLabel("AssetCondition", true)</label>
+                            @(
+                                Html.Kendo().DropDownList().Name("AssetConditionID")
+                                .BindTo(ComboBoxHelper.GetAllAssetCondition(""))
+                                .OptionLabel("Select Asset Condition")
+                                )
+                        </div>
+                    </div>
+
+                    <div class="col-xl-12 text-right add-action-btns">
+                        @Html.Kendo().Button().Content("Save").Name("saveButton").HtmlAttributes(new { type = "submit", onclick = "return Transfervalidate();" })
+                        @* @Html.Kendo().Button().Content("Draft").Name("draftButton").HtmlAttributes(new { onclick="return DraftTransfervalidate()" }) *@
+                        @Html.Kendo().Button().Content("Cancel").Name("cancelButton").HtmlAttributes(new { onclick = "loadIndexPage('InternalAssetTransfer')" })
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group col-md-12">
+            <label for="fullname">@Html.Label("Audit Log")</label>
+            <a href="#" class="dropdown-toggle" id="AuditLogToggle" data-bs-toggle="collapse" data-bs-target="#AuditLogCollapse"
+               aria-expanded="false" aria-controls="AuditLogCollapse">
+                <span title='Audit Log'></span>
+            </a>
+        </div>
+        <div class="collapse" id="AuditLogCollapse">
+            @{
+                EntryPageModel newModel = new EntryPageModel()
+                {
+
+                    EntityInstance = header as BaseEntityObject,
+                    ControllerName = this.GetType().Name.Substring(0, this.GetType().Name.Length - "Controller".Length),
+                };
+                Html.RenderPartial("BaseViews/AuditLogSingleView", newModel);
+            }
+        </div>
+
+    </div>
+
+   
+}
+
+
+
+ @( Html.Kendo().Window()
+        .Name("PopupAsset")
+        .Width(1300)
+        .Visible(false)
+        .Actions(actions => actions.Close())
+        .Height(550)
+        .Draggable()
+        .Resizable()
+        .Iframe(true)
+        .Modal(true)
+.Scrollable(false)
+)
+
+<script>
+    $(function () {
+        setPageHeading("Internal Transfer Asset Edit ");
+    });
+    function downloadDocument() {
+
+        //window.open("~/ExcelTemplate/UploadTransferAsset.xls");
+        $.ajax({
+            url: "/InternalAssetTransfer/DownloadFile",
+            type: "Get",
+            dataType: "json",
+            async: false,
+            data: { fileName: "UploadTransferAsset.xls" },
+
+
+        });
+
+    }
+    function checkedChanged() {
+        if ($("#NoCustodian").is(':checked')) {
+            var ddl = $("#CustodianID").data("kendoMultiColumnComboBox");
+            ddl.enable(false);
+        }
+
+        else {
+            var ddl = $("#CustodianID").data("kendoMultiColumnComboBox");
+            ddl.enable(true);
+        }
+    }
+    function Transfervalidate() { 
+        var flag = true;
+
+
+        if (!$("#LocationID").val()) {
+            flag = false;
+            if ($("#validateLocation").val() != "") {
+                $("#errLoc").after('<span style="color:red;font-weight:normal;" id="validateLocation">@Language.GetString("Location Name is Required")</span>');
+            }
+        }
+        else {
+            $("#validateLocation").remove();
+        }
+      
+        var grid = $("#DetailsGrid").data("kendoGrid");
+        var data = grid.dataSource.data();
+        var totalNumber = data.length;
+        if (totalNumber <= 0) {
+            if ($("#validateGrid").val() != "") {
+                $("#errGrid").after('<span style="color:red;font-weight:normal;" id="validateGrid">@Language.GetString("Select anyone Asset Details")</span>');
+            }
+            flag = false;
+        }
+        else {
+         
+            var loadedID = [];
+            for (var i = 0; i < totalNumber; i++) {
+                var currentDataItem = data[i];
+                loadedID.push(currentDataItem.AssetID);
+            }
+            $("#validateGrid").remove();
+            $("#AssetIDS").val(loadedID);
+        }
+        if (flag) {
+            // TransferAssetValidate();
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    function DraftTransfervalidate() {
+        var flag = true;
+
+
+       
+        var grid = $("#DetailsGrid").data("kendoGrid");
+        var data = grid.dataSource.data();
+        var totalNumber = data.length;
+        if (totalNumber <= 0) {
+            if ($("#validateGrid").val() != "") {
+                $("#errGrid").after('<span style="color:red;font-weight:normal;" id="validateGrid">@Language.GetString("Select anyone Asset Details")</span>');
+            }
+            flag = false;
+        }
+        else {
+
+            var loadedID = [];
+            for (var i = 0; i < totalNumber; i++) {
+                var currentDataItem = data[i];
+                loadedID.push(currentDataItem.AssetID);
+            }
+            $("#validateGrid").remove();
+            $("#AssetIDS").val(loadedID);
+        }
+        if (flag) {
+            $.ajax({
+                url: "/InternalAssetTransfer/EditDraftMode",
+                type: "POST",
+                dataType: "json",
+                async: false,
+                data: {
+                    AssetIDS: $("#AssetIDS").val(),
+                    LocationID: $("#LocationID").val(),
+                    CurrentPageID: @Model.EntityInstance.CurrentPageID,
+                    TransactionID:$("#TransactionID").val()
+                },
+                success: function (data) {
+
+                    if (data.Result == "Success") {
+                        showSuccessMessage(data.message);
+
+                        loadIndexPage('InternalAssetTransfer');
+
+                    }
+                    else {
+                        ShowErrorMesage(data.message);
+                        loadIndexPage('InternalAssetTransfer');
+
+                    }
+                }
+            });
+
+        }
+        else {
+            return false;
+        }
+    }
+</script>
+<script src="~/ACSScript/Common.js"></script>

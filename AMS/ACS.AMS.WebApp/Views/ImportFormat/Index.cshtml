@@ -1,0 +1,34 @@
+﻿@model IndexPageModel
+  
+@{
+    ViewBag.Title = "Index";
+}
+<div class="layout-WoringAreaContainer">
+
+
+      
+        <div class="list-container">
+
+             @{
+            DisplayHelper display = new DisplayHelper(this, "ImportFormat", "ImportFormatID");
+
+            var gridCtrl = Html.Kendo().Grid<dynamic>()
+                .Name("DetailsGrid");
+
+            display.AddGridActionColumns(gridCtrl, Url, "ImportFormat", RightNames.ImportFormat,adddownloadColumns:true);
+            display.ConfigureGrid(gridCtrl);
+            display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.ImportFormat);
+
+            gridCtrl.Render();
+            //display.AddPopUpWindow(this.Html, "Division");
+
+        }
+        </div>
+</div>
+
+<script>
+    $(function () {
+        setPageHeading("Import Format Index");
+    });
+  
+</script>

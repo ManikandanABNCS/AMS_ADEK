@@ -1,0 +1,4 @@
+﻿@model IndexPageModel
+<iframe id="myIframe" name="myIframe" style="border: none; width:100%; height: 100%" frameborder="0" scrolling="no" src="@Url.Action("ItemList", new {controllerName=Model.ControllerName, pageName=Model.PageName,Isdynamic=Model.Isdynamic })">
+    
+</iframe>

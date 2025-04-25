@@ -1,0 +1,49 @@
+﻿@model IndexPageModel
+@{
+    ViewBag.Title = "Index";
+
+}
+
+         <div class="content-page-header">
+			<div class="row">
+				<div class="col-md-3">
+					<div class="page-title"> 
+						<h5 id="pageMainHeadingPortion"></h5>
+					</div>
+				</div>
+                <div class="col-md-6">
+					
+				</div>
+				<div class="col-md-3">
+					 <div class="left-widget">
+                         
+                    </div>
+				</div>
+			</div>
+            </div>
+        <div class="list-container">
+              @{
+        DisplayHelper display = new DisplayHelper(this, "NotificationTemplate", "NotificationTemplateID");
+
+        var gridCtrl = Html.Kendo().Grid<dynamic>()
+                .Name("DetailsGrid");
+
+        display.AddGridActionColumns(gridCtrl, Url, "NotificationTemplate", RightNames.NotificationTemplate);
+            display.ConfigureGrid(gridCtrl);
+        display.AddGridHeaders(gridCtrl, Url, this.Html, RightNames.NotificationTemplate);
+
+            gridCtrl.Render();
+            //display.AddPopUpWindow(this.Html, "Division");
+
+        }
+         
+        </div>
+   
+
+
+
+<script>
+$(function () {
+        setPageHeading("Notification Template Index");
+});
+</script>

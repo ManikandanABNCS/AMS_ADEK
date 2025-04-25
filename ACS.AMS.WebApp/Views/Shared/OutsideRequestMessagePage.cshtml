@@ -1,0 +1,111 @@
+﻿@model OutsideRequestMessageModel
+@using ACS.AMS.DAL;
+
+
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] AMS</title>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery/dist/popper.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+
+    <link href="@Url.Content("~/lib/kendo-ui/styles/kendo.common.min.css")" rel="stylesheet" type="text/css" />
+    <script src="~/lib/kendo-ui/js/jquery.min.js"></script>
+    <script src="~/lib/kendo-ui/js/jszip.min.js"></script>
+    <script src="~/lib/kendo-ui/js/kendo.all.min.js"></script>
+    <script src="~/lib/kendo-ui/js/kendo.aspnetmvc.min.js"></script>
+
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/ThemeBuilderDesign/dist/css/ThemeBuilderDesign.css" rel="stylesheet" />
+    <link href="~/css/ThemeBuilder.custom.css" rel="stylesheet" type="text/css" />
+    <link href="~/css/font-awesome.css" rel="stylesheet" type="text/css" />
+    <script src="~/ACSScript/Common.js"></script>
+    <script src="~/ACSScript/ACSDynamicReport.js"></script>
+    @{
+        //var culture = System.Globalization.CultureInfo.CurrentCulture.ToString();
+        var path = Url.Content("~/lib/kendo-ui/js/messages/kendo.messages." + "en-GB" + ".min.js");
+    }
+
+    <script src="@path"></script>
+
+</head>
+<body>
+    <header>
+        <div class="row" style="width:100%">
+            <div class="headerMenu col-md-12">
+
+                <div class="container-fluid">
+                    <div class="row" style="width:100%">
+                        <div class="col-xl-1" style="margin-right: 40px;">
+                            <ul id="menu1" class="k-menu k-header k-reset k-widget k-menu-horizontal">
+                                <li class="k-item k-menu-item k-first">
+                                    <a href="" style="color:#ffff">
+                                        <span class="k-link k-menu-link">
+                                            <img src="~/cropped-weOne-Favicon-white-01-32x32.png" />
+                                         
+                                            <span class="k-menu-link-text"></span>
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="col-xl-8 text-center">
+
+                          
+                           
+                        </div>
+
+                        <div class="col-xl-2 text-right">
+                            <div class="top-right-bar" style="max-height: 30px;">
+                                <ul class="layout-Main-Header-container-topbar-menu">
+                                    
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+      
+
+        <section class="section dashboard"  style="min-height: 650px;">
+            <div style="margin-top:200px">
+
+            @if (Model.Status == "Fail")
+            {
+                <center>
+                    <b style="color:red">
+                        @Language.GetErrorMessage(Model.Message)
+                    </b>
+                </center>
+            }
+            else
+            {
+                <center>
+                    <b style="color:green">
+                        @Language.GetErrorMessage(Model.Message)
+                    </b>
+                </center>
+            }
+            </div>
+        </section>
+
+        <footer class="footer text-center d-flex align-items-center">
+            <div class="copyright" style="width: 100%;"> &copy; All Rights Reserved @DateTime.Now.Year. </div>
+        </footer>
+    </main>
+
+</body>
+</html>
+
+
+
